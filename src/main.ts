@@ -4,5 +4,5 @@ const doc =
     : 'pizza sucks';
 
 const app = () => {
-  console.log('sdlfjkahsdljkfhasdjf');
+  console.log('Something else');
 };

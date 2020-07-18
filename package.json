@@ -4,7 +4,8 @@
   "description": "A game",
   "main": "index.js",
   "scripts": {
-    "build": "tsc src/main.ts"
+    "build": "tsc",
+    "watch": "tsc --watch"
   },
   "repository": {
     "type": "git",
@@ -31,5 +32,8 @@
     "eslint-scope": "^5.1.0",
     "prettier": "^2.0.5",
     "typescript": "^3.9.6"
+  },
+  "devDependencies": {
+    "eslint": "^7.4.0"
   }
 }
