@@ -21,9 +21,6 @@ const SCALE = 2;
 const runMainLoop = () => {
   const player = G_model_createPlayer();
   const room = G_model_createRoomFromSprite('map_0', player);
-  // const room: Room = {
-  //   tiles
-  // };
   G_model_setCurrentRoom(room);
 
   const startTime = performance.now();
@@ -32,7 +29,7 @@ const runMainLoop = () => {
     const sixtyFpsMs = 16.666;
     const dt = now - prevNow;
     const fm = dt / sixtyFpsMs;
-    G_model_setFrameMultiplier(fm);
+    G_model_setFrameMultiplier(fm > 2 ? 2 : fm);
     G_model_setElapsedMs(now - startTime);
     prevNow = now;
 
