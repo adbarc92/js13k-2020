@@ -1,10 +1,14 @@
 /*
+This file handles operations related to Sprites: loading them and getting info about them.
+A Sprite is a sub-image of a parent image.  The sub image is represented by a rectangle
+within the parent image (the four numbers: x, y, width, height).
+*/
+/*
 global
 G_view_drawSprite
+G_model_createCanvas
 */
 
-// A sprite is a sub-image of a parent image.  The sub image is represented by a rectangle
-// within the parent image (the four numbers: x, y, width, height).
 type Sprite = [
   HTMLCanvasElement | HTMLImageElement,
   number,
@@ -28,8 +32,12 @@ type SpriteCollection = { [key: string]: Sprite };
 
 // This type represents the postfix one can add to a sprite
 type SpriteModification = '' | '_r1' | '_r2' | '_r3' | '_f';
+const G_SPRITE_MOD_NORMAL: SpriteModification = '';
+const G_SPRITE_MOD_FLIPPED: SpriteModification = '_f';
+const G_SPRITE_MOD_ROT90: SpriteModification = '_r1';
+const G_SPRITE_MOD_ROT180: SpriteModification = '_r2';
+const G_SPRITE_MOD_ROT270: SpriteModification = '_r3';
 
-let model_canvas: HTMLCanvasElement | null = null;
 let model_sprites: SpriteCollection | null = null;
 
 // given an inputCanvas, return a new canvas rotated to the right by 90 degrees
@@ -62,7 +70,7 @@ const createFlippedImg = (
   return canvas;
 };
 
-// given a Sprite, create and return an image from the sprite
+// given a Sprite, create and return a new image from the sprite
 const spriteToCanvas = (sprite: Sprite): HTMLCanvasElement => {
   const [, , , spriteWidth, spriteHeight] = sprite;
   const [canvas, ctx] = G_model_createCanvas(spriteWidth, spriteHeight);
@@ -132,7 +140,7 @@ const loadSpritesFromImage = (
 
       // create flipped sprite: <baseSpriteName>_f
       addSprite(
-        `${baseSpriteName}_f`,
+        `${baseSpriteName}${G_SPRITE_MOD_FLIPPED}`,
         createFlippedImg(spriteToCanvas(sprite)),
         0,
         0,
@@ -153,66 +161,45 @@ const loadImage = (imagePath: string): Promise<HTMLImageElement> => {
   });
 };
 
+// exported functions --------------------------------------------------------------------
+
 const G_model_loadImagesAndSprites = async () => {
   const spriteMap = {};
 
   const spriteSheetWidth = 16 * 4;
   const spriteSheetHeight = 16 * 4;
 
-  const baseImage = await loadImage('spritesheets.png');
+  const baseImage = await loadImage('res/packed.png');
   const topLeftSpritesheet = spriteToCanvas(
     createSprite(baseImage, 0, 0, spriteSheetWidth, spriteSheetHeight)
   );
+  loadSpritesFromImage(spriteMap, topLeftSpritesheet, 'actors', 16, 16);
 
   const topRightSpritesheet = spriteToCanvas(
-    createSprite(baseImage, 0, 0, spriteSheetWidth, spriteSheetHeight)
+    createSprite(
+      baseImage,
+      spriteSheetWidth,
+      0,
+      spriteSheetWidth,
+      spriteSheetHeight
+    )
   );
+  loadSpritesFromImage(spriteMap, topRightSpritesheet, 'terrain', 16, 16);
+
+  const bottomLeftSpritesheet = spriteToCanvas(
+    createSprite(
+      baseImage,
+      0,
+      spriteSheetHeight,
+      spriteSheetWidth,
+      spriteSheetHeight
+    )
+  );
+  loadSpritesFromImage(spriteMap, bottomLeftSpritesheet, 'map', 16, 16);
 
   model_sprites = spriteMap;
 };
 
-const G_model_createCanvas = (
-  width: number,
-  height: number
-): [HTMLCanvasElement, CanvasRenderingContext2D, number, number] => {
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  return [
-    canvas,
-    canvas.getContext('2d') as CanvasRenderingContext2D,
-    width,
-    height,
-  ];
-};
-
-const G_model_getCanvas = (): HTMLCanvasElement => {
-  if (model_canvas) {
-    return model_canvas as HTMLCanvasElement;
-  } else {
-    const [canvas, ctx] = G_model_createCanvas(1, 1);
-    canvas.id = 'canv';
-    document.body.appendChild(canvas);
-    const setCanvasSize = () => {
-      const [canvas2, ctx2] = G_model_createCanvas(canvas.width, canvas.height);
-      ctx2.drawImage(canvas, 0, 0);
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(canvas2, 0, 0);
-    };
-    window.addEventListener('resize', setCanvasSize);
-    setCanvasSize();
-    model_canvas = canvas;
-    return canvas;
-  }
-};
-
-const G_model_getCtx = (): CanvasRenderingContext2D => {
-  return G_model_getCanvas().getContext('2d') as CanvasRenderingContext2D;
-};
-
-const G_model_getImage = (imageName: string): HTMLImageElement =>
-  (model_images as ImageCollection)[imageName];
+// get a Sprite given a sprite name
 const G_model_getSprite = (spriteName: string): Sprite =>
   (model_sprites as SpriteCollection)[spriteName];
