@@ -1,2 +1,6 @@
 *.log
 node_modules/
+scratch/*.encoded.png
+scratch/*.csv
+src/*.map
+src/main.js

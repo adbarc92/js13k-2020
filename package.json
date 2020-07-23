@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "encode-map": "node scripts/encode-map.js"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,8 @@
     "url": "https://github.com/adbarc92/js13k-2020/issues"
   },
   "homepage": "https://github.com/adbarc92/js13k-2020#readme",
-  "dependencies": {
+  "devDependencies": {
+    "eslint": "^7.5.0",
     "@typescript-eslint/eslint-plugin": "^3.6.0",
     "@typescript-eslint/parser": "^3.6.0",
     "babel": "^6.23.0",
@@ -30,10 +32,8 @@
     "eslint-plugin-babel": "^5.3.1",
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-scope": "^5.1.0",
+    "pngjs": "^5.0.0",
     "prettier": "^2.0.5",
     "typescript": "^3.9.6"
-  },
-  "devDependencies": {
-    "eslint": "^7.4.0"
   }
 }

@@ -1,4 +1,4 @@
-{
+() => {
   const images = [
     'https://i.imgur.com/M36x4jw.jpg',
     'https://i.imgur.com/6SfbJkg.jpg',
@@ -118,4 +118,4 @@
 
   document.body.style.backgroundColor = 'black';
   addImageToDom();
-}
+};
