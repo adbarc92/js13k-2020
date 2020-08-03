@@ -18,7 +18,7 @@ window.addEventListener('keydown', ev => {
     (window as any).running = false;
   }
 
-  if (ENABLE_INPUT && IN_BATTLE) {
+  if (BATTLE_ENABLE_INPUT && BATTLE_IN_BATTLE) {
     if (ev.key === '1') {
       // useStrike
     }
