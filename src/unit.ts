@@ -31,6 +31,7 @@ interface Battle {
   allies: Unit[];
   enemies: Unit[];
   rounds: Round[];
+  roundIndex: 0;
 }
 
 type RoundAction = 0 | 1;
@@ -38,7 +39,7 @@ const G_ACTION_STRIKE = 0;
 // ...
 
 const model_createBattle = (allies: Unit[], enemies: Unit[]): Battle => {
-  return { allies, enemies, rounds: [] };
+  return { allies, enemies, rounds: [], roundIndex: 0 };
 };
 
 const model_battleAddRound = (battle: Battle, round: Round) => {
@@ -55,6 +56,10 @@ const model_createRound = (turnOrder: Unit[]): Round => {
 
 const model_roundIncrementIndex = (round: Round) => {
   round.currentIndex++;
+};
+
+const model_battleIncrementIndex = (battle: Battle) => {
+  battle.roundIndex++;
 };
 
 const controller_roundInit = (round: Round) => {
@@ -160,33 +165,27 @@ const strike = (attacker: Unit, victim: Unit) => {
 
 const mainBattle = () => {
   const unit1 = model_createUnit(5, 5, 5, 5, 5);
-  // console.log('Unit1:', JSON.stringify(unit1, null, 2));
   const unit2 = model_createUnit(7, 2, 4, 3, 1);
-  // console.log('Unit2:', JSON.stringify(unit2, null, 2));
-
-  // console.log('Damage done by U1 to U2!!!!!!: ', strike(unit1, unit2));
-  // console.log('Damage done by U2 to U1!!!!!!: ', strike(unit2, unit1));
-  // console.log('Unit1:', JSON.stringify(unit1, null, 2));
-  // console.log('Unit2:', JSON.stringify(unit2, null, 2));
 
   const battle = model_createBattle([unit1], [unit2]);
-  const round = model_createRound([unit1, unit2]);
+  let round = model_createRound([unit1, unit2]);
   model_battleAddRound(battle, round);
   controller_roundInit(round);
-  console.log(round);
-  console.log(round.turnOrder);
-  // while (!model_battleIsComplete(battle)) {
-  console.log('while condition:', !model_roundIsOver(round));
-  while (!model_roundIsOver(round)) {
-    console.log('while');
-    const actingUnit = model_roundGetActingUnit(round) as Unit;
 
-    const target = G_utils_isAlly(battle, actingUnit)
-      ? (G_utils_getRandArrElem(battle.enemies) as Unit)
-      : (G_utils_getRandArrElem(battle.allies) as Unit);
-    console.log('Target is', JSON.stringify(target, null, 2));
-    controller_roundDoTurn(round, target);
+  while (!model_battleIsComplete(battle)) {
+    while (!model_roundIsOver(round)) {
+      console.log(battle.roundIndex);
+      const actingUnit = model_roundGetActingUnit(round) as Unit;
+
+      const target = G_utils_isAlly(battle, actingUnit)
+        ? (G_utils_getRandArrElem(battle.enemies) as Unit)
+        : (G_utils_getRandArrElem(battle.allies) as Unit);
+      controller_roundDoTurn(round, target);
+      console.log('Unit1:', JSON.stringify(unit1, null, 2));
+      console.log('Unit2:', JSON.stringify(unit2, null, 2));
+    }
+    model_battleAddRound(battle, controller_roundEnd(round));
+    model_battleIncrementIndex(battle);
+    round = battle.rounds[battle.roundIndex];
   }
-  // model_battleAddRound(battle, controller_roundEnd(round));
-  // }
 };
