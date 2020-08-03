@@ -6,11 +6,11 @@ G_utils_isAlly
 */
 
 interface Stats {
-  HP: number;
-  Dmg: number;
-  Def: number;
-  Mag: number;
-  Spd: number;
+  hp: number;
+  dmg: number;
+  def: number;
+  mag: number;
+  spd: number;
   iCnt: number;
   cCnt: number;
 }
@@ -94,7 +94,7 @@ const controller_roundApplyAction = (
       console.error('No action:', action, 'exists.');
   }
   model_roundIncrementIndex(round);
-  // check if HP <=0
+  // check if hp <=0
   round.nextTurnOrder.push(actingUnit);
 };
 
@@ -116,7 +116,7 @@ const model_createStats = (
   mag: number,
   spd: number
 ): Stats => {
-  return { HP: hp, Dmg: dmg, Def: def, Mag: mag, Spd: spd, iCnt: mag, cCnt: 0 };
+  return { hp, dmg, def, mag, spd, iCnt: mag, cCnt: 0 };
 };
 
 const model_createUnit = (
@@ -135,31 +135,33 @@ const model_createUnit = (
   };
 };
 
-const model_statsModifyHP = (
+const model_statsModifyhp = (
   currentStats: Stats,
   baseStats: Stats,
   val: number
 ) => {
-  const { HP: cHP } = currentStats;
-  const { HP: bHP } = baseStats;
-  let nextHp = cHP + val;
-  if (nextHp > bHP) {
-    nextHp = bHP;
+  const { hp: chp } = currentStats;
+  const { hp: bhp } = baseStats;
+  let nextHp = chp + val;
+  if (nextHp > bhp) {
+    nextHp = bhp;
   } else if (nextHp < 0) {
     nextHp = 0;
   }
-
-  currentStats.HP = nextHp;
+  currentStats.hp = nextHp;
 };
 
-const strike = (attacker: Unit, victim: Unit) => {
+// const fixSpd = () => {};
+
+const strike = (attacker: Unit, victim: Unit): number => {
   const { cS, bS } = victim;
-  const { Def } = cS;
-  const { Dmg } = attacker.bS;
+  const { def } = cS;
+  const { dmg } = attacker.bS;
 
-  const dmgDone = -Math.max(Dmg - Def, 1);
+  const dmgDone = -Math.max(dmg - def, 1);
 
-  model_statsModifyHP(cS, bS, dmgDone);
+  // speed modification should be done here
+  model_statsModifyhp(cS, bS, dmgDone);
   return dmgDone;
 };
 
@@ -173,6 +175,7 @@ const mainBattle = () => {
   controller_roundInit(round);
 
   while (!model_battleIsComplete(battle)) {
+    // IN_BATTLE = true;
     while (!model_roundIsOver(round)) {
       console.log(battle.roundIndex);
       const actingUnit = model_roundGetActingUnit(round) as Unit;
@@ -188,4 +191,5 @@ const mainBattle = () => {
     model_battleIncrementIndex(battle);
     round = battle.rounds[battle.roundIndex];
   }
+  // IN_BATTLE = false;
 };

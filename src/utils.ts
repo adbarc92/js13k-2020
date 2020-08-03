@@ -77,7 +77,7 @@ const G_utils_rectToCollisionPoints = (rect: Rect): CollisionPoints => {
 
 const G_utils_areAllUnitsDead = (units: Unit[]): boolean => {
   return units.reduce((everyoneIsDead: boolean, unit: Unit) => {
-    return everyoneIsDead && unit.cS.HP === 0;
+    return everyoneIsDead && unit.cS.hp === 0;
   }, true);
 };
 
