@@ -5,11 +5,15 @@ This file contains logic for what happens when an event occurs: a keypress, butt
 global
 G_model_setKeyDown
 G_model_setKeyUp
+G_battleGenerateRound
+G_BATTLE_CURRENT_BATTLE
+mainBattle
 */
 
 /* Event Flags */
-let BATTLE_ENABLE_INPUT = false;
+let BATTLE_INPUT_ENABLED = false;
 let BATTLE_IN_BATTLE = false;
+// let BATTLE_ADVANCE = false;
 
 window.addEventListener('keydown', ev => {
   G_model_setKeyDown(ev.key);
@@ -18,7 +22,14 @@ window.addEventListener('keydown', ev => {
     (window as any).running = false;
   }
 
-  if (BATTLE_ENABLE_INPUT && BATTLE_IN_BATTLE) {
+  if (ev.key === '32') {
+    console.log('thing');
+    G_battleGenerateRound();
+    console.log(G_BATTLE_CURRENT_BATTLE.rounds);
+    // mainBattle();
+  }
+
+  if (BATTLE_INPUT_ENABLED && BATTLE_IN_BATTLE) {
     if (ev.key === '1') {
       // useStrike
     }

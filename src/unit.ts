@@ -34,9 +34,56 @@ interface Battle {
   roundIndex: 0;
 }
 
-type RoundAction = 0 | 1;
-const G_ACTION_STRIKE = 0;
-// ...
+type RoundAction = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+const G_ACTION_STRIKE: RoundAction = 0;
+const G_ACTION_CHARGE: RoundAction = 1;
+const G_ACTION_INTERRUPT: RoundAction = 2;
+const G_ACTION_DEFEND: RoundAction = 3;
+const G_ACTION_HEAL: RoundAction = 4;
+const G_ACTION_USE: RoundAction = 5;
+const G_ACTION_FLEE: RoundAction = 6;
+
+/* GLOBAL FUNCTIONS BEGIN */
+
+let G_BATTLE_ALLIES: Unit[] = [];
+
+let G_BATTLE_ENEMIES: Unit[] = [];
+
+let G_BATTLE_CURRENT_BATTLE: Battle;
+
+const G_battleGetAllies = (): Unit[] => {
+  if (G_BATTLE_ALLIES === []) {
+    G_BATTLE_ALLIES.push(model_createUnit(5, 5, 5, 5, 5));
+  }
+  return G_BATTLE_ALLIES;
+};
+
+const G_battleGetEnemies = (): Unit[] => {
+  if (G_BATTLE_ENEMIES === []) {
+    G_BATTLE_ENEMIES.push(model_createUnit(7, 2, 4, 3, 1));
+  }
+  return G_BATTLE_ENEMIES;
+};
+
+const G_battleGetCurrentBattle = () => {
+  if (G_BATTLE_CURRENT_BATTLE === undefined) {
+    G_BATTLE_CURRENT_BATTLE = model_createBattle(
+      G_battleGetAllies(),
+      G_battleGetEnemies()
+    );
+  }
+  return G_BATTLE_CURRENT_BATTLE;
+};
+
+const G_battleGenerateRound = () => {
+  const battle = G_battleGetCurrentBattle();
+  const newRound = model_createRound(
+    G_battleGetAllies().concat(G_battleGetEnemies())
+  );
+  model_battleAddRound(battle, newRound);
+};
+
+/* GLOBAL FUNCTIONS END */
 
 const model_createBattle = (allies: Unit[], enemies: Unit[]): Battle => {
   return { allies, enemies, rounds: [], roundIndex: 0 };
@@ -151,7 +198,37 @@ const model_statsModifyhp = (
   currentStats.hp = nextHp;
 };
 
-// const fixSpd = () => {};
+const modSpd = (actor: Unit, act: RoundAction) => {
+  const { cS } = actor;
+  let mod;
+  switch (act) {
+    case 0:
+      mod = 1;
+      break;
+    case 1:
+      mod = 2;
+      break;
+    case 2:
+      mod = -1;
+      break;
+    case 3:
+      mod = 3;
+      break;
+    case 4:
+      mod = 2;
+      break;
+    case 5:
+      mod = 1;
+      break;
+    case 6:
+      mod = -1;
+      break;
+    default:
+      mod = 0;
+      break;
+  }
+  cS.spd += mod;
+};
 
 const strike = (attacker: Unit, victim: Unit): number => {
   const { cS, bS } = victim;
@@ -165,17 +242,37 @@ const strike = (attacker: Unit, victim: Unit): number => {
   return dmgDone;
 };
 
+const roundLoop = (battle: Battle, round: Round) => {
+  console.log(battle.roundIndex);
+  const actingUnit = model_roundGetActingUnit(round) as Unit;
+
+  const target = G_utils_isAlly(battle, actingUnit)
+    ? (G_utils_getRandArrElem(battle.enemies) as Unit)
+    : (G_utils_getRandArrElem(battle.allies) as Unit);
+  controller_roundDoTurn(round, target);
+};
+
 const mainBattle = () => {
   const unit1 = model_createUnit(5, 5, 5, 5, 5);
+  G_BATTLE_ALLIES.push(unit1);
   const unit2 = model_createUnit(7, 2, 4, 3, 1);
+  G_BATTLE_ENEMIES.push(unit2);
 
-  const battle = model_createBattle([unit1], [unit2]);
+  // const battle = model_createBattle([unit1, unit2]);
+  const battle = G_battleGetCurrentBattle();
   let round = model_createRound([unit1, unit2]);
   model_battleAddRound(battle, round);
   controller_roundInit(round);
 
+  /* This block runs a round of combat */
+  // while (!model_roundIsOver(round)) {
+  //   roundLoop(battle, round);
+  //   console.log('Unit1:', JSON.stringify(unit1, null, 2));
+  //   console.log('Unit2:', JSON.stringify(unit2, null, 2));
+  // }
+
+  /* This block runs the battle to completion */
   while (!model_battleIsComplete(battle)) {
-    // IN_BATTLE = true;
     while (!model_roundIsOver(round)) {
       console.log(battle.roundIndex);
       const actingUnit = model_roundGetActingUnit(round) as Unit;
@@ -191,5 +288,4 @@ const mainBattle = () => {
     model_battleIncrementIndex(battle);
     round = battle.rounds[battle.roundIndex];
   }
-  // IN_BATTLE = false;
 };

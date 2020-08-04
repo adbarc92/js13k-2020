@@ -28,6 +28,7 @@ rules:
   no-lone-blocks: 0
   no-throw-literal: 0
   no-console: 0
+  no-global-assign: 0
   no-case-declarations: 0
   no-fallthrough: 0
   no-sparse-arrays: 0
