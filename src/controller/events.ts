@@ -7,6 +7,8 @@ G_model_setKeyDown
 G_model_setKeyUp
 G_battleGenerateRound
 G_BATTLE_CURRENT_BATTLE
+G_controller_battleSimulateNextRound
+G_model_getCurrentBattle
 mainBattle
 */
 
@@ -22,11 +24,17 @@ window.addEventListener('keydown', ev => {
     (window as any).running = false;
   }
 
-  if (ev.key === '32') {
+  console.log('keypress!!!', ev);
+  if (ev.key === ' ') {
     console.log('thing');
     G_battleGenerateRound();
     console.log(G_BATTLE_CURRENT_BATTLE.rounds);
     // mainBattle();
+  }
+
+  if (ev.key === 'b') {
+    console.log('SIMULATE ROUND BENJAMIN');
+    G_controller_battleSimulateNextRound(G_model_getCurrentBattle());
   }
 
   if (BATTLE_INPUT_ENABLED && BATTLE_IN_BATTLE) {

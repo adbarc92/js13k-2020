@@ -93,6 +93,10 @@ const model_battleAddRound = (battle: Battle, round: Round) => {
   battle.rounds.push(round);
 };
 
+const model_battleGetCurrentRound = (battle: Battle): Round => {
+  return battle.rounds[battle.roundIndex];
+};
+
 const model_createRound = (turnOrder: Unit[]): Round => {
   return {
     turnOrder,
@@ -242,6 +246,7 @@ const strike = (attacker: Unit, victim: Unit): number => {
   return dmgDone;
 };
 
+// Benjamin: this function simulates a turn for the current acting unit (I think?)
 const roundLoop = (battle: Battle, round: Round) => {
   console.log(battle.roundIndex);
   const actingUnit = model_roundGetActingUnit(round) as Unit;
@@ -252,24 +257,31 @@ const roundLoop = (battle: Battle, round: Round) => {
   controller_roundDoTurn(round, target);
 };
 
+// Benjamin: this function sets up the current battle
 const mainBattle = () => {
   const unit1 = model_createUnit(5, 5, 5, 5, 5);
-  G_BATTLE_ALLIES.push(unit1);
+  // G_BATTLE_ALLIES.push(unit1);
   const unit2 = model_createUnit(7, 2, 4, 3, 1);
-  G_BATTLE_ENEMIES.push(unit2);
+  // G_BATTLE_ENEMIES.push(unit2);
+
+  // Benjamin: set up the first round of the battle, but don't run it until user input
+  const battle = model_createBattle([unit1], [unit2]);
+  const firstRound = model_createRound([unit1, unit2]);
+  model_battleAddRound(battle, firstRound);
+  G_model_setCurrentBattle(battle);
 
   // const battle = model_createBattle([unit1, unit2]);
-  const battle = G_battleGetCurrentBattle();
-  let round = model_createRound([unit1, unit2]);
-  model_battleAddRound(battle, round);
-  controller_roundInit(round);
+  // const battle = G_battleGetCurrentBattle();
+  // let round = model_createRound([unit1, unit2]);
+  // model_battleAddRound(battle, round);
+  // controller_roundInit(round);
 
   /* This block runs a round of combat */
-  while (!model_roundIsOver(round)) {
-    roundLoop(battle, round);
-    console.log('Unit1:', JSON.stringify(unit1, null, 2));
-    console.log('Unit2:', JSON.stringify(unit2, null, 2));
-  }
+  // while (!model_roundIsOver(round)) {
+  //   roundLoop(battle, round);
+  //   console.log('Unit1:', JSON.stringify(unit1, null, 2));
+  //   console.log('Unit2:', JSON.stringify(unit2, null, 2));
+  // }
 
   /* This block runs the battle to completion */
   // while (!model_battleIsComplete(battle)) {
@@ -288,4 +300,36 @@ const mainBattle = () => {
   //   model_battleIncrementIndex(battle);
   //   round = battle.rounds[battle.roundIndex];
   // }
+};
+
+// code that Benjamin added is below -----------------------------------------------------
+
+// This global variable holds the current battle.  It should only be accessed through
+// the following getters and setters
+let model_currentBattle: Battle | null = null;
+const G_model_setCurrentBattle = (battle: Battle) => {
+  model_currentBattle = battle;
+};
+const G_model_getCurrentBattle = (): Battle => {
+  return model_currentBattle as Battle;
+};
+
+// simulates a single round of combat
+const G_controller_battleSimulateNextRound = (battle: Battle) => {
+  const round = model_battleGetCurrentRound(battle);
+  controller_roundInit(round);
+
+  // this part is hard-coded.  We'd probably want to generalize printing a unit with a function
+  const [unit1] = battle.allies;
+  const [unit2] = battle.enemies;
+  while (!model_roundIsOver(round)) {
+    roundLoop(battle, round);
+    console.log('Unit1:', JSON.stringify(unit1, null, 2));
+    console.log('Unit2:', JSON.stringify(unit2, null, 2));
+  }
+
+  const nextRound = controller_roundEnd(round);
+  model_battleAddRound(battle, nextRound);
+  model_battleIncrementIndex(battle);
+  console.log('round over');
 };
