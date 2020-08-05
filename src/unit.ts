@@ -240,6 +240,35 @@ const simulateTurn = (battle: Battle, round: Round) => {
   controller_roundDoTurn(round, target);
 };
 
+const drawBattle = (battle: Battle) => {
+  G_view_clearScreen();
+  G_view_drawText(`Round: ${(battle.roundIndex + 1).toString()}`, 20, 20);
+  const { allies, enemies } = battle;
+  for (let i = 0; i < allies.length; i++) {
+    G_model_actorSetFacing(allies[i].actor, G_FACING_RIGHT);
+    G_model_actorSetPosition(allies[i].actor, playerPos[i][0], playerPos[i][1]);
+    G_view_drawActor(allies[i].actor, 2);
+    // console.log(allies[i].cS.hp.toString());
+    G_view_drawText(
+      `${allies[i].cS.hp.toString()}/${allies[i].bS.hp.toString()}`,
+      playerPos[i][0] + 70,
+      playerPos[i][1] + 70
+    );
+  }
+
+  for (let i = 0; i < enemies.length; i++) {
+    G_model_actorSetFacing(enemies[i].actor, G_FACING_LEFT);
+    G_model_actorSetPosition(enemies[i].actor, enemyPos[i][0], enemyPos[i][1]);
+
+    G_view_drawActor(enemies[i].actor, 2);
+    G_view_drawText(
+      `${enemies[i].cS.hp.toString()}/${enemies[i].bS.hp.toString()}`,
+      enemyPos[i][0] + 175,
+      enemyPos[i][1] + 70
+    );
+  }
+};
+
 // Benjamin: this function sets up the current battle
 const initBattle = () => {
   const jimothy = model_createUnit('Jimothy', 5, 5, 5, 5, 5);
@@ -250,33 +279,6 @@ const initBattle = () => {
   const firstRound = model_createRound([jimothy, karst]);
   model_battleAddRound(battle, firstRound);
   G_model_setCurrentBattle(battle);
-
-  const drawBattle = (battle: Battle) => {
-    G_view_clearScreen();
-    const { allies, enemies } = battle;
-    for (let i = 0; i < allies.length; i++) {
-      G_model_actorSetFacing(allies[i].actor, G_FACING_RIGHT);
-      G_model_actorSetPosition(
-        allies[i].actor,
-        playerPos[i][0],
-        playerPos[i][1]
-      );
-      G_view_drawActor(allies[i].actor, 2);
-      // console.log(allies[i].cS.hp.toString());
-      G_view_drawText('HELLO', playerPos[i][0], playerPos[i][1] - 10);
-    }
-
-    for (let i = 0; i < enemies.length; i++) {
-      G_model_actorSetFacing(enemies[i].actor, G_FACING_LEFT);
-      G_model_actorSetPosition(
-        enemies[i].actor,
-        enemyPos[i][0],
-        enemyPos[i][1]
-      );
-
-      G_view_drawActor(enemies[i].actor, 2);
-    }
-  };
 
   drawBattle(battle);
 };
@@ -310,5 +312,9 @@ const G_controller_battleSimulateNextRound = (battle: Battle) => {
   const nextRound = controller_roundEnd(round);
   model_battleAddRound(battle, nextRound);
   model_battleIncrementIndex(battle);
+  drawBattle(battle);
   console.log('round over');
+  if (model_battleIsComplete(battle)) {
+    initBattle();
+  }
 };

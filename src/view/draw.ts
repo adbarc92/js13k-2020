@@ -32,8 +32,8 @@ const G_view_drawText = (
 ) => {
   scale = scale || 1;
   ctx = ctx || G_model_getCtx();
-  ctx.font = '120px serif';
-  ctx.fillText(`${text}`, x, y);
+  ctx.font = '12px serif';
+  ctx.strokeText(`${text}`, x, y);
 };
 
 const G_view_drawVerticalGradient = (
