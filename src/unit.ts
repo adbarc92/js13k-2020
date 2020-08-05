@@ -224,7 +224,11 @@ const strike = (attacker: Unit, victim: Unit): number => {
   const { dmg } = attacker.bS;
 
   const dmgDone = -Math.max(dmg - def, 1);
-
+  console.log(
+    `${attacker.name} strikes ${victim.name} for ${-dmgDone} damage! (${
+      victim.cS.hp
+    } HP remaining)`
+  );
   // speed modification should be done here
   model_statsModifyhp(cS, bS, dmgDone);
   return dmgDone;
@@ -267,8 +271,8 @@ const drawBattle = (battle: Battle) => {
 
     G_view_drawText(
       `${allies[i].cS.hp}/${allies[i].bS.hp}`,
-      playerPos[i][0] + 70,
-      playerPos[i][1] + 70
+      playerPos[i][0] * 2 + 5,
+      playerPos[i][1] * 2 - 5
     );
   }
 
@@ -277,10 +281,11 @@ const drawBattle = (battle: Battle) => {
     G_model_actorSetPosition(enemies[i].actor, enemyPos[i][0], enemyPos[i][1]);
 
     G_view_drawActor(enemies[i].actor, 2);
+
     G_view_drawText(
       `${enemies[i].cS.hp.toString()}/${enemies[i].bS.hp.toString()}`,
-      enemyPos[i][0] + 175,
-      enemyPos[i][1] + 70
+      enemyPos[i][0] * 2 + 5,
+      enemyPos[i][1] * 2 - 5
     );
   }
 };
@@ -290,9 +295,9 @@ const initBattle = () => {
   const jimothy = model_createUnit('Jimothy', 5, 5, 5, 5, 5);
   const karst = model_createUnit('Karst', 7, 2, 4, 3, 1);
 
-  // Benjamin: set up the first round of the battle, but don't run it until user input
   const battle = model_createBattle([jimothy], [karst]);
   const firstRound = model_createRound([jimothy, karst]);
+
   model_battleAddRound(battle, firstRound);
   G_model_setCurrentBattle(battle);
 
