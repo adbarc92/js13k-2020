@@ -12,9 +12,7 @@ G_model_getCurrentBattle
 */
 
 /* Event Flags */
-let BATTLE_INPUT_ENABLED = false;
-let BATTLE_IN_BATTLE = false;
-// let BATTLE_ADVANCE = false;
+let BATTLE_INPUT_ENABLED = true;
 
 window.addEventListener('keydown', ev => {
   G_model_setKeyDown(ev.key);
@@ -23,19 +21,10 @@ window.addEventListener('keydown', ev => {
     (window as any).running = false;
   }
 
-  console.log('keypress!!!', ev);
-  if (ev.key === ' ') {
-    console.log('thing');
-  }
-
-  if (ev.key === 'b') {
-    console.log('SIMULATE ROUND BENJAMIN');
-    G_controller_battleSimulateNextRound(G_model_getCurrentBattle());
-  }
-
-  if (BATTLE_INPUT_ENABLED && BATTLE_IN_BATTLE) {
-    if (ev.key === '1') {
-      // useStrike
+  if (BATTLE_INPUT_ENABLED) {
+    if (ev.key === ' ' || ev.key === 'b') {
+      console.log('keypress!!!', ev);
+      G_controller_battleSimulateNextRound(G_model_getCurrentBattle());
     }
   }
 });

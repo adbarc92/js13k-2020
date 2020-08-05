@@ -11,6 +11,7 @@ G_view_clearScreen
 G_FACING_LEFT
 G_FACING_RIGHT
 G_view_drawText
+BATTLE_INPUT_ENABLED
 */
 
 const playerPos = [
@@ -230,27 +231,42 @@ const strike = (attacker: Unit, victim: Unit): number => {
 };
 
 // Benjamin: this function simulates a turn for the current acting unit (I think?)
-const simulateTurn = (battle: Battle, round: Round) => {
-  console.log(battle.roundIndex);
-  const actingUnit = model_roundGetActingUnit(round) as Unit;
+// const simulateTurn = (battle: Battle, round: Round) => {
+//   // console.log(battle.roundIndex);
+//   const actingUnit = model_roundGetActingUnit(round) as Unit;
 
-  const target = G_utils_isAlly(battle, actingUnit)
-    ? (G_utils_getRandArrElem(battle.enemies) as Unit)
-    : (G_utils_getRandArrElem(battle.allies) as Unit);
-  controller_roundDoTurn(round, target);
+//   const target = G_utils_isAlly(battle, actingUnit)
+//     ? (G_utils_getRandArrElem(battle.enemies) as Unit)
+//     : (G_utils_getRandArrElem(battle.allies) as Unit);
+//   // setTimeout(() => {
+//   //   controller_roundDoTurn(round, target);
+//   // }, 500);
+//   controller_roundDoTurn(round, target);
+// };
+
+const simulateTurn = async (battle: Battle, round: Round): Promise<void> => {
+  return new Promise(resolve => {
+    const actingUnit = model_roundGetActingUnit(round) as Unit;
+
+    const target = G_utils_isAlly(battle, actingUnit)
+      ? (G_utils_getRandArrElem(battle.enemies) as Unit)
+      : (G_utils_getRandArrElem(battle.allies) as Unit);
+    controller_roundDoTurn(round, target);
+    setTimeout(resolve, 1000);
+  });
 };
 
 const drawBattle = (battle: Battle) => {
   G_view_clearScreen();
-  G_view_drawText(`Round: ${(battle.roundIndex + 1).toString()}`, 20, 20);
+  G_view_drawText(`Round: ${battle.roundIndex + 1}`, 20, 20);
   const { allies, enemies } = battle;
   for (let i = 0; i < allies.length; i++) {
     G_model_actorSetFacing(allies[i].actor, G_FACING_RIGHT);
     G_model_actorSetPosition(allies[i].actor, playerPos[i][0], playerPos[i][1]);
     G_view_drawActor(allies[i].actor, 2);
-    // console.log(allies[i].cS.hp.toString());
+
     G_view_drawText(
-      `${allies[i].cS.hp.toString()}/${allies[i].bS.hp.toString()}`,
+      `${allies[i].cS.hp}/${allies[i].bS.hp}`,
       playerPos[i][0] + 70,
       playerPos[i][1] + 70
     );
@@ -296,7 +312,9 @@ const G_model_getCurrentBattle = (): Battle => {
 };
 
 // simulates a single round of combat
-const G_controller_battleSimulateNextRound = (battle: Battle) => {
+const G_controller_battleSimulateNextRound = async (battle: Battle) => {
+  BATTLE_INPUT_ENABLED = false;
+  // console.log('Battle input:', BATTLE_INPUT_ENABLED);
   const round = model_battleGetCurrentRound(battle);
   controller_roundInit(round);
 
@@ -304,19 +322,21 @@ const G_controller_battleSimulateNextRound = (battle: Battle) => {
   const [jimothy] = battle.allies;
   const [karst] = battle.enemies;
   while (!model_roundIsOver(round)) {
-    simulateTurn(battle, round);
-    console.log('jimothy:', JSON.stringify(jimothy, null, 2));
-    console.log('karst:', JSON.stringify(karst, null, 2));
+    await simulateTurn(battle, round);
+    // console.log('jimothy:', JSON.stringify(jimothy, null, 2));
+    // console.log('karst:', JSON.stringify(karst, null, 2));
   }
 
   const nextRound = controller_roundEnd(round);
   model_battleAddRound(battle, nextRound);
   model_battleIncrementIndex(battle);
   drawBattle(battle);
-  console.log('round over');
+  // console.log('round over');
   if (model_battleIsComplete(battle)) {
     setTimeout(() => {
       initBattle();
     }, 2000);
   }
+  BATTLE_INPUT_ENABLED = true;
+  // console.log('Battle input:', BATTLE_INPUT_ENABLED);
 };
