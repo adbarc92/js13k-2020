@@ -323,6 +323,7 @@ const G_controller_battleSimulateNextRound = async (battle: Battle) => {
   const [karst] = battle.enemies;
   while (!model_roundIsOver(round)) {
     await simulateTurn(battle, round);
+    drawBattle(battle);
     // console.log('jimothy:', JSON.stringify(jimothy, null, 2));
     // console.log('karst:', JSON.stringify(karst, null, 2));
   }
