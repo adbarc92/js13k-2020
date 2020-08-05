@@ -13,7 +13,7 @@ G_view_clearScreen
 G_view_drawRoom
 G_view_drawActor
 G_controller_updateRoom
-mainBattle
+initBattle
 */
 
 const SCALE = 2;
@@ -49,7 +49,7 @@ const SCALE = 2;
 
 const main = async () => {
   await G_model_loadImagesAndSprites();
-  mainBattle();
+  initBattle();
   // runMainLoop();
 };
 

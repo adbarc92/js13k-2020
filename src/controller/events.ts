@@ -9,7 +9,6 @@ G_battleGenerateRound
 G_BATTLE_CURRENT_BATTLE
 G_controller_battleSimulateNextRound
 G_model_getCurrentBattle
-mainBattle
 */
 
 /* Event Flags */
@@ -27,9 +26,6 @@ window.addEventListener('keydown', ev => {
   console.log('keypress!!!', ev);
   if (ev.key === ' ') {
     console.log('thing');
-    G_battleGenerateRound();
-    console.log(G_BATTLE_CURRENT_BATTLE.rounds);
-    // mainBattle();
   }
 
   if (ev.key === 'b') {

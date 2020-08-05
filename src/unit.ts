@@ -3,7 +3,29 @@ global
 G_utils_areAllUnitsDead
 G_utils_getRandArrElem
 G_utils_isAlly
+G_model_createActor
+G_model_actorSetPosition
+G_model_actorSetFacing
+G_view_drawActor
+G_view_clearScreen
+G_FACING_LEFT
+G_FACING_RIGHT
+G_view_drawText
 */
+
+const playerPos = [
+  [60, 90],
+  [45, 105],
+  [30, 90],
+  [45, 75],
+];
+
+const enemyPos = [
+  [165, 90],
+  [180, 105],
+  [195, 90],
+  [180, 75],
+];
 
 interface Stats {
   hp: number;
@@ -16,7 +38,8 @@ interface Stats {
 }
 
 interface Unit {
-  sprite: string;
+  name: string;
+  actor: Actor;
   bS: Stats;
   cS: Stats;
 }
@@ -42,48 +65,6 @@ const G_ACTION_DEFEND: RoundAction = 3;
 const G_ACTION_HEAL: RoundAction = 4;
 const G_ACTION_USE: RoundAction = 5;
 const G_ACTION_FLEE: RoundAction = 6;
-
-/* GLOBAL FUNCTIONS BEGIN */
-
-let G_BATTLE_ALLIES: Unit[] = [];
-
-let G_BATTLE_ENEMIES: Unit[] = [];
-
-let G_BATTLE_CURRENT_BATTLE: Battle;
-
-const G_battleGetAllies = (): Unit[] => {
-  if (G_BATTLE_ALLIES === []) {
-    G_BATTLE_ALLIES.push(model_createUnit(5, 5, 5, 5, 5));
-  }
-  return G_BATTLE_ALLIES;
-};
-
-const G_battleGetEnemies = (): Unit[] => {
-  if (G_BATTLE_ENEMIES === []) {
-    G_BATTLE_ENEMIES.push(model_createUnit(7, 2, 4, 3, 1));
-  }
-  return G_BATTLE_ENEMIES;
-};
-
-const G_battleGetCurrentBattle = () => {
-  if (G_BATTLE_CURRENT_BATTLE === undefined) {
-    G_BATTLE_CURRENT_BATTLE = model_createBattle(
-      G_battleGetAllies(),
-      G_battleGetEnemies()
-    );
-  }
-  return G_BATTLE_CURRENT_BATTLE;
-};
-
-const G_battleGenerateRound = () => {
-  const battle = G_battleGetCurrentBattle();
-  const newRound = model_createRound(
-    G_battleGetAllies().concat(G_battleGetEnemies())
-  );
-  model_battleAddRound(battle, newRound);
-};
-
-/* GLOBAL FUNCTIONS END */
 
 const model_createBattle = (allies: Unit[], enemies: Unit[]): Battle => {
   return { allies, enemies, rounds: [], roundIndex: 0 };
@@ -171,18 +152,20 @@ const model_createStats = (
 };
 
 const model_createUnit = (
+  name: string,
   hp: number,
   dmg: number,
   def: number,
   mag: number,
   spd: number,
-  sprite?: string
+  actor?: Actor
 ): Unit => {
-  sprite = sprite || '';
+  actor = actor || G_model_createActor(0);
   return {
+    name,
     bS: model_createStats(hp, dmg, def, mag, spd),
     cS: model_createStats(hp, dmg, def, mag, spd),
-    sprite,
+    actor,
   };
 };
 
@@ -247,7 +230,7 @@ const strike = (attacker: Unit, victim: Unit): number => {
 };
 
 // Benjamin: this function simulates a turn for the current acting unit (I think?)
-const roundLoop = (battle: Battle, round: Round) => {
+const simulateTurn = (battle: Battle, round: Round) => {
   console.log(battle.roundIndex);
   const actingUnit = model_roundGetActingUnit(round) as Unit;
 
@@ -258,48 +241,44 @@ const roundLoop = (battle: Battle, round: Round) => {
 };
 
 // Benjamin: this function sets up the current battle
-const mainBattle = () => {
-  const unit1 = model_createUnit(5, 5, 5, 5, 5);
-  // G_BATTLE_ALLIES.push(unit1);
-  const unit2 = model_createUnit(7, 2, 4, 3, 1);
-  // G_BATTLE_ENEMIES.push(unit2);
+const initBattle = () => {
+  const jimothy = model_createUnit('Jimothy', 5, 5, 5, 5, 5);
+  const karst = model_createUnit('Karst', 7, 2, 4, 3, 1);
 
   // Benjamin: set up the first round of the battle, but don't run it until user input
-  const battle = model_createBattle([unit1], [unit2]);
-  const firstRound = model_createRound([unit1, unit2]);
+  const battle = model_createBattle([jimothy], [karst]);
+  const firstRound = model_createRound([jimothy, karst]);
   model_battleAddRound(battle, firstRound);
   G_model_setCurrentBattle(battle);
 
-  // const battle = model_createBattle([unit1, unit2]);
-  // const battle = G_battleGetCurrentBattle();
-  // let round = model_createRound([unit1, unit2]);
-  // model_battleAddRound(battle, round);
-  // controller_roundInit(round);
+  const drawBattle = (battle: Battle) => {
+    G_view_clearScreen();
+    const { allies, enemies } = battle;
+    for (let i = 0; i < allies.length; i++) {
+      G_model_actorSetFacing(allies[i].actor, G_FACING_RIGHT);
+      G_model_actorSetPosition(
+        allies[i].actor,
+        playerPos[i][0],
+        playerPos[i][1]
+      );
+      G_view_drawActor(allies[i].actor, 2);
+      // console.log(allies[i].cS.hp.toString());
+      G_view_drawText('HELLO', playerPos[i][0], playerPos[i][1] - 10);
+    }
 
-  /* This block runs a round of combat */
-  // while (!model_roundIsOver(round)) {
-  //   roundLoop(battle, round);
-  //   console.log('Unit1:', JSON.stringify(unit1, null, 2));
-  //   console.log('Unit2:', JSON.stringify(unit2, null, 2));
-  // }
+    for (let i = 0; i < enemies.length; i++) {
+      G_model_actorSetFacing(enemies[i].actor, G_FACING_LEFT);
+      G_model_actorSetPosition(
+        enemies[i].actor,
+        enemyPos[i][0],
+        enemyPos[i][1]
+      );
 
-  /* This block runs the battle to completion */
-  // while (!model_battleIsComplete(battle)) {
-  //   while (!model_roundIsOver(round)) {
-  //     console.log(battle.roundIndex);
-  //     const actingUnit = model_roundGetActingUnit(round) as Unit;
+      G_view_drawActor(enemies[i].actor, 2);
+    }
+  };
 
-  //     const target = G_utils_isAlly(battle, actingUnit)
-  //       ? (G_utils_getRandArrElem(battle.enemies) as Unit)
-  //       : (G_utils_getRandArrElem(battle.allies) as Unit);
-  //     controller_roundDoTurn(round, target);
-  //     console.log('Unit1:', JSON.stringify(unit1, null, 2));
-  //     console.log('Unit2:', JSON.stringify(unit2, null, 2));
-  //   }
-  //   model_battleAddRound(battle, controller_roundEnd(round));
-  //   model_battleIncrementIndex(battle);
-  //   round = battle.rounds[battle.roundIndex];
-  // }
+  drawBattle(battle);
 };
 
 // code that Benjamin added is below -----------------------------------------------------
@@ -320,12 +299,12 @@ const G_controller_battleSimulateNextRound = (battle: Battle) => {
   controller_roundInit(round);
 
   // this part is hard-coded.  We'd probably want to generalize printing a unit with a function
-  const [unit1] = battle.allies;
-  const [unit2] = battle.enemies;
+  const [jimothy] = battle.allies;
+  const [karst] = battle.enemies;
   while (!model_roundIsOver(round)) {
-    roundLoop(battle, round);
-    console.log('Unit1:', JSON.stringify(unit1, null, 2));
-    console.log('Unit2:', JSON.stringify(unit2, null, 2));
+    simulateTurn(battle, round);
+    console.log('jimothy:', JSON.stringify(jimothy, null, 2));
+    console.log('karst:', JSON.stringify(karst, null, 2));
   }
 
   const nextRound = controller_roundEnd(round);

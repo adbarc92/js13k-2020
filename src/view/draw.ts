@@ -23,6 +23,19 @@ const G_view_clearScreen = () => {
   );
 };
 
+const G_view_drawText = (
+  text: string,
+  x: number,
+  y: number,
+  scale?: number,
+  ctx?: CanvasRenderingContext2D
+) => {
+  scale = scale || 1;
+  ctx = ctx || G_model_getCtx();
+  ctx.font = '120px serif';
+  ctx.fillText(`${text}`, x, y);
+};
+
 const G_view_drawVerticalGradient = (
   x: number,
   y: number,
