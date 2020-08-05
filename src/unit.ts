@@ -315,6 +315,8 @@ const G_controller_battleSimulateNextRound = (battle: Battle) => {
   drawBattle(battle);
   console.log('round over');
   if (model_battleIsComplete(battle)) {
-    initBattle();
+    setTimeout(() => {
+      initBattle();
+    }, 2000);
   }
 };
