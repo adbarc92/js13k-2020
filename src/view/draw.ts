@@ -27,13 +27,16 @@ const G_view_drawText = (
   text: string,
   x: number,
   y: number,
+  color?: string,
   scale?: number,
   ctx?: CanvasRenderingContext2D
 ) => {
-  scale = scale || 1;
+  scale = scale || 2;
+  color = color || 'black';
   ctx = ctx || G_model_getCtx();
-  ctx.font = '12px serif';
-  ctx.strokeText(`${text}`, x, y);
+  ctx.font = '14px serif';
+  ctx.fillStyle = color;
+  ctx.fillText(`${text}`, x, y);
 };
 
 const G_view_drawVerticalGradient = (

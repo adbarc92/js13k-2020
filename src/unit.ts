@@ -12,6 +12,7 @@ G_FACING_LEFT
 G_FACING_RIGHT
 G_view_drawText
 BATTLE_INPUT_ENABLED
+G_model_getCtx
 */
 
 const playerPos = [
@@ -260,6 +261,33 @@ const simulateTurn = async (battle: Battle, round: Round): Promise<void> => {
   });
 };
 
+const drawCursor = (index: number) => {
+  const ctx = G_model_getCtx();
+  const mod = index * 18;
+  ctx.beginPath();
+  ctx.moveTo(210, 390 + mod);
+  ctx.lineTo(210, 400 + mod);
+  ctx.lineTo(220, 395 + mod);
+  ctx.closePath();
+  ctx.fillStyle = 'white';
+  ctx.fill();
+};
+
+const drawMenu = () => {
+  const options = ['Strike', 'Charge', 'Defend', 'Use', 'Heal', 'Flee'];
+  const ctx = G_model_getCtx();
+  // Create background
+  ctx.fillRect(195, 380, 100, 120);
+  // create outline
+  ctx.strokeStyle = 'white';
+  ctx.strokeRect(195, 380, 100, 120);
+  // Populate menu options
+  for (let i = 0, x = 225, y = 400; i < options.length; i++, y += 18) {
+    G_view_drawText(options[i], x, y, 'white');
+  }
+  drawCursor(2);
+};
+
 const drawBattle = (battle: Battle) => {
   G_view_clearScreen();
   G_view_drawText(`Round: ${battle.roundIndex + 1}`, 20, 20);
@@ -302,6 +330,7 @@ const initBattle = () => {
   G_model_setCurrentBattle(battle);
 
   drawBattle(battle);
+  drawMenu();
 };
 
 // code that Benjamin added is below -----------------------------------------------------
