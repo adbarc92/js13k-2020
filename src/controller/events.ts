@@ -9,10 +9,10 @@ G_battleGenerateRound
 G_BATTLE_CURRENT_BATTLE
 G_controller_battleSimulateNextRound
 G_model_getCurrentBattle
+G_model_getBattleInputEnabled
 */
 
 /* Event Flags */
-let BATTLE_INPUT_ENABLED = true;
 
 window.addEventListener('keydown', ev => {
   G_model_setKeyDown(ev.key);
@@ -21,7 +21,7 @@ window.addEventListener('keydown', ev => {
     (window as any).running = false;
   }
 
-  if (BATTLE_INPUT_ENABLED) {
+  if (G_model_getBattleInputEnabled()) {
     if (ev.key === ' ' || ev.key === 'b') {
       console.log('keypress!!!', ev);
       G_controller_battleSimulateNextRound(G_model_getCurrentBattle());

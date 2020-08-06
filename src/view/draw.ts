@@ -7,7 +7,25 @@ G_model_getCtx
 G_model_getCanvas
 G_model_getSprite
 G_model_actorGetCurrentSprite
+G_model_actorSetFacing
+G_model_actorSetPosition
+G_FACING_RIGHT
+G_FACING_LEFT
 */
+
+const playerPos = [
+  [60, 90],
+  [45, 105],
+  [30, 90],
+  [45, 75],
+];
+
+const enemyPos = [
+  [165, 90],
+  [180, 105],
+  [195, 90],
+  [180, 75],
+];
 
 const gradientCache = {};
 
@@ -106,4 +124,70 @@ const G_view_drawActor = (actor: Actor, scale?: number) => {
   const py = y * (scale as number);
   const sprite = G_model_actorGetCurrentSprite(actor);
   G_view_drawSprite(sprite, px, py, scale);
+};
+
+const G_view_drawMenu = (
+  options: string[],
+  x: number = 195,
+  y: number = 380,
+  w: number = 100,
+  h: number = 120,
+  color: string = 'white',
+  cursorIndex: number = 0,
+  optionOffset: number = 18
+) => {
+  const ctx = G_model_getCtx();
+  // Create background
+  ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = color; // Ben: more general value? Relative to color parameter
+  ctx.strokeRect(x, y, w, h);
+
+  // Populate menu
+  for (
+    let i = 0, j = x + 30, k = y + 20;
+    i < options.length;
+    i++, k += optionOffset
+  ) {
+    G_view_drawText(options[i], j, k, color);
+  }
+
+  // draw Cursor
+  const cursorOffset = cursorIndex * optionOffset;
+  ctx.beginPath();
+  ctx.moveTo(x + 15, y + 10 + cursorOffset);
+  ctx.lineTo(x + 15, y + 20 + cursorOffset);
+  ctx.lineTo(x + 25, y + 15 + cursorOffset);
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+};
+
+const G_view_drawBattle = (battle: Battle) => {
+  G_view_clearScreen();
+  G_view_drawText(`Round: ${battle.roundIndex + 1}`, 20, 20);
+  const { allies, enemies } = battle;
+  for (let i = 0; i < allies.length; i++) {
+    G_model_actorSetFacing(allies[i].actor, G_FACING_RIGHT);
+    G_model_actorSetPosition(allies[i].actor, playerPos[i][0], playerPos[i][1]);
+    G_view_drawActor(allies[i].actor, 2);
+
+    G_view_drawText(
+      `${allies[i].cS.hp}/${allies[i].bS.hp}`,
+      playerPos[i][0] * 2 + 5,
+      playerPos[i][1] * 2 - 5
+    );
+  }
+
+  for (let i = 0; i < enemies.length; i++) {
+    G_model_actorSetFacing(enemies[i].actor, G_FACING_LEFT);
+    G_model_actorSetPosition(enemies[i].actor, enemyPos[i][0], enemyPos[i][1]);
+
+    G_view_drawActor(enemies[i].actor, 2);
+
+    G_view_drawText(
+      `${enemies[i].cS.hp.toString()}/${enemies[i].bS.hp.toString()}`,
+      enemyPos[i][0] * 2 + 5,
+      enemyPos[i][1] * 2 - 5
+    );
+  }
 };
