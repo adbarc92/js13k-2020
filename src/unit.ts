@@ -122,7 +122,7 @@ const controller_roundApplyAction = (
   const actingUnit = model_roundGetActingUnit(round) as Unit;
   switch (action) {
     case G_ACTION_STRIKE:
-      strike(actingUnit, target);
+      controller_battleActionStrike(actingUnit, target);
       break;
     default:
       console.error('No action:', action, 'exists.');
@@ -187,7 +187,7 @@ const model_statsModifyhp = (
   currentStats.hp = nextHp;
 };
 
-const modSpd = (actor: Unit, act: RoundAction) => {
+const controller_battleModSpd = (actor: Unit, act: RoundAction) => {
   const { cS } = actor;
   let mod;
   switch (act) {
@@ -219,16 +219,19 @@ const modSpd = (actor: Unit, act: RoundAction) => {
   cS.spd += mod;
 };
 
-const strike = (attacker: Unit, victim: Unit): number => {
+const controller_battleActionStrike = (
+  attacker: Unit,
+  victim: Unit
+): number => {
   const { cS, bS } = victim;
   const { def } = cS;
   const { dmg } = attacker.bS;
 
   const dmgDone = -Math.max(dmg - def, 1);
   console.log(
-    `${attacker.name} strikes ${victim.name} for ${-dmgDone} damage! (${
-      victim.cS.hp
-    } HP remaining)`
+    `${attacker.name} controller_battleActionStrikes ${
+      victim.name
+    } for ${-dmgDone} damage! (${victim.cS.hp} HP remaining)`
   );
   // speed modification should be done here
   model_statsModifyhp(cS, bS, dmgDone);
@@ -236,7 +239,7 @@ const strike = (attacker: Unit, victim: Unit): number => {
 };
 
 // Benjamin: this function simulates a turn for the current acting unit (I think?)
-// const simulateTurn = (battle: Battle, round: Round) => {
+// const controller_battleSimulateTurn = (battle: Battle, round: Round) => {
 //   // console.log(battle.roundIndex);
 //   const actingUnit = model_roundGetActingUnit(round) as Unit;
 
@@ -249,7 +252,10 @@ const strike = (attacker: Unit, victim: Unit): number => {
 //   controller_roundDoTurn(round, target);
 // };
 
-const simulateTurn = async (battle: Battle, round: Round): Promise<void> => {
+const controller_battleSimulateTurn = async (
+  battle: Battle,
+  round: Round
+): Promise<void> => {
   return new Promise(resolve => {
     const actingUnit = model_roundGetActingUnit(round) as Unit;
 
@@ -261,34 +267,96 @@ const simulateTurn = async (battle: Battle, round: Round): Promise<void> => {
   });
 };
 
-const drawCursor = (index: number) => {
+// const drawCursor = (index: number) => {
+//   const ctx = G_model_getCtx();
+//   const mod = index * 18;
+//   ctx.beginPath();
+//   ctx.moveTo(210, 390 + mod);
+//   ctx.lineTo(210, 400 + mod);
+//   ctx.lineTo(220, 395 + mod);
+//   ctx.closePath();
+//   ctx.fillStyle = 'white';
+//   ctx.fill();
+// };
+
+// const betterCursor = (
+//   index: number,
+//   menuOffset: number,
+//   x: number,
+//   y: number,
+//   color: string
+// ) => {
+//   const ctx = G_model_getCtx();
+//   const offset = index * 18;
+//   ctx.beginPath();
+//   ctx.moveTo(x, y + offset);
+//   ctx.lineTo(x, y + 10 + offset);
+//   ctx.lineTo(x + 10, y + 5 + offset);
+//   ctx.closePath();
+//   ctx.fillStyle = color;
+//   ctx.fill();
+// };
+
+// const G_view_drawMenu = (cursorIndex: number = 0) => {
+//   const options = ['Strike', 'Charge', 'Defend', 'Use', 'Heal', 'Flee'];
+//   const ctx = G_model_getCtx();
+//   // Create background
+//   ctx.fillRect(195, 380, 100, 120);
+//   // create outline
+//   ctx.strokeStyle = 'white';
+//   ctx.strokeRect(195, 380, 100, 120);
+//   // Populate menu options
+//   for (let i = 0, x = 225, y = 400; i < options.length; i++, y += 18) {
+//     G_view_drawText(options[i], x, y, 'white');
+//   }
+//   // Draw Cursor
+//   const offset = cursorIndex * 18;
+//   ctx.beginPath();
+//   ctx.moveTo(210, 390 + offset);
+//   ctx.lineTo(210, 400 + offset);
+//   ctx.lineTo(220, 395 + offset);
+//   ctx.closePath();
+//   ctx.fillStyle = 'white';
+//   ctx.fill();
+// };
+
+const G_view_drawMenu = (
+  options: string[],
+  x: number = 195,
+  y: number = 380,
+  w: number = 100,
+  h: number = 120,
+  color: string = 'white',
+  cursorIndex: number = 0,
+  optionOffset: number = 18
+) => {
   const ctx = G_model_getCtx();
-  const mod = index * 18;
+  // Create background
+  ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = color; // Ben: more general value? Relative to color parameter
+  ctx.strokeRect(x, y, w, h);
+
+  // Populate menu
+  for (
+    let i = 0, j = x + 30, k = y + 20;
+    i < options.length;
+    i++, k += optionOffset
+  ) {
+    G_view_drawText(options[i], j, k, color);
+  }
+
+  // draw Cursor
+  const cursorOffset = cursorIndex * optionOffset;
   ctx.beginPath();
-  ctx.moveTo(210, 390 + mod);
-  ctx.lineTo(210, 400 + mod);
-  ctx.lineTo(220, 395 + mod);
+  ctx.moveTo(x + 15, y + 10 + cursorOffset);
+  ctx.lineTo(x + 15, y + 20 + cursorOffset);
+  ctx.lineTo(x + 25, y + 15 + cursorOffset);
   ctx.closePath();
-  ctx.fillStyle = 'white';
+  ctx.fillStyle = color;
   ctx.fill();
 };
 
-const drawMenu = () => {
-  const options = ['Strike', 'Charge', 'Defend', 'Use', 'Heal', 'Flee'];
-  const ctx = G_model_getCtx();
-  // Create background
-  ctx.fillRect(195, 380, 100, 120);
-  // create outline
-  ctx.strokeStyle = 'white';
-  ctx.strokeRect(195, 380, 100, 120);
-  // Populate menu options
-  for (let i = 0, x = 225, y = 400; i < options.length; i++, y += 18) {
-    G_view_drawText(options[i], x, y, 'white');
-  }
-  drawCursor(2);
-};
-
-const drawBattle = (battle: Battle) => {
+const G_view_drawBattle = (battle: Battle) => {
   G_view_clearScreen();
   G_view_drawText(`Round: ${battle.roundIndex + 1}`, 20, 20);
   const { allies, enemies } = battle;
@@ -319,7 +387,7 @@ const drawBattle = (battle: Battle) => {
 };
 
 // Benjamin: this function sets up the current battle
-const initBattle = () => {
+const controller_initBattle = () => {
   const jimothy = model_createUnit('Jimothy', 5, 5, 5, 5, 5);
   const karst = model_createUnit('Karst', 7, 2, 4, 3, 1);
 
@@ -329,8 +397,10 @@ const initBattle = () => {
   model_battleAddRound(battle, firstRound);
   G_model_setCurrentBattle(battle);
 
-  drawBattle(battle);
-  drawMenu();
+  G_view_drawBattle(battle);
+  // G_view_drawMenu();
+  const options = ['Strike', 'Charge', 'Defend', 'Use', 'Heal', 'Flee'];
+  G_view_drawMenu(options, 195, 380, 100, 120, 'white', 0, 18);
 };
 
 // code that Benjamin added is below -----------------------------------------------------
@@ -348,7 +418,6 @@ const G_model_getCurrentBattle = (): Battle => {
 // simulates a single round of combat
 const G_controller_battleSimulateNextRound = async (battle: Battle) => {
   BATTLE_INPUT_ENABLED = false;
-  // console.log('Battle input:', BATTLE_INPUT_ENABLED);
   const round = model_battleGetCurrentRound(battle);
   controller_roundInit(round);
 
@@ -356,22 +425,19 @@ const G_controller_battleSimulateNextRound = async (battle: Battle) => {
   const [jimothy] = battle.allies;
   const [karst] = battle.enemies;
   while (!model_roundIsOver(round)) {
-    await simulateTurn(battle, round);
-    drawBattle(battle);
-    // console.log('jimothy:', JSON.stringify(jimothy, null, 2));
-    // console.log('karst:', JSON.stringify(karst, null, 2));
+    await controller_battleSimulateTurn(battle, round);
+    G_view_drawBattle(battle);
   }
 
   const nextRound = controller_roundEnd(round);
   model_battleAddRound(battle, nextRound);
   model_battleIncrementIndex(battle);
-  drawBattle(battle);
+  G_view_drawBattle(battle);
   // console.log('round over');
   if (model_battleIsComplete(battle)) {
     setTimeout(() => {
-      initBattle();
+      controller_initBattle();
     }, 2000);
   }
   BATTLE_INPUT_ENABLED = true;
-  // console.log('Battle input:', BATTLE_INPUT_ENABLED);
 };
