@@ -74,3 +74,17 @@ const G_utils_rectToCollisionPoints = (rect: Rect): CollisionPoints => {
     G_utils_createPoint(x2 - dx / 4, cy), // right
   ];
 };
+
+const G_utils_areAllUnitsDead = (units: Unit[]): boolean => {
+  return units.reduce((everyoneIsDead: boolean, unit: Unit) => {
+    return everyoneIsDead && unit.cS.hp === 0;
+  }, true);
+};
+
+const G_utils_getRandArrElem = (arr: unknown[]): unknown => {
+  return arr[Math.floor(Math.random() * arr.length)];
+};
+
+const G_utils_isAlly = (battle: Battle, unit: Unit): boolean => {
+  return battle.allies.includes(unit);
+};
