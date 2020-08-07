@@ -10,6 +10,9 @@ G_BATTLE_CURRENT_BATTLE
 G_controller_battleSimulateNextRound
 G_model_getCurrentBattle
 G_model_getBattleInputEnabled
+G_model_getCursorIndex
+G_model_setCursorIndex
+G_view_drawMenu
 */
 
 /* Event Flags */
@@ -25,6 +28,19 @@ window.addEventListener('keydown', ev => {
     if (ev.key === ' ' || ev.key === 'b') {
       // console.log('keypress!!!', ev);
       G_controller_battleSimulateNextRound(G_model_getCurrentBattle());
+    }
+
+    if (ev.key === 'ArrowDown') {
+      const index = G_model_getCursorIndex();
+      G_model_setCursorIndex((index + 1) % 6);
+      G_view_drawMenu(['Strike', 'Charge', 'Defend', 'Use', 'Heal', 'Flee']);
+    }
+
+    if (ev.key === 'ArrowUp') {
+      const index = G_model_getCursorIndex();
+      const newIndex = index - 1 < 0 ? 5 : index - 1;
+      G_model_setCursorIndex(newIndex);
+      G_view_drawMenu(['Strike', 'Charge', 'Defend', 'Use', 'Heal', 'Flee']);
     }
   }
 });
