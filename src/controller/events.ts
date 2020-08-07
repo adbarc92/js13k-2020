@@ -23,7 +23,7 @@ window.addEventListener('keydown', ev => {
 
   if (G_model_getBattleInputEnabled()) {
     if (ev.key === ' ' || ev.key === 'b') {
-      console.log('keypress!!!', ev);
+      // console.log('keypress!!!', ev);
       G_controller_battleSimulateNextRound(G_model_getCurrentBattle());
     }
   }

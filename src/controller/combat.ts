@@ -121,12 +121,13 @@ const controller_battleActionStrike = (
   const { dmg } = attacker.bS;
 
   const dmgDone = -Math.max(dmg - def, 1);
+  model_statsModifyHp(cS, bS, dmgDone);
   console.log(
-    `${attacker.name} controller_battleActionStrikes ${
-      victim.name
-    } for ${-dmgDone} damage! (${victim.cS.hp} HP remaining)`
+    `${attacker.name} strikes ${victim.name} for ${-dmgDone} damage! (${
+      victim.cS.hp
+    } HP remaining)`
   );
   // speed modification should be done here
-  model_statsModifyHp(cS, bS, dmgDone);
+
   return dmgDone;
 };
