@@ -57,7 +57,6 @@ const controller_initBattle = () => {
   G_model_setCurrentBattle(battle);
 
   G_view_drawBattle(battle);
-  // G_view_drawMenu();
   const options = ['Strike', 'Charge', 'Defend', 'Use', 'Heal', 'Flee'];
   G_view_drawMenu(options, 'white', 195, 380, 100, 120, 18);
   G_model_setBattleInputEnabled(true);

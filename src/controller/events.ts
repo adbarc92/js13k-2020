@@ -20,13 +20,14 @@ G_view_drawMenu
 window.addEventListener('keydown', ev => {
   G_model_setKeyDown(ev.key);
 
+  console.log('keypress!!!', ev);
+
   if (ev.key === 'q') {
     (window as any).running = false;
   }
 
   if (G_model_getBattleInputEnabled()) {
     if (ev.key === ' ' || ev.key === 'b') {
-      // console.log('keypress!!!', ev);
       G_controller_battleSimulateNextRound(G_model_getCurrentBattle());
     }
 
@@ -42,6 +43,8 @@ window.addEventListener('keydown', ev => {
       G_model_setCursorIndex(newIndex);
       G_view_drawMenu(['Strike', 'Charge', 'Defend', 'Use', 'Heal', 'Flee']);
     }
+
+    // if (ev.key === 'Enter') {}
   }
 });
 

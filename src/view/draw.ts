@@ -129,7 +129,7 @@ const G_view_drawActor = (actor: Actor, scale?: number) => {
   G_view_drawSprite(sprite, px, py, scale);
 };
 
-let model_cursorIndex: number = 1;
+let model_cursorIndex: number = 0;
 
 const G_model_setCursorIndex = (i: number) => {
   model_cursorIndex = i;
