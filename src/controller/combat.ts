@@ -62,6 +62,7 @@ const controller_initBattle = () => {
   // G_view_drawMenu();
   const options = ['Strike', 'Charge', 'Defend', 'Use', 'Heal', 'Flee'];
   G_view_drawMenu(options, 195, 380, 100, 120, 'white', 0, 18);
+  G_model_setBattleInputEnabled(true);
 };
 
 const controller_battleSimulateTurn = async (
