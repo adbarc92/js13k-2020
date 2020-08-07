@@ -107,7 +107,7 @@ const controller_roundApplyAction = (
 };
 
 const controller_roundInit = (round: Round) => {
-  console.log('Start new round');
+  console.log('Start new round:', round);
 };
 
 const controller_battleActionStrike = (

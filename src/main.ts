@@ -16,7 +16,7 @@ G_controller_updateRoom
 controller_initBattle
 */
 
-const SCALE = 2;
+// const SCALE = 2;
 (window as any).running = true;
 
 // const runMainLoop = () => {

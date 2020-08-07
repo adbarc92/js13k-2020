@@ -13,6 +13,11 @@ G_FACING_RIGHT
 G_FACING_LEFT
 */
 
+interface DratTextParams {
+  color?: string;
+  fontSize?: string;
+}
+
 const playerPos = [
   [60, 90],
   [45, 105],
@@ -45,12 +50,10 @@ const G_view_drawText = (
   text: string,
   x: number,
   y: number,
-  color?: string,
-  scale?: number,
+  textParams?: DratTextParams,
   ctx?: CanvasRenderingContext2D
 ) => {
-  scale = scale || 2;
-  color = color || 'black';
+  const color = textParams?.color || 'white';
   ctx = ctx || G_model_getCtx();
   ctx.font = '14px monospace';
   ctx.fillStyle = color;
@@ -159,7 +162,7 @@ const G_view_drawMenu = (
     i < options.length;
     i++, k += optionOffset
   ) {
-    G_view_drawText(options[i], j, k, color);
+    G_view_drawText(options[i], j, k);
   }
 
   // draw Cursor
