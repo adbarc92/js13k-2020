@@ -52,7 +52,7 @@ const G_view_drawText = (
   scale = scale || 2;
   color = color || 'black';
   ctx = ctx || G_model_getCtx();
-  ctx.font = '14px serif';
+  ctx.font = '14px monospace';
   ctx.fillStyle = color;
   ctx.fillText(`${text}`, x, y);
 };
@@ -126,21 +126,32 @@ const G_view_drawActor = (actor: Actor, scale?: number) => {
   G_view_drawSprite(sprite, px, py, scale);
 };
 
+let model_cursorIndex: number = 1;
+
+const G_model_setCursorIndex = (i: number) => {
+  model_cursorIndex = i;
+};
+
+const G_model_getCursorIndex = () => {
+  return model_cursorIndex;
+};
+
 const G_view_drawMenu = (
   options: string[],
+  color: string = 'white',
   x: number = 195,
   y: number = 380,
   w: number = 100,
   h: number = 120,
-  color: string = 'white',
-  cursorIndex: number = 0,
   optionOffset: number = 18
 ) => {
   const ctx = G_model_getCtx();
-  // Create background
+  // Create background\
+  ctx.fillStyle = 'white';
   ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = 'black';
+  ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
   ctx.strokeStyle = color; // Ben: more general value? Relative to color parameter
-  ctx.strokeRect(x, y, w, h);
 
   // Populate menu
   for (
@@ -152,7 +163,7 @@ const G_view_drawMenu = (
   }
 
   // draw Cursor
-  const cursorOffset = cursorIndex * optionOffset;
+  const cursorOffset = G_model_getCursorIndex() * optionOffset;
   ctx.beginPath();
   ctx.moveTo(x + 15, y + 10 + cursorOffset);
   ctx.lineTo(x + 15, y + 20 + cursorOffset);

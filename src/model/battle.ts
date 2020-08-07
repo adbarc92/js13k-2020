@@ -45,19 +45,19 @@ const G_model_getBattleInputEnabled = () => {
   return model_battleInputEnabled;
 };
 
-const model_createBattle = (allies: Unit[], enemies: Unit[]): Battle => {
+const G_model_createBattle = (allies: Unit[], enemies: Unit[]): Battle => {
   return { allies, enemies, rounds: [], roundIndex: 0 };
 };
 
-const model_battleAddRound = (battle: Battle, round: Round) => {
+const G_model_battleAddRound = (battle: Battle, round: Round) => {
   battle.rounds.push(round);
 };
 
-const model_battleGetCurrentRound = (battle: Battle): Round => {
+const G_model_battleGetCurrentRound = (battle: Battle): Round => {
   return battle.rounds[battle.roundIndex];
 };
 
-const model_createRound = (turnOrder: Unit[]): Round => {
+const G_model_createRound = (turnOrder: Unit[]): Round => {
   return {
     turnOrder,
     nextTurnOrder: [],
@@ -65,23 +65,23 @@ const model_createRound = (turnOrder: Unit[]): Round => {
   };
 };
 
-const model_roundIncrementIndex = (round: Round) => {
+const G_model_roundIncrementIndex = (round: Round) => {
   round.currentIndex++;
 };
 
-const model_battleIncrementIndex = (battle: Battle) => {
+const G_model_battleIncrementIndex = (battle: Battle) => {
   battle.roundIndex++;
 };
 
-const model_roundGetActingUnit = (round: Round): Unit | null => {
+const G_model_roundGetActingUnit = (round: Round): Unit | null => {
   return round.turnOrder[round.currentIndex] || null;
 };
 
-const model_roundIsOver = (round: Round): boolean => {
-  return model_roundGetActingUnit(round) === null;
+const G_model_roundIsOver = (round: Round): boolean => {
+  return G_model_roundGetActingUnit(round) === null;
 };
 
-const model_battleIsComplete = (battle: Battle) => {
+const G_model_battleIsComplete = (battle: Battle) => {
   return (
     G_utils_areAllUnitsDead(battle.enemies) ||
     G_utils_areAllUnitsDead(battle.allies)

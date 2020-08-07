@@ -30,7 +30,7 @@ const model_createStats = (
   return { hp, dmg, def, mag, spd, iCnt: mag, cCnt: 0 };
 };
 
-const model_createUnit = (
+const G_model_createUnit = (
   name: string,
   hp: number,
   dmg: number,
@@ -48,7 +48,7 @@ const model_createUnit = (
   };
 };
 
-const model_statsModifyHp = (
+const G_model_statsModifyHp = (
   currentStats: Stats,
   baseStats: Stats,
   val: number
