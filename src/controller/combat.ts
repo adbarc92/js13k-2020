@@ -21,6 +21,8 @@ G_model_roundIncrementIndex
 G_model_statsModifyHp
 */
 
+const BATTLE_MENU = ['Strike', 'Charge', 'Defend', 'Use', 'Heal', 'Flee'];
+
 // simulates a single round of combat
 const G_controller_battleSimulateNextRound = async (battle: Battle) => {
   G_model_setBattleInputEnabled(false);
@@ -58,8 +60,7 @@ const controller_initBattle = () => {
 
   G_view_drawBattle(battle);
   // G_view_drawMenu();
-  const options = ['Strike', 'Charge', 'Defend', 'Use', 'Heal', 'Flee'];
-  G_view_drawMenu(options, 'white', 195, 380, 100, 120, 18);
+  G_view_drawMenu(BATTLE_MENU, 'white', 195, 380, 100, 120, 18);
   G_model_setBattleInputEnabled(true);
 };
 
@@ -96,7 +97,7 @@ const controller_roundApplyAction = (
   const actingUnit = G_model_roundGetActingUnit(round) as Unit;
   switch (action) {
     case G_ACTION_STRIKE:
-      controller_battleActionStrike(actingUnit, target);
+      G_controller_battleActionStrike(actingUnit, target);
       break;
     default:
       console.error('No action:', action, 'exists.');
@@ -110,7 +111,7 @@ const controller_roundInit = (round: Round) => {
   console.log('Start new round:', round);
 };
 
-const controller_battleActionStrike = (
+const G_controller_battleActionStrike = (
   attacker: Unit,
   victim: Unit
 ): number => {
@@ -128,4 +129,21 @@ const controller_battleActionStrike = (
   // speed modification should be done here
 
   return dmgDone;
+};
+
+const G_controller_battleActionCharge = (actor: Unit) => {
+  const { cS } = actor;
+  cS.cCnt++;
+  // modSpd
+  // animation?
+};
+
+const G_controller_battleActionHeal = (actor: Unit) => {
+  const { cS, bS } = actor;
+  if (cS.iCnt < 2) {
+    console.log('Insufficient charge');
+  } else {
+    cS.iCnt--;
+    cS.hp = bS.hp;
+  }
 };

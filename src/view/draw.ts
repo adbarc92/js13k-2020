@@ -11,6 +11,7 @@ G_model_actorSetFacing
 G_model_actorSetPosition
 G_FACING_RIGHT
 G_FACING_LEFT
+BATTLE_MENU
 */
 
 interface DratTextParams {
@@ -204,4 +205,5 @@ const G_view_drawBattle = (battle: Battle) => {
       enemyPos[i][1] * 2 - 5
     );
   }
+  G_view_drawMenu(BATTLE_MENU);
 };
