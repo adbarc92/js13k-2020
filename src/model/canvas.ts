@@ -62,3 +62,7 @@ const G_model_setElapsedMs = (v: number) => {
 const G_model_getElapsedMs = (): number => {
   return model_elapsedMs;
 };
+
+const G_model_getScreenSize = () => {
+  return 512;
+};

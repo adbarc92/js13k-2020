@@ -1,0 +1,42 @@
+/*
+global
+G_model_getCtx
+G_view_drawText
+G_view_drawRect
+G_BLACK
+G_WHITE
+*/
+
+const CURSOR_WIDTH = 16;
+const CURSOR_HEIGHT = 16;
+
+const G_view_drawMenuCursor = (x: number, y: number) => {
+  const ctx = G_model_getCtx();
+  const cursorHeight = CURSOR_HEIGHT;
+  const cursorWidth = CURSOR_WIDTH;
+  ctx.save();
+  ctx.translate(x - CURSOR_WIDTH / 2, y - CURSOR_HEIGHT / 2);
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, cursorHeight);
+  ctx.lineTo(cursorWidth, cursorHeight / 2);
+  ctx.closePath();
+  ctx.fillStyle = G_WHITE;
+  ctx.fill();
+  ctx.restore();
+};
+
+const G_view_drawMenu = (menu: Menu) => {
+  const { x, y, w, h, i, bg, items, lineHeight: lh } = menu;
+  if (bg) {
+    G_view_drawRect(x, y, w, h, G_BLACK);
+    G_view_drawRect(x, y, w, h, G_WHITE, true);
+  }
+
+  items.forEach((label, ind) => {
+    G_view_drawText(label, x + w / 2, y + ind * lh + lh / 2, {
+      align: 'center',
+    });
+  });
+  G_view_drawMenuCursor(x - CURSOR_WIDTH, y + i * lh + lh / 2);
+};
