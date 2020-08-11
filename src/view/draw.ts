@@ -3,21 +3,34 @@ This file contains functions that can draw things on the screen
 */
 /*
 global
+G_view_drawMenu
 G_model_getCtx
 G_model_getCanvas
 G_model_getSprite
 G_model_actorGetCurrentSprite
 G_model_actorSetFacing
 G_model_actorSetPosition
+G_model_getBattleInputEnabled
 G_FACING_RIGHT
 G_FACING_LEFT
 BATTLE_MENU
 */
 
-interface DratTextParams {
+const G_BLACK = '#000';
+const G_WHITE = '#FFF';
+
+interface DrawTextParams {
+  font?: string;
   color?: string;
-  fontSize?: string;
+  size?: string;
+  align?: 'left' | 'center' | 'right';
 }
+const DEFAULT_TEXT_PARAMS = {
+  font: 'monospace',
+  color: '#fff',
+  size: 16,
+  align: 'left',
+};
 
 const playerPos = [
   [60, 90],
@@ -47,18 +60,37 @@ const G_view_clearScreen = () => {
   );
 };
 
+const G_view_drawRect = (
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  color: string,
+  stroke?: boolean,
+  ctx?: CanvasRenderingContext2D
+) => {
+  ctx = ctx || G_model_getCtx();
+  ctx[stroke ? 'strokeStyle' : 'fillStyle'] = color;
+  ctx[stroke ? 'strokeRect' : 'fillRect'](x, y, w, h);
+};
+
 const G_view_drawText = (
   text: string,
   x: number,
   y: number,
-  textParams?: DratTextParams,
+  textParams?: DrawTextParams,
   ctx?: CanvasRenderingContext2D
 ) => {
-  const color = textParams?.color || 'white';
+  const { font, size, color, align } = {
+    ...DEFAULT_TEXT_PARAMS,
+    ...(textParams || {}),
+  };
   ctx = ctx || G_model_getCtx();
-  ctx.font = '14px monospace';
+  ctx.font = `${size}px ${font}`;
   ctx.fillStyle = color;
-  ctx.fillText(`${text}`, x, y);
+  ctx.textAlign = align as CanvasTextAlign;
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
 };
 
 const G_view_drawVerticalGradient = (
@@ -121,6 +153,13 @@ const G_view_drawRoom = (room: Room, x: number, y: number, scale?: number) => {
   });
 };
 
+const G_view_drawUnitHP = (unit: Unit, x: number, y: number) => {
+  const ctx = G_model_getCtx();
+  ctx.font = '14px monospace';
+  ctx.fillStyle = 'white';
+  ctx.fillText(`${unit.cS.hp}/${unit.bS.hp}`, x * 2 + 5, y * 2 - 5);
+};
+
 const G_view_drawActor = (actor: Actor, scale?: number) => {
   scale = scale || 1;
   const { x, y } = actor;
@@ -130,61 +169,10 @@ const G_view_drawActor = (actor: Actor, scale?: number) => {
   G_view_drawSprite(sprite, px, py, scale);
 };
 
-let model_cursorIndex: number = 1;
-
-const G_model_setCursorIndex = (i: number) => {
-  model_cursorIndex = i;
-};
-
-const G_model_getCursorIndex = () => {
-  return model_cursorIndex;
-};
-
-const G_view_drawMenu = (
-  options: string[],
-  color: string = 'white',
-  x: number = 195,
-  y: number = 380,
-  w: number = 100,
-  h: number = 120,
-  optionOffset: number = 18
-) => {
-  const ctx = G_model_getCtx();
-  // Create background\
-  ctx.fillStyle = 'white';
-  ctx.fillRect(x, y, w, h);
-  ctx.fillStyle = 'black';
-  ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
-  ctx.strokeStyle = color; // Ben: more general value? Relative to color parameter
-
-  // Populate menu
-  for (
-    let i = 0, j = x + 30, k = y + 20;
-    i < options.length;
-    i++, k += optionOffset
-  ) {
-    G_view_drawText(options[i], j, k);
-  }
-
-  // draw Cursor
-  const cursorOffset = G_model_getCursorIndex() * optionOffset;
-  ctx.beginPath();
-  ctx.moveTo(x + 15, y + 10 + cursorOffset);
-  ctx.lineTo(x + 15, y + 20 + cursorOffset);
-  ctx.lineTo(x + 25, y + 15 + cursorOffset);
-  ctx.closePath();
-  ctx.fillStyle = color;
-  ctx.fill();
-};
-
-const G_view_drawBattleMenu = () => {
-  G_view_drawMenu(BATTLE_MENU, 'white', 195, 380, 100, 120, 18);
-};
-
 const G_view_drawBattle = (battle: Battle) => {
   G_view_clearScreen();
   G_view_drawText(`Round: ${battle.roundIndex + 1}`, 20, 20);
-  const { allies, enemies } = battle;
+  const { allies, enemies, actionMenu } = battle;
   for (let i = 0; i < allies.length; i++) {
     G_model_actorSetFacing(allies[i].actor, G_FACING_RIGHT);
     G_model_actorSetPosition(allies[i].actor, playerPos[i][0], playerPos[i][1]);
@@ -209,5 +197,8 @@ const G_view_drawBattle = (battle: Battle) => {
       enemyPos[i][1] * 2 - 5
     );
   }
-  // G_view_drawMenu(BATTLE_MENU);
+
+  if (G_model_getBattleInputEnabled()) {
+    G_view_drawMenu(actionMenu);
+  }
 };

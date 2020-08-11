@@ -81,7 +81,7 @@ const G_utils_areAllUnitsDead = (units: Unit[]): boolean => {
   }, true);
 };
 
-const G_utils_getRandArrElem = (arr: unknown[]): unknown => {
+const G_utils_getRandArrElem = (arr: any[]): any => {
   return arr[Math.floor(Math.random() * arr.length)];
 };
 
