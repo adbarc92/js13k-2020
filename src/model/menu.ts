@@ -93,7 +93,7 @@ const G_view_drawMenu2 = (menu: Menu) => {
       G_view_drawText(menuItems[i] as string, j, k);
     } else {
       const { actor } = menuItems[i] as Unit;
-      // setFacing
+      // This will be its own function
       G_model_actorSetFacing(actor, G_FACING_RIGHT);
       G_model_actorSetPosition(actor, j, k);
       G_view_drawActor(actor);
@@ -103,7 +103,7 @@ const G_view_drawMenu2 = (menu: Menu) => {
 
   const cursorOffset = cursorPosition * itemOffset;
   ctx.beginPath();
-  ctx.moveTo(x + w / 8, y + h / 12); //
+  ctx.moveTo(x + w / 8, y + h / 12);
   ctx.lineTo(x + w / 8, y + h / 6);
   ctx.lineTo(x + w / 4 - 5, y + (h * 3) / 24);
   ctx.closePath();
