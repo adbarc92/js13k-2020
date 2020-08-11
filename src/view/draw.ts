@@ -177,6 +177,10 @@ const G_view_drawMenu = (
   ctx.fill();
 };
 
+const G_view_drawBattleMenu = () => {
+  G_view_drawMenu(BATTLE_MENU, 'white', 195, 380, 100, 120, 18);
+};
+
 const G_view_drawBattle = (battle: Battle) => {
   G_view_clearScreen();
   G_view_drawText(`Round: ${battle.roundIndex + 1}`, 20, 20);
@@ -205,5 +209,5 @@ const G_view_drawBattle = (battle: Battle) => {
       enemyPos[i][1] * 2 - 5
     );
   }
-  G_view_drawMenu(BATTLE_MENU);
+  // G_view_drawMenu(BATTLE_MENU);
 };

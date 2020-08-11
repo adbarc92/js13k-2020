@@ -88,3 +88,10 @@ const G_utils_getRandArrElem = (arr: unknown[]): unknown => {
 const G_utils_isAlly = (battle: Battle, unit: Unit): boolean => {
   return battle.allies.includes(unit);
 };
+
+const G_utils_windowGetHeight = () => {
+  return window.innerHeight;
+};
+const G_utils_windowGetWidth = () => {
+  return window.innerWidth;
+};

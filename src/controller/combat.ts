@@ -19,6 +19,8 @@ G_model_roundGetActingUnit
 G_ACTION_STRIKE
 G_model_roundIncrementIndex
 G_model_statsModifyHp
+G_model_createMenu
+G_view_drawMenu2
 */
 
 const BATTLE_MENU = ['Strike', 'Charge', 'Defend', 'Use', 'Heal', 'Flee'];
@@ -39,7 +41,6 @@ const G_controller_battleSimulateNextRound = async (battle: Battle) => {
   G_model_battleAddRound(battle, nextRound);
   G_model_battleIncrementIndex(battle);
   G_view_drawBattle(battle);
-  // console.log('round over');
   if (G_model_battleIsComplete(battle)) {
     setTimeout(() => {
       controller_initBattle();
@@ -59,8 +60,8 @@ const controller_initBattle = () => {
   G_model_setCurrentBattle(battle);
 
   G_view_drawBattle(battle);
-  // G_view_drawMenu();
-  G_view_drawMenu(BATTLE_MENU, 'white', 195, 380, 100, 120, 18);
+  const battleMenu = G_model_createMenu(195, 380, BATTLE_MENU, true);
+  G_view_drawMenu2(battleMenu);
   G_model_setBattleInputEnabled(true);
 };
 
