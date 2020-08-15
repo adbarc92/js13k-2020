@@ -33,7 +33,7 @@ window.addEventListener('keydown', ev => {
     const key = ev.key;
 
     try {
-      const menu = battle.actionMenu;
+      const menu = battle.actionMenuStack[0];
       if (key === 'ArrowDown') {
         G_model_menuSetNextCursorIndex(menu, 1);
       } else if (key === 'ArrowUp') {

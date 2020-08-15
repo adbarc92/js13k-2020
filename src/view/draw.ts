@@ -28,22 +28,22 @@ interface DrawTextParams {
 const DEFAULT_TEXT_PARAMS = {
   font: 'monospace',
   color: '#fff',
-  size: 16,
+  size: 14,
   align: 'left',
 };
 
 const playerPos = [
-  [60, 90],
-  [45, 105],
-  [30, 90],
-  [45, 75],
+  [40, 70],
+  [40, 100],
+  [40, 130],
+  [40, 160],
 ];
 
 const enemyPos = [
-  [165, 90],
-  [180, 105],
-  [195, 90],
-  [180, 75],
+  [200, 70],
+  [200, 100],
+  [200, 130],
+  [200, 160],
 ];
 
 const gradientCache = {};
@@ -153,13 +153,6 @@ const G_view_drawRoom = (room: Room, x: number, y: number, scale?: number) => {
   });
 };
 
-const G_view_drawUnitHP = (unit: Unit, x: number, y: number) => {
-  const ctx = G_model_getCtx();
-  ctx.font = '14px monospace';
-  ctx.fillStyle = 'white';
-  ctx.fillText(`${unit.cS.hp}/${unit.bS.hp}`, x * 2 + 5, y * 2 - 5);
-};
-
 const G_view_drawActor = (actor: Actor, scale?: number) => {
   scale = scale || 1;
   const { x, y } = actor;
@@ -172,16 +165,20 @@ const G_view_drawActor = (actor: Actor, scale?: number) => {
 const G_view_drawBattle = (battle: Battle) => {
   G_view_clearScreen();
   G_view_drawText(`Round: ${battle.roundIndex + 1}`, 20, 20);
-  const { allies, enemies, actionMenu } = battle;
+  const { allies, enemies, actionMenuStack } = battle;
+  const actionMenu = actionMenuStack[0];
   for (let i = 0; i < allies.length; i++) {
     G_model_actorSetFacing(allies[i].actor, G_FACING_RIGHT);
     G_model_actorSetPosition(allies[i].actor, playerPos[i][0], playerPos[i][1]);
     G_view_drawActor(allies[i].actor, 2);
 
     G_view_drawText(
-      `${allies[i].cS.hp}/${allies[i].bS.hp}`,
+      `${allies[i].name}: ${allies[i].cS.hp}/${allies[i].bS.hp}`,
       playerPos[i][0] * 2 + 5,
-      playerPos[i][1] * 2 - 5
+      playerPos[i][1] * 2 - 5,
+      {
+        align: 'center',
+      }
     );
   }
 
@@ -192,9 +189,14 @@ const G_view_drawBattle = (battle: Battle) => {
     G_view_drawActor(enemies[i].actor, 2);
 
     G_view_drawText(
-      `${enemies[i].cS.hp.toString()}/${enemies[i].bS.hp.toString()}`,
+      `${enemies[i].name}: ${enemies[i].cS.hp.toString()}/${enemies[
+        i
+      ].bS.hp.toString()}`,
       enemyPos[i][0] * 2 + 5,
-      enemyPos[i][1] * 2 - 5
+      enemyPos[i][1] * 2 - 5,
+      {
+        align: 'center',
+      }
     );
   }
 
