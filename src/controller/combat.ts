@@ -25,29 +25,10 @@ G_ACTION_STRIKE
 
 const G_controller_initBattle = () => {
   const jimothy = G_model_createUnit('Jimothy', 5, 5, 5, 5, 5);
-  const seph = G_model_createUnit('Seph', 7, 2, 4, 3, 1);
-  const kana = G_model_createUnit('Kana', 5, 8, 3, 2, 7);
-  const widdly2Diddly = G_model_createUnit('widdly2Diddly', 7, 7, 7, 7, 7);
+  const karst = G_model_createUnit('Karst', 7, 2, 4, 3, 1);
 
-  const karst = G_model_createUnit('Karst', 6, 4, 4, 3, 5);
-  const urien = G_model_createUnit('Urien', 9, 5, 4, 3, 2);
-  const shreth = G_model_createUnit('Shreth', 8, 8, 6, 3, 2);
-  const pDiddy = G_model_createUnit('P Diddy', 5, 5, 5, 5, 5);
-
-  const battle = G_model_createBattle(
-    [jimothy, seph, kana, widdly2Diddly],
-    [karst, urien, shreth, pDiddy]
-  );
-  const firstRound = G_model_createRound([
-    jimothy,
-    karst,
-    seph,
-    urien,
-    kana,
-    shreth,
-    widdly2Diddly,
-    pDiddy,
-  ]);
+  const battle = G_model_createBattle([jimothy], [karst]);
+  const firstRound = G_model_createRound([jimothy, karst]);
 
   G_model_battleAddRound(battle, firstRound);
   G_model_setCurrentBattle(battle);
