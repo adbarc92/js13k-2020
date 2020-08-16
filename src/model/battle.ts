@@ -71,6 +71,13 @@ const G_utils_getSpriteHeight = (unit: Unit): number => {
   return G_model_getSprite(`${sprite}_${spriteIndex}`)[4];
 };
 
+const G_utils_getSpriteWidth = (unit: Unit): number => {
+  // console.log('Unit:', unit);
+  const { sprite, spriteIndex } = unit.actor;
+  // console.log('Sprite:', `${sprite}_${spriteIndex}`);
+  return G_model_getSprite(`${sprite}_${spriteIndex}`)[3];
+};
+
 let G_BATTLE_TARGET_INDEX = -1;
 
 const G_controller_setBattleTargetIndex = (i: number) => {
@@ -85,17 +92,25 @@ const handleTargetMenuInput = (i: number) => {
   G_controller_setBattleTargetIndex(i);
 };
 
+// These will be used to phase out positioning constants
+const G_SCALE = 2;
+const ALLY_X = 80;
+const ENEMY_X = 80;
+const Y_OFFSET = 27;
+
 const selectTarget = async (actingUnit: Unit) => {
   const battle = G_model_getCurrentBattle();
-  const x = G_utils_isAlly(battle, actingUnit) ? 200 : 40;
+  const x = G_utils_isAlly(battle, actingUnit) ? 200 * G_SCALE : 80 * G_SCALE;
+  const h = G_utils_getSpriteHeight(actingUnit);
+  console.log('x:', x);
   const targetMenu = G_model_createVerticalMenu(
     x,
-    70,
+    70 * G_SCALE - h / 2,
     0,
     Array(4).fill(''),
     handleTargetMenuInput,
-    true,
-    G_utils_getSpriteHeight(actingUnit)
+    false,
+    Y_OFFSET + h * G_SCALE
   );
   battle.actionMenuStack.push(targetMenu);
   return new Promise(resolve => {

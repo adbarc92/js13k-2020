@@ -33,6 +33,7 @@ const DEFAULT_TEXT_PARAMS = {
   align: 'left',
 };
 
+// for(let i = 70; i <= 160; i+=30)
 const playerPos = [
   [40, 70],
   [40, 100],
