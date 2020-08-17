@@ -4,11 +4,15 @@ G_controller_roundApplyAction
 G_model_createVerticalMenu
 G_model_getScreenSize
 G_model_getSprite
+G_model_getSpriteSize
+G_model_getScreenSize
 G_view_drawBattle
 G_view_drawMenu
 G_utils_areAllUnitsDead
 G_utils_getRandArrElem
 G_utils_isAlly
+G_CURSOR_WIDTH
+G_CURSOR_HEIGHT
 */
 
 interface Round {
@@ -44,6 +48,26 @@ const G_BATTLE_MENU_LABELS = [
   'Flee',
 ];
 
+type Allegiance = 0 | 1;
+const G_ALLEGIANCE_ALLY = 0;
+const G_ALLEGIANCE_ENEMY = 1;
+
+const G_SCALE = 2;
+
+const playerPos = [
+  [40, 70] as [number, number],
+  [40, 100] as [number, number],
+  [40, 130] as [number, number],
+  [40, 160] as [number, number],
+];
+
+const enemyPos = [
+  [200, 70] as [number, number],
+  [200, 100] as [number, number],
+  [200, 130] as [number, number],
+  [200, 160] as [number, number],
+];
+
 const G_model_createBattle = (allies: Unit[], enemies: Unit[]): Battle => {
   const screenSize = G_model_getScreenSize();
   const menuWidth = 100;
@@ -56,7 +80,7 @@ const G_model_createBattle = (allies: Unit[], enemies: Unit[]): Battle => {
       y,
       menuWidth,
       G_BATTLE_MENU_LABELS,
-      handleActionMenuInput,
+      handleActionMenuSelected,
       true,
       lineHeight
     ),
@@ -64,95 +88,65 @@ const G_model_createBattle = (allies: Unit[], enemies: Unit[]): Battle => {
   return { allies, enemies, rounds: [], roundIndex: 0, actionMenuStack };
 };
 
-const G_utils_getSpriteHeight = (unit: Unit): number => {
-  // console.log('Unit:', unit);
-  const { sprite, spriteIndex } = unit.actor;
-  // console.log('Sprite:', `${sprite}_${spriteIndex}`);
-  return G_model_getSprite(`${sprite}_${spriteIndex}`)[4];
+const G_model_battleGetScreenPosition = (
+  i: number,
+  allegiance: Allegiance
+): [number, number] => {
+  return allegiance === G_ALLEGIANCE_ALLY ? playerPos[i] : enemyPos[i];
 };
 
-const G_utils_getSpriteWidth = (unit: Unit): number => {
-  // console.log('Unit:', unit);
-  const { sprite, spriteIndex } = unit.actor;
-  // console.log('Sprite:', `${sprite}_${spriteIndex}`);
-  return G_model_getSprite(`${sprite}_${spriteIndex}`)[3];
-};
-
-let G_BATTLE_TARGET_INDEX = -1;
-
-const G_controller_setBattleTargetIndex = (i: number) => {
-  G_BATTLE_TARGET_INDEX = i;
-};
-
-const G_controller_getBattleTargetIndex = () => {
-  return G_BATTLE_TARGET_INDEX;
-};
-
-const handleTargetMenuInput = (i: number) => {
-  G_controller_setBattleTargetIndex(i);
-};
-
-// These will be used to phase out positioning constants
-const G_SCALE = 2;
-const ALLY_X = 80;
-const ENEMY_X = 80;
-const Y_OFFSET = 27;
-
-const selectTarget = async (actingUnit: Unit) => {
-  const battle = G_model_getCurrentBattle();
-  const x = G_utils_isAlly(battle, actingUnit) ? 200 * G_SCALE : 80 * G_SCALE;
-  const h = G_utils_getSpriteHeight(actingUnit);
-  console.log('x:', x);
-  const targetMenu = G_model_createVerticalMenu(
-    x,
-    70 * G_SCALE - h / 2,
-    0,
-    Array(4).fill(''),
-    handleTargetMenuInput,
-    false,
-    Y_OFFSET + h * G_SCALE
-  );
-  battle.actionMenuStack.push(targetMenu);
+const selectTarget = async (battle: Battle): Promise<Unit | null> => {
   return new Promise(resolve => {
-    G_model_setBattlePostActionCb(resolve);
-    G_model_setBattleInputEnabled(true);
+    const targets = battle.enemies;
+
+    const [startX, startY] = G_model_battleGetScreenPosition(
+      0,
+      G_ALLEGIANCE_ENEMY
+    );
+
+    const x = startX * G_SCALE - G_CURSOR_WIDTH;
+    const y = startY * G_SCALE - 16; // offset by -16 so the cursor is centered on the sprite
+    const h = 30 * G_SCALE; // "30" is the difference in y values of the unit positions from the unit variables
+    const targetMenu = G_model_createVerticalMenu(
+      x,
+      y,
+      100, // set this to 100 so I could debug by turning on the background
+      Array(targets.length).fill(''), // wtf, that exists?  i never knew that...
+      // this function is called when a target is selected
+      (i: number) => {
+        battle.actionMenuStack.shift(); // returns input to the last menu
+        if (i >= 0) {
+          resolve(targets[i]);
+        } else {
+          resolve(null);
+        }
+      },
+      false,
+      h
+    );
+    battle.actionMenuStack.unshift(targetMenu); // transfers input to the newly-created menu
     G_view_drawBattle(battle);
-    G_view_drawMenu(targetMenu);
-    battle.actionMenuStack.shift();
   });
 };
 
-const getTarget = async (unit: Unit): Promise<Unit> => {
-  await selectTarget(unit);
-  const battle = G_model_getCurrentBattle();
-  const index = G_controller_getBattleTargetIndex();
-  if (G_utils_isAlly(battle, unit)) {
-    return battle.enemies[index];
-  }
-  return new Promise(resolve => {
-    G_model_setBattlePostActionCb(resolve);
-    return battle.allies[index];
-  });
-};
-
-const handleActionMenuInput = async (i: RoundAction) => {
+const handleActionMenuSelected = async (i: RoundAction) => {
   const battle = G_model_getCurrentBattle();
   const round = G_model_battleGetCurrentRound(battle);
-  const unit = G_model_roundGetActingUnit(round) as Unit;
 
   // here we could 'await' target selection instead of randomly picking one
-  // const target: Unit = G_utils_getRandArrElem(
-  //   G_utils_isAlly(battle, unit) ? battle.enemies : battle.allies
-  // );
+  const target: Unit | null = await selectTarget(battle);
 
-  const target: Unit = await getTarget(unit);
+  // handles the case where ESC (or back or something) is pressed while targeting
+  if (!target) {
+    return;
+  }
 
   switch (i) {
     case G_ACTION_STRIKE:
       G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
       break;
     default:
-      console.log('Action', i, 'Is not implemented yet.');
+      console.error('Action', i, 'Is not implemented yet.');
   }
 };
 

@@ -7,15 +7,15 @@ G_BLACK
 G_WHITE
 */
 
-const CURSOR_WIDTH = 16;
-const CURSOR_HEIGHT = 16;
+const G_CURSOR_WIDTH = 16;
+const G_CURSOR_HEIGHT = 16;
 
 const G_view_drawMenuCursor = (x: number, y: number) => {
   const ctx = G_model_getCtx();
-  const cursorHeight = CURSOR_HEIGHT;
-  const cursorWidth = CURSOR_WIDTH;
+  const cursorHeight = G_CURSOR_HEIGHT;
+  const cursorWidth = G_CURSOR_WIDTH;
   ctx.save();
-  ctx.translate(x - CURSOR_WIDTH / 2, y - CURSOR_HEIGHT / 2);
+  ctx.translate(x - G_CURSOR_WIDTH / 2, y - G_CURSOR_HEIGHT / 2);
   ctx.beginPath();
   ctx.moveTo(0, 0);
   ctx.lineTo(0, cursorHeight);
@@ -38,5 +38,5 @@ const G_view_drawMenu = (menu: Menu) => {
       align: 'center',
     });
   });
-  G_view_drawMenuCursor(x - CURSOR_WIDTH, y + i * lh + lh / 2);
+  G_view_drawMenuCursor(x - G_CURSOR_WIDTH, y + i * lh + lh / 2);
 };
