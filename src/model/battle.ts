@@ -1,6 +1,8 @@
 /*
 global
 G_controller_roundApplyAction
+G_controller_unitLives
+G_controller_killUnit
 G_model_createVerticalMenu
 G_model_getScreenSize
 G_model_getSprite
@@ -30,15 +32,15 @@ interface Battle {
 }
 
 type RoundAction = 0 | 1 | 2 | 3 | 4 | 5 | 6;
-const G_ACTION_STRIKE: RoundAction = 0;
+const G_ACTION_STRIKE: RoundAction = 0; // requires target
 const G_ACTION_CHARGE: RoundAction = 1;
-const G_ACTION_INTERRUPT: RoundAction = 2;
+const G_ACTION_INTERRUPT: RoundAction = 2; // requires target
 const G_ACTION_DEFEND: RoundAction = 3;
 const G_ACTION_HEAL: RoundAction = 4;
-const G_ACTION_USE: RoundAction = 5;
+const G_ACTION_USE: RoundAction = 5; // may require target
 const G_ACTION_FLEE: RoundAction = 6;
 const G_BATTLE_MENU_LABELS = [
-  // make sure these indexes match above
+  // make sure these indices match above
   'Strike',
   'Charge',
   'Interrupt',
@@ -133,17 +135,18 @@ const handleActionMenuSelected = async (i: RoundAction) => {
   const battle = G_model_getCurrentBattle();
   const round = G_model_battleGetCurrentRound(battle);
 
-  // here we could 'await' target selection instead of randomly picking one
-  const target: Unit | null = await selectTarget(battle);
-
-  // handles the case where ESC (or back or something) is pressed while targeting
-  if (!target) {
-    return;
-  }
-
   switch (i) {
     case G_ACTION_STRIKE:
+      // here we could 'await' target selection instead of randomly picking one
+      const target: Unit | null = await selectTarget(battle);
+      // handles the case where ESC (or back or something) is pressed while targeting
+      if (!target) {
+        return;
+      }
       G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
+      break;
+    case G_ACTION_HEAL:
+      G_controller_roundApplyAction(G_ACTION_HEAL, round, null);
       break;
     default:
       console.error('Action', i, 'Is not implemented yet.');

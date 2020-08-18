@@ -156,11 +156,10 @@ const G_view_drawActor = (actor: Actor, scale?: number) => {
 
 const G_view_drawBattle = (battle: Battle) => {
   G_view_clearScreen();
-  G_view_drawText(`Round: ${battle.roundIndex + 1}`, 20, 20);
+  G_view_drawText(`Round: ${battle.roundIndex + 1}`, 10, 40);
   const { allies, enemies, actionMenuStack } = battle;
   const actionMenu = actionMenuStack[0];
   for (let i = 0; i < allies.length; i++) {
-    G_model_actorSetFacing(allies[i].actor, G_FACING_RIGHT);
     const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ALLY);
     G_model_actorSetPosition(allies[i].actor, x, y);
     G_view_drawActor(allies[i].actor, 2);
@@ -175,7 +174,6 @@ const G_view_drawBattle = (battle: Battle) => {
   }
 
   for (let i = 0; i < enemies.length; i++) {
-    G_model_actorSetFacing(enemies[i].actor, G_FACING_LEFT);
     const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ENEMY);
     G_model_actorSetPosition(enemies[i].actor, x, y);
     G_view_drawActor(enemies[i].actor, 2);

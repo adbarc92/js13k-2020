@@ -5,8 +5,11 @@ within the parent image (the four numbers: x, y, width, height).
 */
 /*
 global
-G_view_drawSprite
+G_controller_unitLives
 G_model_createCanvas
+G_model_getCurrentBattle
+G_utils_isAlly
+G_view_drawSprite
 */
 
 type Sprite = [
@@ -31,12 +34,13 @@ const createSprite = (
 type SpriteCollection = { [key: string]: Sprite };
 
 // This type represents the postfix one can add to a sprite
-type SpriteModification = '' | '_r1' | '_r2' | '_r3' | '_f';
+type SpriteModification = '' | '_r1' | '_r2' | '_r3' | '_f' | '_fr1';
 const G_SPRITE_MOD_NORMAL: SpriteModification = '';
 const G_SPRITE_MOD_FLIPPED: SpriteModification = '_f';
 const G_SPRITE_MOD_ROT90: SpriteModification = '_r1';
 const G_SPRITE_MOD_ROT180: SpriteModification = '_r2';
 const G_SPRITE_MOD_ROT270: SpriteModification = '_r3';
+const G_SPRITE_MOD_FLROT90: SpriteModification = '_fr1';
 
 let model_sprites: SpriteCollection | null = null;
 
@@ -142,6 +146,15 @@ const loadSpritesFromImage = (
       addSprite(
         `${baseSpriteName}${G_SPRITE_MOD_FLIPPED}`,
         createFlippedImg(spriteToCanvas(sprite)),
+        0,
+        0,
+        spriteWidth,
+        spriteHeight
+      );
+
+      addSprite(
+        `${baseSpriteName}${G_SPRITE_MOD_FLROT90}`,
+        createRotatedImg(createFlippedImg(spriteToCanvas(sprite))),
         0,
         0,
         spriteWidth,

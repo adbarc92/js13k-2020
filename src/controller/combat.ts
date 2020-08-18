@@ -10,29 +10,96 @@ G_model_battleIsComplete
 G_model_createUnit
 G_model_createBattle
 G_model_setCurrentBattle
-G_view_drawBattle
 G_model_createRound
 G_model_roundGetActingUnit
 G_model_roundIncrementIndex
 G_model_statsModifyHp
 G_model_createMenu
+G_model_actorSetFacing
 G_model_getBattlePostActionCb
+G_model_getCurrentBattle
 G_model_setBattlePostActionCb
+G_view_drawBattle
 G_utils_isAlly
 G_utils_getRandArrElem
 G_ACTION_STRIKE
+G_ACTION_HEAL
+G_FACING_UP
+G_ALLEGIANCE_ALLY
+G_ALLEGIANCE_ENEMY
+G_FACING_UP_LEFT
+G_FACING_UP_RIGHT
 */
 
-const G_controller_initBattle = () => {
-  const jimothy = G_model_createUnit('Jimothy', 5, 5, 5, 5, 5);
-  const seph = G_model_createUnit('Seph', 7, 2, 4, 3, 1);
-  const kana = G_model_createUnit('Kana', 5, 8, 3, 2, 7);
-  const widdly2Diddly = G_model_createUnit('widdly2Diddly', 7, 7, 7, 7, 7);
+const G_controller_unitLives = (unit: Unit): boolean => {
+  if (unit.cS.hp > 0) {
+    return true;
+  }
+  return false;
+};
 
-  const karst = G_model_createUnit('Karst', 6, 4, 4, 3, 5);
-  const urien = G_model_createUnit('Urien', 9, 5, 4, 3, 2);
-  const shreth = G_model_createUnit('Shreth', 8, 8, 6, 3, 2);
-  const pDiddy = G_model_createUnit('P Diddy', 5, 5, 5, 5, 5);
+const G_controller_killUnit = (unit: Unit, round: Round) => {
+  const { turnOrder: tO, nextTurnOrder: nTO } = round;
+  const battle = G_model_getCurrentBattle();
+  tO.splice(tO.indexOf(unit), 1);
+  nTO.splice(nTO.indexOf(unit), 1);
+  const facing = G_utils_isAlly(battle, unit)
+    ? G_FACING_UP_RIGHT
+    : G_FACING_UP_LEFT;
+  G_model_actorSetFacing(unit.actor, facing);
+  G_view_drawBattle(battle);
+};
+
+const G_controller_initBattle = () => {
+  const jimothy = G_model_createUnit(
+    'Jimothy',
+    5,
+    200,
+    5,
+    5,
+    5,
+    G_ALLEGIANCE_ALLY
+  );
+  const seph = G_model_createUnit('Seph', 7, 2, 4, 3, 1, G_ALLEGIANCE_ALLY);
+  const kana = G_model_createUnit('Kana', 5, 8, 3, 2, 7, G_ALLEGIANCE_ALLY);
+  const widdly2Diddly = G_model_createUnit(
+    'widdly2Diddly',
+    7,
+    7,
+    7,
+    7,
+    7,
+    G_ALLEGIANCE_ALLY
+  );
+
+  const karst = G_model_createUnit('Karst', 6, 4, 4, 3, 5, G_ALLEGIANCE_ENEMY);
+  const urien = G_model_createUnit(
+    'Urien',
+    9,
+    200,
+    4,
+    3,
+    2,
+    G_ALLEGIANCE_ENEMY
+  );
+  const shreth = G_model_createUnit(
+    'Shreth',
+    8,
+    8,
+    6,
+    3,
+    2,
+    G_ALLEGIANCE_ENEMY
+  );
+  const pDiddy = G_model_createUnit(
+    'P Diddy',
+    5,
+    5,
+    5,
+    5,
+    5,
+    G_ALLEGIANCE_ENEMY
+  );
 
   const battle = G_model_createBattle(
     [jimothy, seph, kana, widdly2Diddly],
@@ -107,12 +174,18 @@ const controller_battleSimulateTurn = async (
 const G_controller_roundApplyAction = (
   action: RoundAction,
   round: Round,
-  target: Unit
+  target: Unit | null
 ) => {
   const actingUnit = G_model_roundGetActingUnit(round) as Unit;
   switch (action) {
     case G_ACTION_STRIKE:
-      G_controller_battleActionStrike(actingUnit, target);
+      G_controller_battleActionStrike(actingUnit, target as Unit);
+      if (!G_controller_unitLives(target as Unit)) {
+        G_controller_killUnit(target as Unit, round);
+      }
+      break;
+    case G_ACTION_HEAL:
+      G_controller_battleActionHeal(actingUnit);
       break;
     default:
       console.error('No action:', action, 'exists.');
