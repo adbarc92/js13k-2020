@@ -60,3 +60,7 @@ const G_model_menuSetNextCursorIndex = (menu: Menu, diff: MenuIncrement) => {
 const G_model_menuSelectCurrentItem = (menu: Menu) => {
   menu.cb(menu.i);
 };
+
+const G_model_menuSelectNothing = (menu: Menu) => {
+  menu.cb(-1);
+};

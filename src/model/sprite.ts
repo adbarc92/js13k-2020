@@ -203,3 +203,5 @@ const G_model_loadImagesAndSprites = async () => {
 // get a Sprite given a sprite name
 const G_model_getSprite = (spriteName: string): Sprite =>
   (model_sprites as SpriteCollection)[spriteName];
+
+const G_model_getSpriteSize = () => 16;
