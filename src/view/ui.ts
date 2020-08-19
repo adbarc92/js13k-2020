@@ -1,6 +1,7 @@
 /*
 global
 G_model_getCtx
+G_model_getScreenSize
 G_view_drawText
 G_view_drawRect
 G_BLACK
@@ -39,4 +40,17 @@ const G_view_drawMenu = (menu: Menu) => {
     });
   });
   G_view_drawMenuCursor(x - G_CURSOR_WIDTH, y + i * lh + lh / 2);
+};
+
+const G_view_drawBattleText = (text: string) => {
+  const x = 0;
+  const y = 0;
+  const w = G_model_getScreenSize();
+  const h = 30;
+
+  G_view_drawRect(x, y, w, h, G_BLACK);
+
+  G_view_drawText(text, G_model_getScreenSize() / 2, 16, {
+    align: 'center',
+  });
 };

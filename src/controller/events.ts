@@ -23,7 +23,7 @@ G_controller_battleActionHeal
 
 window.addEventListener('keydown', ev => {
   G_model_setKeyDown(ev.key);
-  console.log('KEY', ev.key);
+  // console.log('KEY', ev.key);
 
   if (ev.key === 'q') {
     (window as any).running = false;

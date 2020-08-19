@@ -6,8 +6,6 @@ G_controller_killUnit
 G_model_createVerticalMenu
 G_model_getScreenSize
 G_model_getSprite
-G_model_getSpriteSize
-G_model_getScreenSize
 G_view_drawBattle
 G_view_drawMenu
 G_utils_areAllUnitsDead
@@ -29,6 +27,7 @@ interface Battle {
   rounds: Round[];
   roundIndex: 0;
   actionMenuStack: Menu[];
+  text: string;
 }
 
 type RoundAction = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -87,7 +86,14 @@ const G_model_createBattle = (allies: Unit[], enemies: Unit[]): Battle => {
       lineHeight
     ),
   ];
-  return { allies, enemies, rounds: [], roundIndex: 0, actionMenuStack };
+  return {
+    allies,
+    enemies,
+    rounds: [],
+    roundIndex: 0,
+    actionMenuStack,
+    text: '',
+  };
 };
 
 const G_model_battleGetScreenPosition = (
@@ -214,4 +220,8 @@ const G_model_battleIsComplete = (battle: Battle) => {
     G_utils_areAllUnitsDead(battle.enemies) ||
     G_utils_areAllUnitsDead(battle.allies)
   );
+};
+
+const G_model_actionToString = (i: number): string => {
+  return G_BATTLE_MENU_LABELS[i];
 };

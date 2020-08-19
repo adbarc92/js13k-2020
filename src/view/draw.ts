@@ -9,10 +9,14 @@ G_model_getCtx
 G_model_getCanvas
 G_model_getSprite
 G_model_actorGetCurrentSprite
+G_model_actorGetPosition
 G_model_actorSetFacing
 G_model_actorSetPosition
-G_model_getBattleInputEnabled
+G_model_battleGetCurrentRound
 G_model_battleGetScreenPosition
+G_model_getBattleInputEnabled
+G_model_roundGetActingUnit
+G_view_drawBattleText
 G_FACING_RIGHT
 G_FACING_LEFT
 G_ALLEGIANCE_ALLY
@@ -157,10 +161,15 @@ const G_view_drawActor = (actor: Actor, scale?: number) => {
 const G_view_drawBattle = (battle: Battle) => {
   G_view_clearScreen();
   G_view_drawText(`Round: ${battle.roundIndex + 1}`, 10, 40);
+  const actingUnit = G_model_roundGetActingUnit(
+    G_model_battleGetCurrentRound(battle)
+  );
+  G_view_drawText(`Turn: ${actingUnit?.name}`, 10, 60);
   const { allies, enemies, actionMenuStack } = battle;
   const actionMenu = actionMenuStack[0];
   for (let i = 0; i < allies.length; i++) {
-    const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ALLY);
+    const [x, y] = G_model_actorGetPosition(allies[i].actor);
+    // const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ALLY);
     G_model_actorSetPosition(allies[i].actor, x, y);
     G_view_drawActor(allies[i].actor, 2);
     G_view_drawText(
@@ -174,8 +183,9 @@ const G_view_drawBattle = (battle: Battle) => {
   }
 
   for (let i = 0; i < enemies.length; i++) {
-    const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ENEMY);
-    G_model_actorSetPosition(enemies[i].actor, x, y);
+    // const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ENEMY);
+    const [x, y] = G_model_actorGetPosition(enemies[i].actor);
+    // G_model_actorSetPosition(enemies[i].actor, x, y);
     G_view_drawActor(enemies[i].actor, 2);
     G_view_drawText(
       `${enemies[i].name}: ${enemies[i].cS.hp.toString()}/${enemies[
@@ -191,5 +201,8 @@ const G_view_drawBattle = (battle: Battle) => {
 
   if (G_model_getBattleInputEnabled()) {
     G_view_drawMenu(actionMenu);
+  }
+  if (battle.text) {
+    G_view_drawBattleText(battle.text);
   }
 };

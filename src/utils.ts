@@ -95,3 +95,9 @@ const G_utils_windowGetHeight = () => {
 const G_utils_windowGetWidth = () => {
   return window.innerWidth;
 };
+
+const G_utils_waitMs = async (ms: number) => {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms);
+  });
+};

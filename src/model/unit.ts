@@ -4,6 +4,8 @@ G_model_createActor
 G_model_actorSetFacing
 G_FACING_LEFT
 G_FACING_RIGHT
+G_model_actorSetPosition
+G_model_battleGetScreenPosition
 */
 
 interface Stats {
@@ -21,6 +23,8 @@ interface Unit {
   actor: Actor;
   bS: Stats;
   cS: Stats;
+  i: number; // vertical index of unit
+  allegiance: Allegiance;
 }
 
 const model_createStats = (
@@ -40,6 +44,7 @@ const G_model_createUnit = (
   def: number,
   mag: number,
   spd: number,
+  i: number,
   allegiance: Allegiance,
   actor?: Actor
 ): Unit => {
@@ -47,12 +52,16 @@ const G_model_createUnit = (
   allegiance
     ? G_model_actorSetFacing(actor, G_FACING_LEFT)
     : G_model_actorSetFacing(actor, G_FACING_RIGHT);
-  return {
+  const unit = {
     name,
     bS: model_createStats(hp, dmg, def, mag, spd),
     cS: model_createStats(hp, dmg, def, mag, spd),
     actor,
+    i,
+    allegiance,
   };
+  G_model_unitResetPosition(unit);
+  return unit;
 };
 
 const G_model_statsModifyHp = (
@@ -69,4 +78,22 @@ const G_model_statsModifyHp = (
     nextHp = 0;
   }
   currentStats.hp = nextHp;
+};
+
+const G_model_unitMoveForward = (unit: Unit) => {
+  const { allegiance } = unit;
+  const [x, y] = G_model_battleGetScreenPosition(unit.i, allegiance);
+  G_model_actorSetPosition(unit.actor, x + (allegiance ? -50 : 50), y);
+};
+
+const G_model_unitResetPosition = (unit: Unit) => {
+  const [x, y] = G_model_battleGetScreenPosition(unit.i, unit.allegiance);
+  G_model_actorSetPosition(unit.actor, x, y);
+};
+
+const G_model_unitLives = (unit: Unit): boolean => {
+  if (unit.cS.hp > 0) {
+    return true;
+  }
+  return false;
 };

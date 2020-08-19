@@ -3,25 +3,30 @@ global
 G_model_createActor
 G_model_setBattleInputEnabled
 G_model_battleGetCurrentRound
-G_model_roundIsOver
+G_model_actionToString
+G_model_actorSetFacing
 G_model_battleAddRound
 G_model_battleIncrementIndex
 G_model_battleIsComplete
-G_model_createUnit
 G_model_createBattle
-G_model_setCurrentBattle
+G_model_createMenu
+G_model_createUnit
 G_model_createRound
+G_model_getCurrentBattle
+G_model_getBattlePostActionCb
 G_model_roundGetActingUnit
 G_model_roundIncrementIndex
 G_model_statsModifyHp
-G_model_createMenu
-G_model_actorSetFacing
-G_model_getBattlePostActionCb
-G_model_getCurrentBattle
+G_model_setCurrentBattle
 G_model_setBattlePostActionCb
+G_model_roundIsOver
+G_model_unitMoveForward
+G_model_unitResetPosition
 G_view_drawBattle
+G_view_drawBattleText
 G_utils_isAlly
 G_utils_getRandArrElem
+G_utils_waitMs
 G_ACTION_STRIKE
 G_ACTION_HEAL
 G_FACING_UP
@@ -29,75 +34,98 @@ G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
 G_FACING_UP_LEFT
 G_FACING_UP_RIGHT
+G_model_unitLives
 */
-
-const G_controller_unitLives = (unit: Unit): boolean => {
-  if (unit.cS.hp > 0) {
-    return true;
-  }
-  return false;
-};
 
 const G_controller_killUnit = (unit: Unit, round: Round) => {
   const { turnOrder: tO, nextTurnOrder: nTO } = round;
   const battle = G_model_getCurrentBattle();
   tO.splice(tO.indexOf(unit), 1);
   nTO.splice(nTO.indexOf(unit), 1);
-  const facing = G_utils_isAlly(battle, unit)
-    ? G_FACING_UP_RIGHT
-    : G_FACING_UP_LEFT;
-  G_model_actorSetFacing(unit.actor, facing);
+
   G_view_drawBattle(battle);
 };
 
 const G_controller_initBattle = () => {
   const jimothy = G_model_createUnit(
     'Jimothy',
-    5,
+    100,
     200,
     5,
     5,
     5,
+    0,
     G_ALLEGIANCE_ALLY
   );
-  const seph = G_model_createUnit('Seph', 7, 2, 4, 3, 1, G_ALLEGIANCE_ALLY);
-  const kana = G_model_createUnit('Kana', 5, 8, 3, 2, 7, G_ALLEGIANCE_ALLY);
+  const seph = G_model_createUnit(
+    'Seph',
+    100,
+    2,
+    4,
+    3,
+    1,
+    1,
+    G_ALLEGIANCE_ALLY
+  );
+  const kana = G_model_createUnit(
+    'Kana',
+    100,
+    8,
+    3,
+    2,
+    7,
+    2,
+    G_ALLEGIANCE_ALLY
+  );
   const widdly2Diddly = G_model_createUnit(
     'widdly2Diddly',
+    100,
     7,
     7,
     7,
     7,
-    7,
+    3,
     G_ALLEGIANCE_ALLY
   );
 
-  const karst = G_model_createUnit('Karst', 6, 4, 4, 3, 5, G_ALLEGIANCE_ENEMY);
+  const karst = G_model_createUnit(
+    'Karst',
+    100,
+    4,
+    4,
+    3,
+    5,
+    0,
+    G_ALLEGIANCE_ENEMY
+  );
   const urien = G_model_createUnit(
     'Urien',
-    9,
-    200,
+    100,
+    20,
     4,
     3,
     2,
+    1,
     G_ALLEGIANCE_ENEMY
   );
   const shreth = G_model_createUnit(
-    'Shreth',
-    8,
+    'Shrike',
+    100,
     8,
     6,
     3,
+    2,
     2,
     G_ALLEGIANCE_ENEMY
   );
   const pDiddy = G_model_createUnit(
     'P Diddy',
+    100,
     5,
     5,
     5,
     5,
-    5,
+    3,
     G_ALLEGIANCE_ENEMY
   );
 
@@ -117,6 +145,7 @@ const G_controller_initBattle = () => {
   ]);
 
   G_model_battleAddRound(battle, firstRound);
+  console.log('First Round Turn Order:', firstRound);
   G_model_setCurrentBattle(battle);
   G_model_setBattleInputEnabled(false);
   doBattle(battle);
@@ -141,7 +170,9 @@ const G_controller_battleSimulateNextRound = async (battle: Battle) => {
 
   // this part is hard-coded.  We'd probably want to generalize printing a unit with a function
   while (!G_model_roundIsOver(round)) {
+    console.log('Current Round Index:', round.currentIndex);
     await controller_battleSimulateTurn(battle, round);
+    G_model_roundIncrementIndex(round);
     G_view_drawBattle(battle);
   }
 
@@ -155,6 +186,10 @@ const controller_battleSimulateTurn = async (
   round: Round
 ): Promise<void> => {
   const actingUnit = G_model_roundGetActingUnit(round) as Unit;
+  if (!G_model_unitLives(actingUnit)) {
+    return;
+  }
+  console.log(actingUnit.name, 'beginning turn');
   return new Promise(resolve => {
     G_model_setBattlePostActionCb(resolve);
     if (G_utils_isAlly(battle, actingUnit)) {
@@ -171,17 +206,27 @@ const controller_battleSimulateTurn = async (
 };
 
 // at the end of this function the postAction callback is invoked to keep the battle running
-const G_controller_roundApplyAction = (
+const G_controller_roundApplyAction = async (
   action: RoundAction,
   round: Round,
   target: Unit | null
 ) => {
+  G_model_setBattleInputEnabled(false);
+  const battle = G_model_getCurrentBattle();
   const actingUnit = G_model_roundGetActingUnit(round) as Unit;
+  G_model_unitMoveForward(actingUnit);
+  battle.text = G_model_actionToString(action);
+  G_view_drawBattle(battle);
+  await G_utils_waitMs(1000);
   switch (action) {
     case G_ACTION_STRIKE:
-      G_controller_battleActionStrike(actingUnit, target as Unit);
-      if (!G_controller_unitLives(target as Unit)) {
-        G_controller_killUnit(target as Unit, round);
+      const dmg = G_controller_battleActionStrike(actingUnit, target as Unit);
+      battle.text = 'Did ' + -dmg + " damage. It's somewhat effective.";
+      if (!G_model_unitLives(target as Unit)) {
+        const facing = G_utils_isAlly(battle, target as Unit)
+          ? G_FACING_UP_RIGHT
+          : G_FACING_UP_LEFT;
+        G_model_actorSetFacing((target as Unit).actor, facing);
       }
       break;
     case G_ACTION_HEAL:
@@ -190,11 +235,14 @@ const G_controller_roundApplyAction = (
     default:
       console.error('No action:', action, 'exists.');
   }
-  G_model_roundIncrementIndex(round);
-  // check if hp <=0
   round.nextTurnOrder.push(actingUnit);
-  G_model_setBattleInputEnabled(false);
-  G_model_getBattlePostActionCb()();
+  G_view_drawBattle(battle);
+  await G_utils_waitMs(2000);
+  G_model_unitResetPosition(actingUnit);
+  battle.text = '';
+  G_view_drawBattle(battle);
+  await G_utils_waitMs(500);
+  G_model_getBattlePostActionCb()(); // resolve is called here
 };
 
 const controller_roundInit = (round: Round) => {

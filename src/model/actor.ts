@@ -65,6 +65,10 @@ const G_model_actorSetPosition = (actor: Actor, x: number, y: number) => {
   actor.y = y;
 };
 
+const G_model_actorGetPosition = (actor: Actor): [number, number] => {
+  return [actor.x, actor.y];
+};
+
 const G_model_actorSetVelocity = (actor: Actor, vx: number, vy: number) => {
   actor.vx = vx;
   actor.vy = vy;
