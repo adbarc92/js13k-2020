@@ -3,7 +3,7 @@
     "baseUrl": "./src/",
     "target": "ES2017",
     "outDir": "src-ts",
-    "outFile": "src/main.js",
+    "outFile": "main.js",
     "lib": [
       "dom",
       "ES2017"
