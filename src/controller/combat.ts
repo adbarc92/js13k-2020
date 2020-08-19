@@ -22,7 +22,7 @@ G_model_setBattlePostActionCb
 G_model_roundIsOver
 G_model_unitMoveForward
 G_model_unitResetPosition
-G_view_drawBattle
+
 G_view_drawBattleText
 G_utils_isAlly
 G_utils_getRandArrElem
@@ -36,15 +36,6 @@ G_FACING_UP_LEFT
 G_FACING_UP_RIGHT
 G_model_unitLives
 */
-
-const G_controller_killUnit = (unit: Unit, round: Round) => {
-  const { turnOrder: tO, nextTurnOrder: nTO } = round;
-  const battle = G_model_getCurrentBattle();
-  tO.splice(tO.indexOf(unit), 1);
-  nTO.splice(nTO.indexOf(unit), 1);
-
-  G_view_drawBattle(battle);
-};
 
 const G_controller_initBattle = () => {
   const jimothy = G_model_createUnit(
@@ -148,14 +139,13 @@ const G_controller_initBattle = () => {
   console.log('First Round Turn Order:', firstRound);
   G_model_setCurrentBattle(battle);
   G_model_setBattleInputEnabled(false);
-  doBattle(battle);
+  // doBattle(battle);
+  return battle;
 };
 
-const doBattle = async (battle: Battle) => {
-  G_view_drawBattle(battle);
+const G_controller_doBattle = async (battle: Battle) => {
   while (!G_model_battleIsComplete(battle)) {
     await G_controller_battleSimulateNextRound(battle); // do the fight!
-    G_view_drawBattle(battle);
   }
   console.log('Battle complete!');
   setTimeout(() => {
@@ -173,7 +163,6 @@ const G_controller_battleSimulateNextRound = async (battle: Battle) => {
     console.log('Current Round Index:', round.currentIndex);
     await controller_battleSimulateTurn(battle, round);
     G_model_roundIncrementIndex(round);
-    G_view_drawBattle(battle);
   }
 
   const nextRound = controller_roundEnd(round);
@@ -194,7 +183,6 @@ const controller_battleSimulateTurn = async (
     G_model_setBattlePostActionCb(resolve);
     if (G_utils_isAlly(battle, actingUnit)) {
       G_model_setBattleInputEnabled(true);
-      G_view_drawBattle(battle);
     } else {
       setTimeout(() => {
         // AI (the dumb version): select a random target and STRIKE
@@ -216,7 +204,7 @@ const G_controller_roundApplyAction = async (
   const actingUnit = G_model_roundGetActingUnit(round) as Unit;
   G_model_unitMoveForward(actingUnit);
   battle.text = G_model_actionToString(action);
-  G_view_drawBattle(battle);
+
   await G_utils_waitMs(1000);
   switch (action) {
     case G_ACTION_STRIKE:
@@ -236,11 +224,11 @@ const G_controller_roundApplyAction = async (
       console.error('No action:', action, 'exists.');
   }
   round.nextTurnOrder.push(actingUnit);
-  G_view_drawBattle(battle);
+
   await G_utils_waitMs(2000);
   G_model_unitResetPosition(actingUnit);
   battle.text = '';
-  G_view_drawBattle(battle);
+
   await G_utils_waitMs(500);
   G_model_getBattlePostActionCb()(); // resolve is called here
 };

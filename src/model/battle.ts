@@ -133,7 +133,6 @@ const selectTarget = async (battle: Battle): Promise<Unit | null> => {
       h
     );
     battle.actionMenuStack.unshift(targetMenu); // transfers input to the newly-created menu
-    G_view_drawBattle(battle);
   });
 };
 

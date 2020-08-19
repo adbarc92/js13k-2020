@@ -33,22 +33,17 @@ window.addEventListener('keydown', ev => {
     const battle = G_model_getCurrentBattle();
     const key = ev.key;
 
-    try {
-      const menu = battle.actionMenuStack[0];
-      if (key === 'ArrowDown') {
-        G_model_menuSetNextCursorIndex(menu, 1);
-      } else if (key === 'ArrowUp') {
-        G_model_menuSetNextCursorIndex(menu, -1);
-      } else if (key === 'Enter') {
-        G_model_menuSelectCurrentItem(menu);
-      } else if (key === 'Escape') {
-        if (battle.actionMenuStack.length > 1) {
-          G_model_menuSelectNothing(menu);
-        }
+    const menu = battle.actionMenuStack[0];
+    if (key === 'ArrowDown') {
+      G_model_menuSetNextCursorIndex(menu, 1);
+    } else if (key === 'ArrowUp') {
+      G_model_menuSetNextCursorIndex(menu, -1);
+    } else if (key === 'Enter') {
+      G_model_menuSelectCurrentItem(menu);
+    } else if (key === 'Escape') {
+      if (battle.actionMenuStack.length > 1) {
+        G_model_menuSelectNothing(menu);
       }
-    } finally {
-      // using a `finally` here because we want to call `drawBattle` after any case in the previous block
-      G_view_drawBattle(battle);
     }
   }
 });
