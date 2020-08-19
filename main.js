@@ -799,7 +799,7 @@ const G_model_createBattle = (allies, enemies) => {
     const x = screenSize / 2 - menuWidth / 2;
     const y = screenSize - lineHeight * G_BATTLE_MENU_LABELS.length;
     const actionMenuStack = [
-        G_model_createVerticalMenu(x, y, menuWidth, G_BATTLE_MENU_LABELS, handleActionMenuSelected, true, lineHeight),
+        G_model_createVerticalMenu(x, y, menuWidth, G_BATTLE_MENU_LABELS, handleActionMenuSelected, [], true, lineHeight),
     ];
     return {
         allies,
@@ -831,7 +831,7 @@ const selectTarget = async (battle) => {
             else {
                 resolve(null);
             }
-        }, false, h);
+        }, [], false, h);
         battle.actionMenuStack.unshift(targetMenu); // transfers input to the newly-created menu
     });
 };
@@ -1002,7 +1002,7 @@ G_view_drawText
  G_FACING_RIGHT
 */
 const MENU_DEFAULT_LINE_HEIGHT = 16;
-const G_model_createVerticalMenu = (x, y, w, items, cb, bg, lineHeight) => {
+const G_model_createVerticalMenu = (x, y, w, items, cb, disabledItems, bg, lineHeight) => {
     lineHeight = lineHeight || MENU_DEFAULT_LINE_HEIGHT;
     return {
         x,
@@ -1011,6 +1011,7 @@ const G_model_createVerticalMenu = (x, y, w, items, cb, bg, lineHeight) => {
         h: lineHeight * items.length,
         i: 0,
         cb,
+        disabledItems,
         items,
         lineHeight,
         bg: !!bg,
@@ -1019,6 +1020,9 @@ const G_model_createVerticalMenu = (x, y, w, items, cb, bg, lineHeight) => {
 const G_model_menuSetNextCursorIndex = (menu, diff) => {
     const len = menu.items.length;
     let nextIndex = menu.i + diff;
+    if (menu.disabledItems.includes(nextIndex)) {
+        nextIndex += diff;
+    }
     if (nextIndex < 0) {
         nextIndex = len - 1;
     }
@@ -1294,6 +1298,7 @@ G_model_battleGetScreenPosition
 G_model_getBattleInputEnabled
 G_model_roundGetActingUnit
 G_view_drawBattleText
+G_view_drawInfo
 G_FACING_RIGHT
 G_FACING_LEFT
 G_ALLEGIANCE_ALLY
@@ -1376,10 +1381,12 @@ const G_view_drawBattle = (battle) => {
         // const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ALLY);
         G_model_actorSetPosition(allies[i].actor, x, y);
         G_view_drawActor(allies[i].actor, 2);
-        G_view_drawText(`${allies[i].name}: ${allies[i].cS.hp}/${allies[i].bS.hp}`, x * 2 + 5, y * 2 - 5, {
+        G_view_drawText(`${allies[i].name}`, x * 2 + 16, y * 2 - 5, {
             align: 'center',
         });
     }
+    G_view_drawInfo(battle, G_ALLEGIANCE_ALLY);
+    G_view_drawInfo(battle, G_ALLEGIANCE_ENEMY);
     for (let i = 0; i < enemies.length; i++) {
         // const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ENEMY);
         const [x, y] = G_model_actorGetPosition(enemies[i].actor);
@@ -1404,9 +1411,15 @@ G_view_drawText
 G_view_drawRect
 G_BLACK
 G_WHITE
+G_ALLEGIANCE_ENEMY
+G_ALLEGIANCE_ALLY
 */
 const G_CURSOR_WIDTH = 16;
 const G_CURSOR_HEIGHT = 16;
+const G_view_drawUiBackground = (x, y, w, h) => {
+    G_view_drawRect(x, y, w, h, G_BLACK);
+    G_view_drawRect(x, y, w, h, G_WHITE, true);
+};
 const G_view_drawMenuCursor = (x, y) => {
     const ctx = G_model_getCtx();
     const cursorHeight = G_CURSOR_HEIGHT;
@@ -1425,8 +1438,7 @@ const G_view_drawMenuCursor = (x, y) => {
 const G_view_drawMenu = (menu) => {
     const { x, y, w, h, i, bg, items, lineHeight: lh } = menu;
     if (bg) {
-        G_view_drawRect(x, y, w, h, G_BLACK);
-        G_view_drawRect(x, y, w, h, G_WHITE, true);
+        G_view_drawUiBackground(x, y, w, h);
     }
     items.forEach((label, ind) => {
         G_view_drawText(label, x + w / 2, y + ind * lh + lh / 2, {
@@ -1440,9 +1452,34 @@ const G_view_drawBattleText = (text) => {
     const y = 0;
     const w = G_model_getScreenSize();
     const h = 30;
-    G_view_drawRect(x, y, w, h, G_BLACK);
+    G_view_drawUiBackground(x, y, w, h);
     G_view_drawText(text, G_model_getScreenSize() / 2, 16, {
         align: 'center',
     });
+};
+const G_view_drawInfo = (battle, allegiance) => {
+    // For players, contains name, HP, currentCharge
+    const lineHeight = 20;
+    const screenSize = G_model_getScreenSize();
+    const w = 200;
+    const h = 90;
+    const x = allegiance === G_ALLEGIANCE_ENEMY ? screenSize - w : 0;
+    const y = screenSize - 90;
+    G_view_drawUiBackground(x, y, w, h);
+    const units = allegiance === G_ALLEGIANCE_ENEMY ? battle.enemies : battle.allies;
+    for (let i = 0; i < units.length; i++) {
+        const unit = units[i];
+        const { name, bS, cS } = unit;
+        if (allegiance === G_ALLEGIANCE_ALLY) {
+            G_view_drawText(name.slice(0, 8), x + 10, y + 15 + lineHeight * i);
+            G_view_drawText(`${cS.hp}/${bS.hp}`, x + 100, y + 15 + lineHeight * i);
+            G_view_drawText(`${cS.cCnt}`, x + 175, y + 15 + lineHeight * i);
+        }
+        else {
+            G_view_drawText(name.slice(0, 8), x + w / 2, y + 15 + lineHeight * i, {
+                align: 'center',
+            });
+        }
+    }
 };
 //# sourceMappingURL=main.js.map

@@ -16,10 +16,11 @@ interface Menu {
   y: number;
   w: number;
   h: number;
-  i: number;
-  bg: boolean;
   items: string[];
+  i: number;
   cb: (i: number) => void;
+  disabledItems: number[];
+  bg: boolean;
   lineHeight: number;
 }
 
@@ -29,6 +30,7 @@ const G_model_createVerticalMenu = (
   w: number,
   items: string[],
   cb: (i: number) => void,
+  disabledItems: number[],
   bg?: boolean,
   lineHeight?: number
 ): Menu => {
@@ -40,6 +42,7 @@ const G_model_createVerticalMenu = (
     h: lineHeight * items.length,
     i: 0,
     cb,
+    disabledItems,
     items,
     lineHeight,
     bg: !!bg,
@@ -49,6 +52,9 @@ const G_model_createVerticalMenu = (
 const G_model_menuSetNextCursorIndex = (menu: Menu, diff: MenuIncrement) => {
   const len = menu.items.length;
   let nextIndex = menu.i + diff;
+  if (menu.disabledItems.includes(nextIndex)) {
+    nextIndex += diff;
+  }
   if (nextIndex < 0) {
     nextIndex = len - 1;
   } else if (nextIndex >= len) {

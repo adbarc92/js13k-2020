@@ -82,6 +82,7 @@ const G_model_createBattle = (allies: Unit[], enemies: Unit[]): Battle => {
       menuWidth,
       G_BATTLE_MENU_LABELS,
       handleActionMenuSelected,
+      [],
       true,
       lineHeight
     ),
@@ -129,6 +130,7 @@ const selectTarget = async (battle: Battle): Promise<Unit | null> => {
           resolve(null);
         }
       },
+      [],
       false,
       h
     );

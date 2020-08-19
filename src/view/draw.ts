@@ -17,6 +17,7 @@ G_model_battleGetScreenPosition
 G_model_getBattleInputEnabled
 G_model_roundGetActingUnit
 G_view_drawBattleText
+G_view_drawInfo
 G_FACING_RIGHT
 G_FACING_LEFT
 G_ALLEGIANCE_ALLY
@@ -172,15 +173,12 @@ const G_view_drawBattle = (battle: Battle) => {
     // const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ALLY);
     G_model_actorSetPosition(allies[i].actor, x, y);
     G_view_drawActor(allies[i].actor, 2);
-    G_view_drawText(
-      `${allies[i].name}: ${allies[i].cS.hp}/${allies[i].bS.hp}`,
-      x * 2 + 5,
-      y * 2 - 5,
-      {
-        align: 'center',
-      }
-    );
+    G_view_drawText(`${allies[i].name}`, x * 2 + 16, y * 2 - 5, {
+      align: 'center',
+    });
   }
+  G_view_drawInfo(battle, G_ALLEGIANCE_ALLY);
+  G_view_drawInfo(battle, G_ALLEGIANCE_ENEMY);
 
   for (let i = 0; i < enemies.length; i++) {
     // const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ENEMY);

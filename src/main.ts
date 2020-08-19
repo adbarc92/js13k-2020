@@ -56,7 +56,6 @@ const runMainLoop = () => {
 
 const main = async () => {
   await G_model_loadImagesAndSprites();
-
   runMainLoop();
 };
 
