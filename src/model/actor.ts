@@ -4,13 +4,18 @@ An Actor is an entity on the screen which is affected by gravity.
 /*
 global
 G_SPRITE_MOD_FLIPPED
+G_SPRITE_MOD_FLROT90
+G_SPRITE_MOD_ROT90
+G_SPRITE_MOD_ROT270
 G_model_getElapsedMs
 G_utils_floorNearestMultiple
 */
 
-type Facing = 0 | 1;
+type Facing = 0 | 1 | 2 | 3;
 const G_FACING_LEFT: Facing = 0;
 const G_FACING_RIGHT: Facing = 1;
+const G_FACING_UP_RIGHT: Facing = 2;
+const G_FACING_UP_LEFT: Facing = 3;
 
 type AnimState = 0 | 1 | 2;
 const G_ANIM_DEFAULT: AnimState = 0;
@@ -60,6 +65,10 @@ const G_model_actorSetPosition = (actor: Actor, x: number, y: number) => {
   actor.y = y;
 };
 
+const G_model_actorGetPosition = (actor: Actor): [number, number] => {
+  return [actor.x, actor.y];
+};
+
 const G_model_actorSetVelocity = (actor: Actor, vx: number, vy: number) => {
   actor.vx = vx;
   actor.vy = vy;
@@ -81,11 +90,22 @@ const G_model_actorGetCurrentSprite = (actor: Actor): string => {
     anim = (anim -
       Math.floor((G_model_getElapsedMs() % 200) / 100)) as AnimState;
   }
-  return (
-    sprite +
-    `_${spriteIndex + anim}` +
-    (facing === G_FACING_LEFT ? G_SPRITE_MOD_FLIPPED : '')
-  );
+  let mod = '';
+  switch (facing) {
+    case 0:
+      mod = G_SPRITE_MOD_FLIPPED;
+      break;
+    // case 1 is no modification
+    case 2: // up
+      mod = G_SPRITE_MOD_ROT270;
+      break;
+    case 3:
+      mod = G_SPRITE_MOD_FLROT90;
+      break;
+    default:
+      break;
+  }
+  return sprite + `_${spriteIndex + anim + mod}`;
 };
 
 const G_model_actorSetAnimState = (actor: Actor, anim: AnimState) => {

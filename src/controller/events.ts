@@ -13,6 +13,7 @@ G_model_roundGetActingUnit
 G_model_battleGetCurrentRound
 G_model_menuSetNextCursorIndex
 G_model_menuSelectCurrentItem
+G_model_menuSelectNothing
 G_view_drawMenu
 G_view_drawBattle
 G_controller_battleSimulateNextRound
@@ -22,7 +23,7 @@ G_controller_battleActionHeal
 
 window.addEventListener('keydown', ev => {
   G_model_setKeyDown(ev.key);
-  console.log('KEY', ev.key);
+  // console.log('KEY', ev.key);
 
   if (ev.key === 'q') {
     (window as any).running = false;
@@ -33,13 +34,17 @@ window.addEventListener('keydown', ev => {
     const key = ev.key;
 
     try {
-      const menu = battle.actionMenu;
+      const menu = battle.actionMenuStack[0];
       if (key === 'ArrowDown') {
         G_model_menuSetNextCursorIndex(menu, 1);
       } else if (key === 'ArrowUp') {
         G_model_menuSetNextCursorIndex(menu, -1);
       } else if (key === 'Enter') {
         G_model_menuSelectCurrentItem(menu);
+      } else if (key === 'Escape') {
+        if (battle.actionMenuStack.length > 1) {
+          G_model_menuSelectNothing(menu);
+        }
       }
     } finally {
       // using a `finally` here because we want to call `drawBattle` after any case in the previous block
