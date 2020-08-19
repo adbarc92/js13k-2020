@@ -3,20 +3,21 @@ This file is the main entry point for the game.
 */
 /*
 global
-G_model_loadImagesAndSprites
-G_model_createRoomFromSprite
-G_model_createPlayer
-G_model_setFrameMultiplier
-G_model_setElapsedMs
-G_model_setCurrentRoom
 G_controller_doBattle
 G_controller_initBattle
 G_controller_updateRoom
+G_model_createPlayer
+G_model_createRoomFromSprite
+G_model_setCurrentRoom
+G_model_setElapsedMs
+G_model_setFrameMultiplier
+G_model_loadImagesAndSprites
 G_view_clearScreen
-G_view_drawRoom
 G_view_drawActor
-G_SCALE
 G_view_drawBattle
+G_view_drawRoom
+
+G_SCALE
 */
 
 // const SCALE = 2;
@@ -34,12 +35,12 @@ const runMainLoop = () => {
   let prevNow = startTime;
   const loop = (now: number) => {
     G_view_drawBattle(battle);
-    // const sixtyFpsMs = 16.666;
-    // const dt = now - prevNow;
-    // const fm = dt / sixtyFpsMs;
-    // G_model_setFrameMultiplier(fm > 2 ? 2 : fm);
-    // G_model_setElapsedMs(now - startTime);
-    // prevNow = now;
+    const sixtyFpsMs = 16.666;
+    const dt = now - prevNow;
+    const fm = dt / sixtyFpsMs;
+    G_model_setFrameMultiplier(fm > 2 ? 2 : fm);
+    G_model_setElapsedMs(now - startTime);
+    prevNow = now;
 
     // G_view_clearScreen();
 

@@ -2,12 +2,13 @@
 global
 G_model_getCtx
 G_model_getScreenSize
-G_view_drawText
 G_view_drawRect
+G_view_drawText
+
+G_ALLEGIANCE_ALLY
+G_ALLEGIANCE_ENEMY
 G_BLACK
 G_WHITE
-G_ALLEGIANCE_ENEMY
-G_ALLEGIANCE_ALLY
 */
 
 const G_CURSOR_WIDTH = 16;
@@ -46,8 +47,13 @@ const G_view_drawMenu = (menu: Menu) => {
   }
 
   items.forEach((label, ind) => {
+    let color = G_WHITE;
+    if (menu.disabledItems.includes(ind)) {
+      color = '#999';
+    }
     G_view_drawText(label, x + w / 2, y + ind * lh + lh / 2, {
       align: 'center',
+      color,
     });
   });
   G_view_drawMenuCursor(x - G_CURSOR_WIDTH, y + i * lh + lh / 2);
@@ -83,7 +89,8 @@ const G_view_drawInfo = (battle: Battle, allegiance: Allegiance) => {
     if (allegiance === G_ALLEGIANCE_ALLY) {
       G_view_drawText(name.slice(0, 8), x + 10, y + 15 + lineHeight * i);
       G_view_drawText(`${cS.hp}/${bS.hp}`, x + 100, y + 15 + lineHeight * i);
-      G_view_drawText(`${cS.cCnt}`, x + 175, y + 15 + lineHeight * i);
+      G_view_drawText(`${cS.cCnt}`, x + 165, y + 15 + lineHeight * i);
+      G_view_drawText(`${cS.iCnt}`, x + 185, y + 15 + lineHeight * i);
     } else {
       G_view_drawText(name.slice(0, 8), x + w / 2, y + 15 + lineHeight * i, {
         align: 'center',

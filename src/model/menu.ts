@@ -1,11 +1,12 @@
 /*
 global
+G_model_actorSetFacing
+G_model_actorSetPosition
 G_model_getCtx
+G_view_drawActor
 G_view_drawText
- G_model_actorSetFacing
- G_model_actorSetPosition
- G_view_drawActor
- G_FACING_RIGHT
+
+G_FACING_RIGHT
 */
 const MENU_DEFAULT_LINE_HEIGHT = 16;
 
@@ -51,15 +52,22 @@ const G_model_createVerticalMenu = (
 
 const G_model_menuSetNextCursorIndex = (menu: Menu, diff: MenuIncrement) => {
   const len = menu.items.length;
-  let nextIndex = menu.i + diff;
-  if (menu.disabledItems.includes(nextIndex)) {
-    nextIndex += diff;
-  }
-  if (nextIndex < 0) {
-    nextIndex = len - 1;
-  } else if (nextIndex >= len) {
-    nextIndex = 0;
-  }
+  let ctr = 0;
+  let nextIndex: number = 0;
+  let curIndex = menu.i;
+  do {
+    ctr++;
+    if (ctr > 30) {
+      break;
+    }
+    nextIndex = curIndex + diff;
+    if (nextIndex < 0) {
+      nextIndex = len - 1;
+    } else if (nextIndex >= len) {
+      nextIndex = 0;
+    }
+    curIndex = nextIndex;
+  } while (menu.disabledItems.includes(nextIndex));
   menu.i = nextIndex;
 };
 

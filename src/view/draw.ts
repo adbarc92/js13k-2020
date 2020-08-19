@@ -4,24 +4,25 @@ This file contains functions that can draw things on the screen
 */
 /*
 global
-G_view_drawMenu
-G_model_getCtx
-G_model_getCanvas
-G_model_getSprite
+G_model_actorSetPosition
 G_model_actorGetCurrentSprite
 G_model_actorGetPosition
 G_model_actorSetFacing
-G_model_actorSetPosition
 G_model_battleGetCurrentRound
 G_model_battleGetScreenPosition
+G_model_getCanvas
+G_model_getCtx
 G_model_getBattleInputEnabled
+G_model_getSprite
 G_model_roundGetActingUnit
 G_view_drawBattleText
 G_view_drawInfo
-G_FACING_RIGHT
-G_FACING_LEFT
+G_view_drawMenu
+
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
+G_FACING_LEFT
+G_FACING_RIGHT
 BATTLE_MENU
 */
 
@@ -201,6 +202,7 @@ const G_view_drawBattle = (battle: Battle) => {
     G_view_drawMenu(actionMenu);
   }
   if (battle.text) {
+    console.log('Battle Text:', battle.text);
     G_view_drawBattleText(battle.text);
   }
 };

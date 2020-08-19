@@ -115,20 +115,21 @@ This file is the main entry point for the game.
 */
 /*
 global
-G_model_loadImagesAndSprites
-G_model_createRoomFromSprite
-G_model_createPlayer
-G_model_setFrameMultiplier
-G_model_setElapsedMs
-G_model_setCurrentRoom
 G_controller_doBattle
 G_controller_initBattle
 G_controller_updateRoom
+G_model_createPlayer
+G_model_createRoomFromSprite
+G_model_setCurrentRoom
+G_model_setElapsedMs
+G_model_setFrameMultiplier
+G_model_loadImagesAndSprites
 G_view_clearScreen
-G_view_drawRoom
 G_view_drawActor
-G_SCALE
 G_view_drawBattle
+G_view_drawRoom
+
+G_SCALE
 */
 // const SCALE = 2;
 window.running = true;
@@ -142,12 +143,12 @@ const runMainLoop = () => {
     let prevNow = startTime;
     const loop = (now) => {
         G_view_drawBattle(battle);
-        // const sixtyFpsMs = 16.666;
-        // const dt = now - prevNow;
-        // const fm = dt / sixtyFpsMs;
-        // G_model_setFrameMultiplier(fm > 2 ? 2 : fm);
-        // G_model_setElapsedMs(now - startTime);
-        // prevNow = now;
+        const sixtyFpsMs = 16.666;
+        const dt = now - prevNow;
+        const fm = dt / sixtyFpsMs;
+        G_model_setFrameMultiplier(fm > 2 ? 2 : fm);
+        G_model_setElapsedMs(now - startTime);
+        prevNow = now;
         // G_view_clearScreen();
         // G_controller_updateRoom(room);
         // G_view_drawRoom(room, 0, 0, G_SCALE);
@@ -237,61 +238,102 @@ const G_utils_waitMs = async (ms) => {
 };
 /*
 global
-G_model_createActor
 G_model_setBattleInputEnabled
 G_model_battleGetCurrentRound
 G_model_actionToString
+G_model_actorSetAnimState
 G_model_actorSetFacing
 G_model_battleAddRound
 G_model_battleIncrementIndex
 G_model_battleIsComplete
+G_model_createActor
 G_model_createBattle
 G_model_createMenu
 G_model_createUnit
+G_model_createVerticalMenu
 G_model_createRound
-G_model_getCurrentBattle
 G_model_getBattlePostActionCb
+G_model_getCurrentBattle
+G_model_getScreenSize
+G_model_menuSetNextCursorIndex
 G_model_roundGetActingUnit
 G_model_roundIncrementIndex
 G_model_statsModifyHp
 G_model_setCurrentBattle
 G_model_setBattlePostActionCb
 G_model_roundIsOver
+G_model_unitLives
 G_model_unitMoveForward
 G_model_unitResetPosition
-
 G_view_drawBattleText
-G_utils_isAlly
 G_utils_getRandArrElem
+G_utils_isAlly
 G_utils_waitMs
+
 G_ACTION_STRIKE
 G_ACTION_HEAL
-G_FACING_UP
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
+G_ANIM_ATTACKING
+G_ACTION_CHARGE
+G_ANIM_DEFAULT
+G_ANIM_WALKING
+G_BATTLE_MENU_LABELS
+G_FACING_UP
 G_FACING_UP_LEFT
 G_FACING_UP_RIGHT
-G_model_unitLives
 */
 const G_controller_initBattle = () => {
     const jimothy = G_model_createUnit('Jimothy', 100, 200, 5, 5, 5, 0, G_ALLEGIANCE_ALLY);
     const seph = G_model_createUnit('Seph', 100, 2, 4, 3, 1, 1, G_ALLEGIANCE_ALLY);
-    const kana = G_model_createUnit('Kana', 100, 8, 3, 2, 7, 2, G_ALLEGIANCE_ALLY);
-    const widdly2Diddly = G_model_createUnit('widdly2Diddly', 100, 7, 7, 7, 7, 3, G_ALLEGIANCE_ALLY);
+    // const kana = G_model_createUnit(
+    //   'Kana',
+    //   100,
+    //   8,
+    //   3,
+    //   2,
+    //   7,
+    //   2,
+    //   G_ALLEGIANCE_ALLY
+    // );
+    // const widdly2Diddly = G_model_createUnit(
+    //   'widdly2Diddly',
+    //   100,
+    //   7,
+    //   7,
+    //   7,
+    //   7,
+    //   3,
+    //   G_ALLEGIANCE_ALLY
+    // );
     const karst = G_model_createUnit('Karst', 100, 4, 4, 3, 5, 0, G_ALLEGIANCE_ENEMY);
     const urien = G_model_createUnit('Urien', 100, 20, 4, 3, 2, 1, G_ALLEGIANCE_ENEMY);
-    const shreth = G_model_createUnit('Shrike', 100, 8, 6, 3, 2, 2, G_ALLEGIANCE_ENEMY);
-    const pDiddy = G_model_createUnit('P Diddy', 100, 5, 5, 5, 5, 3, G_ALLEGIANCE_ENEMY);
-    const battle = G_model_createBattle([jimothy, seph, kana, widdly2Diddly], [karst, urien, shreth, pDiddy]);
+    // const shreth = G_model_createUnit(
+    //   'Shrike',
+    //   100,
+    //   8,
+    //   6,
+    //   3,
+    //   2,
+    //   2,
+    //   G_ALLEGIANCE_ENEMY
+    // );
+    // const pDiddy = G_model_createUnit(
+    //   'P Diddy',
+    //   100,
+    //   5,
+    //   5,
+    //   5,
+    //   5,
+    //   3,
+    //   G_ALLEGIANCE_ENEMY
+    // );
+    const battle = G_model_createBattle([jimothy, seph], [karst, urien]);
     const firstRound = G_model_createRound([
         jimothy,
         karst,
         seph,
         urien,
-        kana,
-        shreth,
-        widdly2Diddly,
-        pDiddy,
     ]);
     G_model_battleAddRound(battle, firstRound);
     console.log('First Round Turn Order:', firstRound);
@@ -326,12 +368,21 @@ const G_controller_battleSimulateNextRound = async (battle) => {
 const controller_battleSimulateTurn = async (battle, round) => {
     const actingUnit = G_model_roundGetActingUnit(round);
     if (!G_model_unitLives(actingUnit)) {
+        round.nextTurnOrder.push(actingUnit);
         return;
     }
-    console.log(actingUnit.name, 'beginning turn');
     return new Promise(resolve => {
         G_model_setBattlePostActionCb(resolve);
+        const actionMenu = battle.actionMenuStack[0];
         if (G_utils_isAlly(battle, actingUnit)) {
+            if (actingUnit.cS.cCnt <= 0) {
+                actionMenu.disabledItems = [2, 4];
+            }
+            else {
+                actionMenu.disabledItems = [];
+            }
+            actionMenu.i = -1;
+            G_model_menuSetNextCursorIndex(actionMenu, 1);
             G_model_setBattleInputEnabled(true);
         }
         else {
@@ -349,6 +400,7 @@ const G_controller_roundApplyAction = async (action, round, target) => {
     const battle = G_model_getCurrentBattle();
     const actingUnit = G_model_roundGetActingUnit(round);
     G_model_unitMoveForward(actingUnit);
+    G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING);
     battle.text = G_model_actionToString(action);
     await G_utils_waitMs(1000);
     switch (action) {
@@ -362,7 +414,12 @@ const G_controller_roundApplyAction = async (action, round, target) => {
                 G_model_actorSetFacing(target.actor, facing);
             }
             break;
+        case G_ACTION_CHARGE:
+            battle.text = 'Charge';
+            G_controller_battleActionCharge(actingUnit);
+            break;
         case G_ACTION_HEAL:
+            // battle.text = 'Heal';
             G_controller_battleActionHeal(actingUnit);
             break;
         default:
@@ -371,6 +428,7 @@ const G_controller_roundApplyAction = async (action, round, target) => {
     round.nextTurnOrder.push(actingUnit);
     await G_utils_waitMs(2000);
     G_model_unitResetPosition(actingUnit);
+    G_model_actorSetAnimState(actingUnit.actor, G_ANIM_DEFAULT);
     battle.text = '';
     await G_utils_waitMs(500);
     G_model_getBattlePostActionCb()(); // resolve is called here
@@ -391,21 +449,16 @@ const G_controller_battleActionStrike = (attacker, victim) => {
     // speed modification should be done here
     return dmgDone;
 };
-const G_controller_battleActionCharge = (actor) => {
-    const { cS } = actor;
+const G_controller_battleActionCharge = (unit) => {
+    const { cS } = unit;
     cS.cCnt++;
     // modSpd
     // animation?
 };
 const G_controller_battleActionHeal = (actor) => {
     const { cS, bS } = actor;
-    if (cS.iCnt < 2) {
-        console.log('Insufficient charge');
-    }
-    else {
-        cS.iCnt--;
-        cS.hp = bS.hp;
-    }
+    cS.iCnt--;
+    cS.hp = bS.hp;
 };
 /*
 This file contains logic for what happens when an event occurs: a keypress, button click, .etc
@@ -665,12 +718,12 @@ An Actor is an entity on the screen which is affected by gravity.
 */
 /*
 global
+G_model_getElapsedMs
+G_utils_floorNearestMultiple
 G_SPRITE_MOD_FLIPPED
 G_SPRITE_MOD_FLROT90
 G_SPRITE_MOD_ROT90
 G_SPRITE_MOD_ROT270
-G_model_getElapsedMs
-G_utils_floorNearestMultiple
 */
 const G_FACING_LEFT = 0;
 const G_FACING_RIGHT = 1;
@@ -679,6 +732,7 @@ const G_FACING_UP_LEFT = 3;
 const G_ANIM_DEFAULT = 0;
 const G_ANIM_WALKING = 1;
 const G_ANIM_JUMPING = 2;
+const G_ANIM_ATTACKING = 3;
 const G_model_createActor = (spriteIndex) => {
     return {
         sprite: 'actors',
@@ -724,6 +778,9 @@ const G_model_actorGetCurrentSprite = (actor) => {
         anim = (anim -
             Math.floor((G_model_getElapsedMs() % 200) / 100));
     }
+    else if (anim === G_ANIM_ATTACKING) {
+        anim = (2 - Math.floor((G_model_getElapsedMs() % 500) / 250));
+    }
     let mod = '';
     switch (facing) {
         case 0:
@@ -746,17 +803,21 @@ const G_model_actorSetAnimState = (actor, anim) => {
 };
 /*
 global
+G_controller_battleActionCharge
 G_controller_roundApplyAction
 G_controller_unitLives
-G_controller_killUnit
 G_model_createVerticalMenu
 G_model_getScreenSize
 G_model_getSprite
+G_model_menuSetNextCursorIndex
+G_model_unitLives
 G_view_drawBattle
 G_view_drawMenu
 G_utils_areAllUnitsDead
-G_utils_getRandArrElem
 G_utils_isAlly
+G_utils_getRandArrElem
+
+G_ACTION_CHARGE
 G_CURSOR_WIDTH
 G_CURSOR_HEIGHT
 */
@@ -831,7 +892,15 @@ const selectTarget = async (battle) => {
             else {
                 resolve(null);
             }
-        }, [], false, h);
+        }, battle.enemies
+            .filter(unit => {
+            return !G_model_unitLives(unit);
+        })
+            .map((_, i) => {
+            return i;
+        }), false, h);
+        targetMenu.i = -1;
+        G_model_menuSetNextCursorIndex(targetMenu, 1);
         battle.actionMenuStack.unshift(targetMenu); // transfers input to the newly-created menu
     });
 };
@@ -847,6 +916,9 @@ const handleActionMenuSelected = async (i) => {
                 return;
             }
             G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
+            break;
+        case G_ACTION_CHARGE:
+            G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
             break;
         case G_ACTION_HEAL:
             G_controller_roundApplyAction(G_ACTION_HEAL, round, null);
@@ -994,12 +1066,13 @@ const G_model_isKeyDown = (key) => {
 };
 /*
 global
+G_model_actorSetFacing
+G_model_actorSetPosition
 G_model_getCtx
+G_view_drawActor
 G_view_drawText
- G_model_actorSetFacing
- G_model_actorSetPosition
- G_view_drawActor
- G_FACING_RIGHT
+
+G_FACING_RIGHT
 */
 const MENU_DEFAULT_LINE_HEIGHT = 16;
 const G_model_createVerticalMenu = (x, y, w, items, cb, disabledItems, bg, lineHeight) => {
@@ -1019,16 +1092,23 @@ const G_model_createVerticalMenu = (x, y, w, items, cb, disabledItems, bg, lineH
 };
 const G_model_menuSetNextCursorIndex = (menu, diff) => {
     const len = menu.items.length;
-    let nextIndex = menu.i + diff;
-    if (menu.disabledItems.includes(nextIndex)) {
-        nextIndex += diff;
-    }
-    if (nextIndex < 0) {
-        nextIndex = len - 1;
-    }
-    else if (nextIndex >= len) {
-        nextIndex = 0;
-    }
+    let ctr = 0;
+    let nextIndex = 0;
+    let curIndex = menu.i;
+    do {
+        ctr++;
+        if (ctr > 30) {
+            break;
+        }
+        nextIndex = curIndex + diff;
+        if (nextIndex < 0) {
+            nextIndex = len - 1;
+        }
+        else if (nextIndex >= len) {
+            nextIndex = 0;
+        }
+        curIndex = nextIndex;
+    } while (menu.disabledItems.includes(nextIndex));
     menu.i = nextIndex;
 };
 const G_model_menuSelectCurrentItem = (menu) => {
@@ -1226,12 +1306,12 @@ const G_model_getSprite = (spriteName) => model_sprites[spriteName];
 const G_model_getSpriteSize = () => 16;
 /*
 global
-G_model_createActor
 G_model_actorSetFacing
-G_FACING_LEFT
-G_FACING_RIGHT
 G_model_actorSetPosition
 G_model_battleGetScreenPosition
+G_model_createActor
+G_FACING_LEFT
+G_FACING_RIGHT
 */
 const model_createStats = (hp, dmg, def, mag, spd) => {
     return { hp, dmg, def, mag, spd, iCnt: mag, cCnt: 0 };
@@ -1279,30 +1359,34 @@ const G_model_unitLives = (unit) => {
     }
     return false;
 };
+const G_model_unitGainCharge = (unit) => {
+    unit.cS.cCnt++;
+};
 //draw.ts
 /*
 This file contains functions that can draw things on the screen
 */
 /*
 global
-G_view_drawMenu
-G_model_getCtx
-G_model_getCanvas
-G_model_getSprite
+G_model_actorSetPosition
 G_model_actorGetCurrentSprite
 G_model_actorGetPosition
 G_model_actorSetFacing
-G_model_actorSetPosition
 G_model_battleGetCurrentRound
 G_model_battleGetScreenPosition
+G_model_getCanvas
+G_model_getCtx
 G_model_getBattleInputEnabled
+G_model_getSprite
 G_model_roundGetActingUnit
 G_view_drawBattleText
 G_view_drawInfo
-G_FACING_RIGHT
-G_FACING_LEFT
+G_view_drawMenu
+
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
+G_FACING_LEFT
+G_FACING_RIGHT
 BATTLE_MENU
 */
 const G_BLACK = '#000';
@@ -1400,6 +1484,7 @@ const G_view_drawBattle = (battle) => {
         G_view_drawMenu(actionMenu);
     }
     if (battle.text) {
+        console.log('Battle Text:', battle.text);
         G_view_drawBattleText(battle.text);
     }
 };
@@ -1407,12 +1492,13 @@ const G_view_drawBattle = (battle) => {
 global
 G_model_getCtx
 G_model_getScreenSize
-G_view_drawText
 G_view_drawRect
+G_view_drawText
+
+G_ALLEGIANCE_ALLY
+G_ALLEGIANCE_ENEMY
 G_BLACK
 G_WHITE
-G_ALLEGIANCE_ENEMY
-G_ALLEGIANCE_ALLY
 */
 const G_CURSOR_WIDTH = 16;
 const G_CURSOR_HEIGHT = 16;
@@ -1441,8 +1527,13 @@ const G_view_drawMenu = (menu) => {
         G_view_drawUiBackground(x, y, w, h);
     }
     items.forEach((label, ind) => {
+        let color = G_WHITE;
+        if (menu.disabledItems.includes(ind)) {
+            color = '#999';
+        }
         G_view_drawText(label, x + w / 2, y + ind * lh + lh / 2, {
             align: 'center',
+            color,
         });
     });
     G_view_drawMenuCursor(x - G_CURSOR_WIDTH, y + i * lh + lh / 2);
@@ -1473,7 +1564,8 @@ const G_view_drawInfo = (battle, allegiance) => {
         if (allegiance === G_ALLEGIANCE_ALLY) {
             G_view_drawText(name.slice(0, 8), x + 10, y + 15 + lineHeight * i);
             G_view_drawText(`${cS.hp}/${bS.hp}`, x + 100, y + 15 + lineHeight * i);
-            G_view_drawText(`${cS.cCnt}`, x + 175, y + 15 + lineHeight * i);
+            G_view_drawText(`${cS.cCnt}`, x + 165, y + 15 + lineHeight * i);
+            G_view_drawText(`${cS.iCnt}`, x + 185, y + 15 + lineHeight * i);
         }
         else {
             G_view_drawText(name.slice(0, 8), x + w / 2, y + 15 + lineHeight * i, {
