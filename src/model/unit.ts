@@ -101,3 +101,7 @@ const G_model_unitLives = (unit: Unit): boolean => {
 const G_model_unitGainCharge = (unit: Unit) => {
   unit.cS.cCnt++;
 };
+
+const G_model_unitResetDef = (unit: Unit) => {
+  unit.cS.def = unit.bS.def;
+};

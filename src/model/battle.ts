@@ -167,6 +167,9 @@ const handleActionMenuSelected = async (i: RoundAction) => {
     case G_ACTION_CHARGE:
       G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
       break;
+    case G_ACTION_DEFEND:
+      G_controller_roundApplyAction(G_ACTION_DEFEND, round, null);
+      break;
     case G_ACTION_HEAL:
       G_controller_roundApplyAction(G_ACTION_HEAL, round, null);
       break;

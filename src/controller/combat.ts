@@ -26,18 +26,20 @@ G_model_setBattlePostActionCb
 G_model_roundIsOver
 G_model_unitLives
 G_model_unitMoveForward
+G_model_unitResetDef
 G_model_unitResetPosition
 G_view_drawBattleText
 G_utils_getRandArrElem
 G_utils_isAlly
 G_utils_waitMs
 
-G_ACTION_STRIKE
+G_ACTION_CHARGE
+G_ACTION_DEFEND
 G_ACTION_HEAL
+G_ACTION_STRIKE
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
 G_ANIM_ATTACKING
-G_ACTION_CHARGE
 G_ANIM_DEFAULT
 G_ANIM_WALKING
 G_BATTLE_MENU_LABELS
@@ -50,7 +52,7 @@ const G_controller_initBattle = () => {
   const jimothy = G_model_createUnit(
     'Jimothy',
     100,
-    200,
+    10,
     5,
     5,
     5,
@@ -60,10 +62,10 @@ const G_controller_initBattle = () => {
   const seph = G_model_createUnit(
     'Seph',
     100,
-    2,
-    4,
-    3,
-    1,
+    10,
+    5,
+    5,
+    5,
     1,
     G_ALLEGIANCE_ALLY
   );
@@ -91,9 +93,9 @@ const G_controller_initBattle = () => {
   const karst = G_model_createUnit(
     'Karst',
     100,
-    4,
-    4,
-    3,
+    10,
+    5,
+    5,
     5,
     0,
     G_ALLEGIANCE_ENEMY
@@ -101,10 +103,10 @@ const G_controller_initBattle = () => {
   const urien = G_model_createUnit(
     'Urien',
     100,
-    20,
-    4,
-    3,
-    2,
+    10,
+    5,
+    5,
+    5,
     1,
     G_ALLEGIANCE_ENEMY
   );
@@ -185,6 +187,9 @@ const controller_battleSimulateTurn = async (
     round.nextTurnOrder.push(actingUnit);
     return;
   }
+  if (actingUnit.cS.def !== actingUnit.bS.def) {
+    G_model_unitResetDef(actingUnit);
+  }
   return new Promise(resolve => {
     G_model_setBattlePostActionCb(resolve);
     const actionMenu = battle.actionMenuStack[0];
@@ -233,11 +238,12 @@ const G_controller_roundApplyAction = async (
       }
       break;
     case G_ACTION_CHARGE:
-      battle.text = 'Charge';
       G_controller_battleActionCharge(actingUnit);
       break;
+    case G_ACTION_DEFEND:
+      G_controller_battleActionDefend(actingUnit);
+      break;
     case G_ACTION_HEAL:
-      // battle.text = 'Heal';
       G_controller_battleActionHeal(actingUnit);
       break;
     default:
@@ -270,7 +276,7 @@ const G_controller_battleActionStrike = (
   const { def } = cS;
   const { dmg } = attacker.bS;
 
-  const dmgDone = -Math.max(dmg - def, 1);
+  const dmgDone = -Math.floor(Math.max(dmg - def, 1));
   G_model_statsModifyHp(cS, bS, dmgDone);
   console.log(
     `${attacker.name} strikes ${victim.name} for ${-dmgDone} damage! (${
@@ -289,8 +295,20 @@ const G_controller_battleActionCharge = (unit: Unit) => {
   // animation?
 };
 
-const G_controller_battleActionHeal = (actor: Unit) => {
-  const { cS, bS } = actor;
+const G_controller_battleActionHeal = (unit: Unit) => {
+  const { cS, bS } = unit;
   cS.iCnt--;
   cS.hp = bS.hp;
 };
+
+const G_controller_battleActionDefend = (unit: Unit) => {
+  const { cS } = unit;
+  cS.def *= 1.5;
+};
+
+// const G_controller_battleEnemyTurn = (unit: Unit) => {
+// 	const {cS, bS} = unit;
+// 	if (cS.cCnt === bS.mag) {
+
+// 	}
+// };
