@@ -1,23 +1,24 @@
 {
-  "compilerOptions": {
-    "baseUrl": "./src/",
-    "target": "ES2017",
-    "outDir": "src-ts",
-    "outFile": "main.js",
-    "lib": [
-      "dom",
-      "ES2017"
-    ],
-    "sourceMap": true,
-    "forceConsistentCasingInFileNames": true,
-    "strictNullChecks": true,
-    "noImplicitAny": false,
-    "experimentalDecorators": true
-  },
-  "exclude": [
-    "node_modules"
-  ],
-  "include": [
-    "./src"
-  ]
+	"compilerOptions": {
+		"baseUrl": "./src/",
+		"target": "ES2017",
+		"outDir": "src-ts",
+		"outFile": "main.js",
+		"lib": [
+			"dom",
+			"ES2017"
+		],
+		"sourceMap": true,
+		"forceConsistentCasingInFileNames": true,
+		"strictNullChecks": true,
+		"noImplicitAny": false,
+		"experimentalDecorators": true,
+		"allowJs": true,
+	},
+	"exclude": [
+		"node_modules"
+	],
+	"include": [
+		"./src"
+	]
 }

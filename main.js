@@ -124,6 +124,7 @@ G_model_setCurrentRoom
 G_model_setElapsedMs
 G_model_setFrameMultiplier
 G_model_loadImagesAndSprites
+G_model_loadSounds
 G_view_clearScreen
 G_view_drawActor
 G_view_drawBattle
@@ -161,6 +162,7 @@ const runMainLoop = () => {
 };
 const main = async () => {
     await G_model_loadImagesAndSprites();
+    G_model_loadSounds();
     runMainLoop();
 };
 window.addEventListener('load', main);
@@ -380,7 +382,7 @@ const controller_battleSimulateTurn = async (battle, round) => {
         G_model_setBattlePostActionCb(resolve);
         const actionMenu = battle.actionMenuStack[0];
         if (G_utils_isAlly(battle, actingUnit)) {
-            if (actingUnit.cS.cCnt <= 0) {
+            if (actingUnit.cS.iCnt <= 0) {
                 actionMenu.disabledItems = [2, 4];
             }
             else {
@@ -405,7 +407,7 @@ const G_controller_roundApplyAction = async (action, round, target) => {
     const battle = G_model_getCurrentBattle();
     const actingUnit = G_model_roundGetActingUnit(round);
     G_model_unitMoveForward(actingUnit);
-    G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING);
+    G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING); // Change animations here
     battle.text = G_model_actionToString(action);
     await G_utils_waitMs(1000);
     switch (action) {
@@ -493,6 +495,7 @@ G_model_menuSelectCurrentItem
 G_model_menuSelectNothing
 G_view_drawMenu
 G_view_drawBattle
+G_view_playSound
 G_controller_battleSimulateNextRound
 G_controller_battleActionCharge
 G_controller_battleActionHeal
@@ -509,15 +512,19 @@ window.addEventListener('keydown', ev => {
         const menu = battle.actionMenuStack[0];
         if (key === 'ArrowDown') {
             G_model_menuSetNextCursorIndex(menu, 1);
+            G_view_playSound('menuMove');
         }
         else if (key === 'ArrowUp') {
             G_model_menuSetNextCursorIndex(menu, -1);
+            G_view_playSound('menuMove');
         }
         else if (key === 'Enter') {
             G_model_menuSelectCurrentItem(menu);
+            G_view_playSound('menuConfirm');
         }
         else if (key === 'Escape') {
             if (battle.actionMenuStack.length > 1) {
+                G_view_playSound('menuCancel');
                 G_model_menuSelectNothing(menu);
             }
         }
@@ -728,6 +735,50 @@ const G_controller_updateActor = (actor, room) => {
     }
     G_model_actorSetAcceleration(actor, 0, 0);
 };
+var zzfx, zzfxV, zzfxX;
+zzfxV = 0.3; // volume
+zzfx;
+(zzfx = (
+// play sound
+t = 1, a = 0.05, n = 220, e = 0, f = 0, h = 0.1, M = 0, r = 1, z = 0, o = 0, i = 0, s = 0, u = 0, x = 0, c = 0, d = 0, X = 0, b = 1, m = 0, l = 44100, B = 99 + e * l, C = f * l, P = h * l, g = m * l, w = X * l, A = 2 * Math.PI, D = t => (0 < t ? 1 : -1), I = B + g + C + P + w, S = (z *= (500 * A) / l ** 2), V = (n *= ((1 + 2 * a * Math.random() - a) * A) / l), j = (D(c) * A) / 4, k = 0, p = 0, q = 0, v = 0, y = 0, E = 0, F = 1, G = [], H = zzfxX.createBufferSource(), J = zzfxX.createBuffer(1, I, l)) => {
+    for (H.connect(zzfxX.destination); q < I; G[q++] = E)
+        ++y > 100 * d &&
+            ((y = 0),
+                (E = k * n * Math.sin((p * c * A) / l - j)),
+                (E =
+                    D((E = M
+                        ? 1 < M
+                            ? 2 < M
+                                ? 3 < M
+                                    ? Math.sin((E % A) ** 3)
+                                    : Math.max(Math.min(Math.tan(E), 1), -1)
+                                : 1 - (((((2 * E) / A) % 2) + 2) % 2)
+                            : 1 - 4 * Math.abs(Math.round(E / A) - E / A)
+                        : Math.sin(E))) *
+                        Math.abs(E) ** r *
+                        t *
+                        zzfxV *
+                        (q < B
+                            ? q / B
+                            : q < B + g
+                                ? 1 - ((q - B) / g) * (1 - b)
+                                : q < B + g + C
+                                    ? b
+                                    : q < I - w
+                                        ? ((I - q - w) / P) * b
+                                        : 0)),
+                (E = w
+                    ? E / 2 +
+                        (w > q ? 0 : ((q < I - w ? 1 : (q - I) / w) * G[(q - w) | 0]) / 2)
+                    : E)),
+            (k += 1 - x + ((1e9 * (Math.sin(q) + 1)) % 2) * x),
+            (p += 1 - x + ((1e9 * (Math.sin(q) ** 2 + 1)) % 2) * x),
+            (n += z += (500 * o * A) / l ** 3),
+            F && ++F > s * l && ((n += (i * A) / l), (V += (i * A) / l), (F = 0)),
+            u && ++v > u * l && ((n = V), (z = S), (v = 1), (F = F || 1));
+    return J.getChannelData(0).set(G), (H.buffer = J), H.start(), H;
+}),
+    (zzfxX = new AudioContext());
 /*
 An Actor is an entity on the screen which is affected by gravity.
 */
@@ -828,6 +879,7 @@ G_model_menuSetNextCursorIndex
 G_model_unitLives
 G_view_drawBattle
 G_view_drawMenu
+G_view_playSound
 G_utils_areAllUnitsDead
 G_utils_isAlly
 G_utils_getRandArrElem
@@ -930,12 +982,15 @@ const handleActionMenuSelected = async (i) => {
             if (!target) {
                 return;
             }
+            G_view_playSound('actionStrike');
             G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
             break;
         case G_ACTION_CHARGE:
+            G_view_playSound('actionCharge');
             G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
             break;
         case G_ACTION_DEFEND:
+            G_view_playSound('actionDefend');
             G_controller_roundApplyAction(G_ACTION_DEFEND, round, null);
             break;
         case G_ACTION_HEAL:
@@ -1089,6 +1144,7 @@ G_model_actorSetPosition
 G_model_getCtx
 G_view_drawActor
 G_view_drawText
+G_view_playSound
 
 G_FACING_RIGHT
 */
@@ -1128,6 +1184,7 @@ const G_model_menuSetNextCursorIndex = (menu, diff) => {
         curIndex = nextIndex;
     } while (menu.disabledItems.includes(nextIndex));
     menu.i = nextIndex;
+    // G_view_playSound('menuMove');
 };
 const G_model_menuSelectCurrentItem = (menu) => {
     menu.cb(menu.i);
@@ -1508,6 +1565,210 @@ const G_view_drawBattle = (battle) => {
         console.log('Battle Text:', battle.text);
         G_view_drawBattleText(battle.text);
     }
+};
+/*
+global
+zzfx
+*/
+let model_sounds = null;
+const loadSound = (soundMap, key, soundArr) => {
+    soundMap[key] = soundArr;
+};
+const G_model_loadSounds = () => {
+    const soundMap = {};
+    loadSound(soundMap, 'menuMove', [
+        ,
+        ,
+        1964,
+        ,
+        ,
+        0.08,
+        1,
+        2.14,
+        ,
+        ,
+        462,
+        0.01,
+        ,
+        ,
+        ,
+        ,
+        ,
+        ,
+        0.02,
+    ]);
+    loadSound(soundMap, 'menuConfirm', [
+        ,
+        ,
+        1469,
+        ,
+        ,
+        0.08,
+        ,
+        0.14,
+        56,
+        ,
+        ,
+        ,
+        ,
+        ,
+        ,
+        ,
+        0.04,
+        ,
+        0.04,
+    ]);
+    loadSound(soundMap, 'menuCancel', [
+        ,
+        ,
+        484,
+        0.04,
+        ,
+        0.08,
+        3,
+        0.12,
+        74,
+        ,
+        57,
+        0.2,
+        ,
+        ,
+        -8.8,
+        ,
+        ,
+        ,
+        0.02,
+    ]);
+    loadSound(soundMap, 'menuCancel', [
+        ,
+        ,
+        889,
+        ,
+        ,
+        0.09,
+        ,
+        1.47,
+        3.7,
+        ,
+        16,
+        0.12,
+        -0.01,
+        ,
+        -7,
+        0.1,
+        ,
+        0.74,
+        0.01,
+    ]);
+    loadSound(soundMap, 'jump', [
+        ,
+        ,
+        223,
+        0.01,
+        0.1,
+        0.22,
+        1,
+        1.35,
+        0.1,
+        ,
+        ,
+        ,
+        ,
+        0.4,
+        ,
+        ,
+        ,
+        0.55,
+        0.09,
+    ]);
+    loadSound(soundMap, 'explosion', [
+        ,
+        ,
+        518,
+        0.01,
+        0.05,
+        1.59,
+        4,
+        1.24,
+        0.5,
+        0.4,
+        ,
+        ,
+        ,
+        0.3,
+        ,
+        0.7,
+        0.13,
+        0.58,
+        0.01,
+    ]);
+    loadSound(soundMap, 'actionStrike', [
+        ,
+        ,
+        224,
+        ,
+        0.08,
+        0.17,
+        4,
+        1.12,
+        4.7,
+        -4.2,
+        ,
+        ,
+        ,
+        1.6,
+        -0.9,
+        0.1,
+        0.01,
+        0.82,
+        0.01,
+    ]);
+    loadSound(soundMap, 'actionCharge', [
+        ,
+        ,
+        978,
+        0.06,
+        0.47,
+        0.82,
+        ,
+        1.45,
+        9.6,
+        ,
+        23,
+        0.03,
+        0.1,
+        ,
+        ,
+        0.1,
+        ,
+        0.92,
+        0.08,
+    ]);
+    loadSound(soundMap, 'actionDefend', [
+        ,
+        ,
+        1396,
+        ,
+        0.1,
+        0.14,
+        1,
+        0.91,
+        ,
+        ,
+        ,
+        ,
+        ,
+        0.1,
+        ,
+        0.1,
+        ,
+        0.71,
+        0.07,
+    ]);
+    model_sounds = soundMap;
+};
+const G_view_playSound = (soundName) => {
+    zzfx(...model_sounds[soundName]);
 };
 /*
 global

@@ -194,7 +194,7 @@ const controller_battleSimulateTurn = async (
     G_model_setBattlePostActionCb(resolve);
     const actionMenu = battle.actionMenuStack[0];
     if (G_utils_isAlly(battle, actingUnit)) {
-      if (actingUnit.cS.cCnt <= 0) {
+      if (actingUnit.cS.iCnt <= 0) {
         actionMenu.disabledItems = [2, 4];
       } else {
         actionMenu.disabledItems = [];
@@ -222,7 +222,7 @@ const G_controller_roundApplyAction = async (
   const battle = G_model_getCurrentBattle();
   const actingUnit = G_model_roundGetActingUnit(round) as Unit;
   G_model_unitMoveForward(actingUnit);
-  G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING);
+  G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING); // Change animations here
   battle.text = G_model_actionToString(action);
 
   await G_utils_waitMs(1000);
