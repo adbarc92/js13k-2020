@@ -17,10 +17,11 @@ jobs:
         run: |
           yarn
           yarn build
+          git add dist -f
+          git commit -a
 
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@3.5.9
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: dist
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
