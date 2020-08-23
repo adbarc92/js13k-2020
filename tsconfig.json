@@ -2,18 +2,18 @@
 	"compilerOptions": {
 		"baseUrl": "./src/",
 		"target": "ES2017",
-		"outDir": "src-ts",
 		"outFile": "main.js",
+		"allowJs": true,
 		"lib": [
 			"dom",
 			"ES2017"
 		],
+		"removeComments": true,
 		"sourceMap": true,
 		"forceConsistentCasingInFileNames": true,
 		"strictNullChecks": true,
 		"noImplicitAny": false,
 		"experimentalDecorators": true,
-		"allowJs": true,
 	},
 	"exclude": [
 		"node_modules"

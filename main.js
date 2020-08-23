@@ -1,143 +1,8 @@
-() => {
-    const images = [
-        'https://i.imgur.com/M36x4jw.jpg',
-        'https://i.imgur.com/6SfbJkg.jpg',
-        'https://i.imgur.com/FW3ehVy.jpg',
-        'https://i.imgur.com/MgZ4f35.jpg',
-        'https://i.imgur.com/PoaqwIJ.png',
-    ];
-    let isRendering = false;
-    let nextRender = null;
-    window.doManualFadeInOut = () => {
-        if (isRendering) {
-            isRendering = false;
-            nextRender = window.doManualFadeInOut;
-            return;
-        }
-        const img = document.getElementById('img_0');
-        if (img) {
-            img.style.transition = '';
-            const ms = 500;
-            // const startTime = +new Date();
-            const startTime = performance.now();
-            isRendering = true;
-            const render = now => {
-                // console.log(
-                //   'startTime: ',
-                //   startTime,
-                //   'now:',
-                //   now,
-                //   'now-startTime:',
-                //   now - startTime
-                // );
-                const elapsed = now - startTime;
-                img.style.opacity = (1 - elapsed / 500).toString();
-                if (elapsed < ms && isRendering) {
-                    requestAnimationFrame(render);
-                }
-                else {
-                    isRendering = false;
-                    img.style.opacity = '1';
-                    if (nextRender) {
-                        nextRender();
-                        nextRender = null;
-                    }
-                }
-            };
-            render(startTime);
-        }
-    };
-    window.fadeOut = ev => {
-        const img = document.getElementById('img_0');
-        if (img) {
-            img.style.opacity = '0';
-        }
-    };
-    // This will be inconsistent, dependent on browser performance
-    window.doManualFadeOut = () => {
-        const img = document.getElementById('img_0');
-        console.log(img);
-        if (img) {
-            img.style.transition = '';
-            const ms = 500;
-            for (let i = 0; i < ms; i += 25) {
-                setTimeout(() => {
-                    img.style.opacity = (1 - i / ms).toString();
-                }, i);
-            }
-            setTimeout(() => {
-                img.style.opacity = '1';
-            }, ms);
-        }
-    };
-    const loadImage = (url, index) => {
-        return new Promise((resolve, reject) => {
-            let p = document.createElement('P');
-            p.innerText = 'Loading';
-            p.style.color = 'white';
-            document.body.append(p);
-            let img = new Image();
-            img.id = 'img_' + index;
-            img.src = url;
-            img.style.opacity = '1';
-            img.style.transition = 'opacity 500ms';
-            img.width = 512; // Aped
-            // If image loads, resolve promise
-            img.onload = () => {
-                p.remove();
-                resolve(img);
-            };
-            // If image fails to load, reject promise
-            img.onerror = () => reject(new Error('Image failed to load'));
-        });
-    };
-    const addImageToDom = async () => {
-        window.addEventListener('transitionend', () => {
-            const img = document.getElementById('img_0');
-            if (img) {
-                img.style.transition = '';
-                console.log(img.style.transition);
-                img.style.opacity = '1';
-                // A setTimeout of zero forces the code to wait until the next tick, rather than continuing the thread
-                setTimeout(() => {
-                    img.style.transition = 'opacity 500ms';
-                }, 0);
-            }
-        });
-        const image = await loadImage(images[0], 0);
-        document.body.append(image);
-    };
-    document.body.style.backgroundColor = 'black';
-    addImageToDom();
-};
-/*
-This file is the main entry point for the game.
-*/
-/*
-global
-G_controller_doBattle
-G_controller_initBattle
-G_controller_updateRoom
-G_model_createPlayer
-G_model_createRoomFromSprite
-G_model_setCurrentRoom
-G_model_setElapsedMs
-G_model_setFrameMultiplier
-G_model_loadImagesAndSprites
-G_model_loadSounds
-G_view_clearScreen
-G_view_drawActor
-G_view_drawBattle
-G_view_drawRoom
-
-G_SCALE
-*/
-// const SCALE = 2;
 window.running = true;
 const runMainLoop = () => {
-    // const player = G_model_createPlayer();
-    // const room = G_model_createRoomFromSprite('map_0', player);
-    // G_model_setCurrentRoom(room);
+    const player = G_model_createPlayer();
+    const room = G_model_createRoomFromSprite('map_0', player);
+    G_model_setCurrentRoom(room);
     const battle = G_controller_initBattle();
     G_controller_doBattle(battle);
     const startTime = performance.now();
@@ -150,13 +15,11 @@ const runMainLoop = () => {
         G_model_setFrameMultiplier(fm > 2 ? 2 : fm);
         G_model_setElapsedMs(now - startTime);
         prevNow = now;
-        // G_view_clearScreen();
-        // G_controller_updateRoom(room);
-        // G_view_drawRoom(room, 0, 0, G_SCALE);
-        // G_view_drawActor(player.actor, G_SCALE);
+        G_controller_updateRoom(room);
+        G_view_drawRoom(room, 0, 0, G_SCALE);
+        G_view_drawActor(player.actor, G_SCALE);
         if (window.running)
             requestAnimationFrame(loop);
-        // if ((window as any).running) setTimeout(loop, 22); // for debugging
     };
     loop(startTime);
 };
@@ -202,7 +65,6 @@ const G_utils_getCollisionsWithRect = (pts, rect) => {
         return collisionSide > -1;
     });
 };
-// given a rect, returns 4 Points where each point represents the BOTTOM, TOP, LEFT, RIGHT of the given rect
 const G_utils_rectToCollisionPoints = (rect) => {
     const [x1, y1, x2, y2] = rect;
     const dx = x2 - x1;
@@ -238,100 +100,11 @@ const G_utils_waitMs = async (ms) => {
         setTimeout(resolve, ms);
     });
 };
-/*
-global
-G_model_setBattleInputEnabled
-G_model_battleGetCurrentRound
-G_model_actionToString
-G_model_actorSetAnimState
-G_model_actorSetFacing
-G_model_battleAddRound
-G_model_battleIncrementIndex
-G_model_battleIsComplete
-G_model_createActor
-G_model_createBattle
-G_model_createMenu
-G_model_createUnit
-G_model_createVerticalMenu
-G_model_createRound
-G_model_getBattlePostActionCb
-G_model_getCurrentBattle
-G_model_getScreenSize
-G_model_menuSetNextCursorIndex
-G_model_roundGetActingUnit
-G_model_roundIncrementIndex
-G_model_statsModifyHp
-G_model_setCurrentBattle
-G_model_setBattlePostActionCb
-G_model_roundIsOver
-G_model_unitLives
-G_model_unitMoveForward
-G_model_unitResetDef
-G_model_unitResetPosition
-G_view_drawBattleText
-G_utils_getRandArrElem
-G_utils_isAlly
-G_utils_waitMs
-
-G_ACTION_CHARGE
-G_ACTION_DEFEND
-G_ACTION_HEAL
-G_ACTION_STRIKE
-G_ALLEGIANCE_ALLY
-G_ALLEGIANCE_ENEMY
-G_ANIM_ATTACKING
-G_ANIM_DEFAULT
-G_ANIM_WALKING
-G_BATTLE_MENU_LABELS
-G_FACING_UP
-G_FACING_UP_LEFT
-G_FACING_UP_RIGHT
-*/
 const G_controller_initBattle = () => {
     const jimothy = G_model_createUnit('Jimothy', 100, 10, 5, 5, 5, 0, G_ALLEGIANCE_ALLY);
     const seph = G_model_createUnit('Seph', 100, 10, 5, 5, 5, 1, G_ALLEGIANCE_ALLY);
-    // const kana = G_model_createUnit(
-    //   'Kana',
-    //   100,
-    //   8,
-    //   3,
-    //   2,
-    //   7,
-    //   2,
-    //   G_ALLEGIANCE_ALLY
-    // );
-    // const widdly2Diddly = G_model_createUnit(
-    //   'widdly2Diddly',
-    //   100,
-    //   7,
-    //   7,
-    //   7,
-    //   7,
-    //   3,
-    //   G_ALLEGIANCE_ALLY
-    // );
     const karst = G_model_createUnit('Karst', 100, 10, 5, 5, 5, 0, G_ALLEGIANCE_ENEMY);
     const urien = G_model_createUnit('Urien', 100, 10, 5, 5, 5, 1, G_ALLEGIANCE_ENEMY);
-    // const shreth = G_model_createUnit(
-    //   'Shrike',
-    //   100,
-    //   8,
-    //   6,
-    //   3,
-    //   2,
-    //   2,
-    //   G_ALLEGIANCE_ENEMY
-    // );
-    // const pDiddy = G_model_createUnit(
-    //   'P Diddy',
-    //   100,
-    //   5,
-    //   5,
-    //   5,
-    //   5,
-    //   3,
-    //   G_ALLEGIANCE_ENEMY
-    // );
     const battle = G_model_createBattle([jimothy, seph], [karst, urien]);
     const firstRound = G_model_createRound([
         jimothy,
@@ -343,23 +116,20 @@ const G_controller_initBattle = () => {
     console.log('First Round Turn Order:', firstRound);
     G_model_setCurrentBattle(battle);
     G_model_setBattleInputEnabled(false);
-    // doBattle(battle);
     return battle;
 };
 const G_controller_doBattle = async (battle) => {
     while (!G_model_battleIsComplete(battle)) {
-        await G_controller_battleSimulateNextRound(battle); // do the fight!
+        await G_controller_battleSimulateNextRound(battle);
     }
     console.log('Battle complete!');
     setTimeout(() => {
         G_controller_initBattle();
     }, 2000);
 };
-// simulates a single round of combat
 const G_controller_battleSimulateNextRound = async (battle) => {
     const round = G_model_battleGetCurrentRound(battle);
     controller_roundInit(round);
-    // this part is hard-coded.  We'd probably want to generalize printing a unit with a function
     while (!G_model_roundIsOver(round)) {
         console.log('Current Round Index:', round.currentIndex);
         await controller_battleSimulateTurn(battle, round);
@@ -394,20 +164,18 @@ const controller_battleSimulateTurn = async (battle, round) => {
         }
         else {
             setTimeout(() => {
-                // AI (the dumb version): select a random target and STRIKE
                 const target = G_utils_getRandArrElem(battle.allies);
                 G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
             }, 1000);
         }
     });
 };
-// at the end of this function the postAction callback is invoked to keep the battle running
 const G_controller_roundApplyAction = async (action, round, target) => {
     G_model_setBattleInputEnabled(false);
     const battle = G_model_getCurrentBattle();
     const actingUnit = G_model_roundGetActingUnit(round);
     G_model_unitMoveForward(actingUnit);
-    G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING); // Change animations here
+    G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING);
     battle.text = G_model_actionToString(action);
     await G_utils_waitMs(1000);
     switch (action) {
@@ -439,13 +207,13 @@ const G_controller_roundApplyAction = async (action, round, target) => {
     G_model_actorSetAnimState(actingUnit.actor, G_ANIM_DEFAULT);
     battle.text = '';
     await G_utils_waitMs(500);
-    G_model_getBattlePostActionCb()(); // resolve is called here
+    G_model_getBattlePostActionCb()();
 };
 const controller_roundInit = (round) => {
     console.log('Start new round:', round);
 };
 const controller_roundEnd = (round) => {
-    return G_model_createRound(round.nextTurnOrder); // Change
+    return G_model_createRound(round.nextTurnOrder);
 };
 const G_controller_battleActionStrike = (attacker, victim) => {
     const { cS, bS } = victim;
@@ -454,14 +222,11 @@ const G_controller_battleActionStrike = (attacker, victim) => {
     const dmgDone = -Math.floor(Math.max(dmg - def, 1));
     G_model_statsModifyHp(cS, bS, dmgDone);
     console.log(`${attacker.name} strikes ${victim.name} for ${-dmgDone} damage! (${victim.cS.hp} HP remaining)`);
-    // speed modification should be done here
     return dmgDone;
 };
 const G_controller_battleActionCharge = (unit) => {
     const { cS } = unit;
     cS.cCnt++;
-    // modSpd
-    // animation?
 };
 const G_controller_battleActionHeal = (unit) => {
     const { cS, bS } = unit;
@@ -472,37 +237,8 @@ const G_controller_battleActionDefend = (unit) => {
     const { cS } = unit;
     cS.def *= 1.5;
 };
-// const G_controller_battleEnemyTurn = (unit: Unit) => {
-// 	const {cS, bS} = unit;
-// 	if (cS.cCnt === bS.mag) {
-// 	}
-// };
-/*
-This file contains logic for what happens when an event occurs: a keypress, button click, .etc
-*/
-/*
-global
-G_model_setKeyDown
-G_model_setKeyUp
-G_model_getCurrentBattle
-G_model_getBattleInputEnabled
-G_model_getCursorIndex
-G_model_setCursorIndex
-G_model_roundGetActingUnit
-G_model_battleGetCurrentRound
-G_model_menuSetNextCursorIndex
-G_model_menuSelectCurrentItem
-G_model_menuSelectNothing
-G_view_drawMenu
-G_view_drawBattle
-G_view_playSound
-G_controller_battleSimulateNextRound
-G_controller_battleActionCharge
-G_controller_battleActionHeal
-*/
 window.addEventListener('keydown', ev => {
     G_model_setKeyDown(ev.key);
-    // console.log('KEY', ev.key);
     if (ev.key === 'q') {
         window.running = false;
     }
@@ -533,47 +269,13 @@ window.addEventListener('keydown', ev => {
 window.addEventListener('keyup', ev => {
     G_model_setKeyUp(ev.key);
 });
-/*
-This file contains functions that run on each frame.
-*/
-/*
-global
-G_utils_getSign
-G_model_isKeyDown
-G_model_actorSetVelocity
-G_model_actorSetPosition
-G_model_actorSetAcceleration
-G_model_actorSetFacing
-G_model_actorSetAnimState
-G_model_roomGetSizePx
-G_model_roomGetCollidableTiles
-G_model_tileIsFullyCollidable
-G_model_getFrameMultiplier
-G_utils_floorNearestMultiple
-G_utils_createRect
-G_utils_getCollisionsWithRect
-G_utils_rectToCollisionPoints
-G_KEY_LEFT
-G_KEY_RIGHT
-G_KEY_SPACE
-G_FACING_LEFT
-G_FACING_RIGHT
-G_ANIM_JUMPING
-G_ANIM_WALKING
-G_ANIM_DEFAULT
-G_COLLISION_TOP
-G_COLLISION_BOTTOM
-G_COLLISION_LEFT
-G_COLLISION_RIGHT
-*/
-const PLAYER_SPEED = 1.2; // the acceleration rate that the player moves left/right
-const PLAYER_JUMP_SPEED = 5.1; // the higher this value, the higher+faster the player jumps
-const AIR_CONTROL_DIVISOR = 30; // the higher this value, the less air control the player has.
-const MAX_SPEED_X = 1.2; // the maximum x speed that an actor can move
-const MAX_SPEED_Y = 3.2; // the maximum y speed that an actor can move
-const DECELERATION_RATE = 1.2; // the rate that actors decelerate (reduce velocity) per frame
-const GRAVITY_RATE = 0.2; // the rate that the y velocity is modified each frame (the higher, the faster the player moves down)
-// given an actor and a 'vx' or 'vy' reduce the velocity value one step closer to 0
+const PLAYER_SPEED = 1.2;
+const PLAYER_JUMP_SPEED = 5.1;
+const AIR_CONTROL_DIVISOR = 30;
+const MAX_SPEED_X = 1.2;
+const MAX_SPEED_Y = 3.2;
+const DECELERATION_RATE = 1.2;
+const GRAVITY_RATE = 0.2;
 const decelerateVelocity = (actor, vel) => {
     const v = actor[vel];
     if (v < 0) {
@@ -595,9 +297,6 @@ const applyGravity = (actor) => {
         actor.ay += GRAVITY_RATE * fm;
     }
 };
-// check collisions between this actor and all wall tiles.  If the actor is colliding,
-// then move the actor towards a position that is not colliding until the actor is no
-// longer colliding
 const handleActorCollisions = (actor, room) => {
     let hasCollision;
     let hasCollisionWithGround = false;
@@ -654,7 +353,6 @@ const handleActorCollisions = (actor, room) => {
         actor.vy = 0;
     }
     actor.isGround = hasCollisionWithGround;
-    //throw 'pizza';
 };
 const G_controller_updateRoom = (room) => {
     const { actors, player } = room;
@@ -712,7 +410,6 @@ const G_controller_updateActor = (actor, room) => {
     let newX = x + vx * fm;
     let newY = y + vy * fm;
     const [roomWidthPx, roomHeightPx] = G_model_roomGetSizePx(room);
-    // keep in bounds
     if (newX < 0) {
         newX = 0;
     }
@@ -736,11 +433,9 @@ const G_controller_updateActor = (actor, room) => {
     G_model_actorSetAcceleration(actor, 0, 0);
 };
 var zzfx, zzfxV, zzfxX;
-zzfxV = 0.3; // volume
+zzfxV = 0.3;
 zzfx;
-(zzfx = (
-// play sound
-t = 1, a = 0.05, n = 220, e = 0, f = 0, h = 0.1, M = 0, r = 1, z = 0, o = 0, i = 0, s = 0, u = 0, x = 0, c = 0, d = 0, X = 0, b = 1, m = 0, l = 44100, B = 99 + e * l, C = f * l, P = h * l, g = m * l, w = X * l, A = 2 * Math.PI, D = t => (0 < t ? 1 : -1), I = B + g + C + P + w, S = (z *= (500 * A) / l ** 2), V = (n *= ((1 + 2 * a * Math.random() - a) * A) / l), j = (D(c) * A) / 4, k = 0, p = 0, q = 0, v = 0, y = 0, E = 0, F = 1, G = [], H = zzfxX.createBufferSource(), J = zzfxX.createBuffer(1, I, l)) => {
+(zzfx = (t = 1, a = 0.05, n = 220, e = 0, f = 0, h = 0.1, M = 0, r = 1, z = 0, o = 0, i = 0, s = 0, u = 0, x = 0, c = 0, d = 0, X = 0, b = 1, m = 0, l = 44100, B = 99 + e * l, C = f * l, P = h * l, g = m * l, w = X * l, A = 2 * Math.PI, D = t => (0 < t ? 1 : -1), I = B + g + C + P + w, S = (z *= (500 * A) / l ** 2), V = (n *= ((1 + 2 * a * Math.random() - a) * A) / l), j = (D(c) * A) / 4, k = 0, p = 0, q = 0, v = 0, y = 0, E = 0, F = 1, G = [], H = zzfxX.createBufferSource(), J = zzfxX.createBuffer(1, I, l)) => {
     for (H.connect(zzfxX.destination); q < I; G[q++] = E)
         ++y > 100 * d &&
             ((y = 0),
@@ -779,18 +474,6 @@ t = 1, a = 0.05, n = 220, e = 0, f = 0, h = 0.1, M = 0, r = 1, z = 0, o = 0, i =
     return J.getChannelData(0).set(G), (H.buffer = J), H.start(), H;
 }),
     (zzfxX = new AudioContext());
-/*
-An Actor is an entity on the screen which is affected by gravity.
-*/
-/*
-global
-G_model_getElapsedMs
-G_utils_floorNearestMultiple
-G_SPRITE_MOD_FLIPPED
-G_SPRITE_MOD_FLROT90
-G_SPRITE_MOD_ROT90
-G_SPRITE_MOD_ROT270
-*/
 const G_FACING_LEFT = 0;
 const G_FACING_RIGHT = 1;
 const G_FACING_UP_RIGHT = 2;
@@ -840,7 +523,6 @@ const G_model_actorIsMoving = (actor) => {
 const G_model_actorGetCurrentSprite = (actor) => {
     let { facing, sprite, spriteIndex, anim } = actor;
     if (anim === G_ANIM_WALKING) {
-        // alternate between two frames (anim = 1 and anim = 0) every 100 ms
         anim = (anim -
             Math.floor((G_model_getElapsedMs() % 200) / 100));
     }
@@ -852,8 +534,7 @@ const G_model_actorGetCurrentSprite = (actor) => {
         case 0:
             mod = G_SPRITE_MOD_FLIPPED;
             break;
-        // case 1 is no modification
-        case 2: // up
+        case 2:
             mod = G_SPRITE_MOD_ROT270;
             break;
         case 3:
@@ -867,36 +548,14 @@ const G_model_actorGetCurrentSprite = (actor) => {
 const G_model_actorSetAnimState = (actor, anim) => {
     actor.anim = anim;
 };
-/*
-global
-G_controller_battleActionCharge
-G_controller_roundApplyAction
-G_controller_unitLives
-G_model_createVerticalMenu
-G_model_getScreenSize
-G_model_getSprite
-G_model_menuSetNextCursorIndex
-G_model_unitLives
-G_view_drawBattle
-G_view_drawMenu
-G_view_playSound
-G_utils_areAllUnitsDead
-G_utils_isAlly
-G_utils_getRandArrElem
-
-G_ACTION_CHARGE
-G_CURSOR_WIDTH
-G_CURSOR_HEIGHT
-*/
-const G_ACTION_STRIKE = 0; // requires target
+const G_ACTION_STRIKE = 0;
 const G_ACTION_CHARGE = 1;
-const G_ACTION_INTERRUPT = 2; // requires target
+const G_ACTION_INTERRUPT = 2;
 const G_ACTION_DEFEND = 3;
 const G_ACTION_HEAL = 4;
-const G_ACTION_USE = 5; // may require target
+const G_ACTION_USE = 5;
 const G_ACTION_FLEE = 6;
 const G_BATTLE_MENU_LABELS = [
-    // make sure these indices match above
     'Strike',
     'Charge',
     'Interrupt',
@@ -946,13 +605,10 @@ const selectTarget = async (battle) => {
         const targets = battle.enemies;
         const [startX, startY] = G_model_battleGetScreenPosition(0, G_ALLEGIANCE_ENEMY);
         const x = startX * G_SCALE - G_CURSOR_WIDTH;
-        const y = startY * G_SCALE - 16; // offset by -16 so the cursor is centered on the sprite
-        const h = 30 * G_SCALE; // "30" is the difference in y values of the unit positions from the unit variables
-        const targetMenu = G_model_createVerticalMenu(x, y, 100, // set this to 100 so I could debug by turning on the background
-        Array(targets.length).fill(''), // wtf, that exists?  i never knew that...
-        // this function is called when a target is selected
-        (i) => {
-            battle.actionMenuStack.shift(); // returns input to the last menu
+        const y = startY * G_SCALE - 16;
+        const h = 30 * G_SCALE;
+        const targetMenu = G_model_createVerticalMenu(x, y, 100, Array(targets.length).fill(''), (i) => {
+            battle.actionMenuStack.shift();
             if (i >= 0) {
                 resolve(targets[i]);
             }
@@ -968,7 +624,7 @@ const selectTarget = async (battle) => {
         }), false, h);
         targetMenu.i = -1;
         G_model_menuSetNextCursorIndex(targetMenu, 1);
-        battle.actionMenuStack.unshift(targetMenu); // transfers input to the newly-created menu
+        battle.actionMenuStack.unshift(targetMenu);
     });
 };
 const handleActionMenuSelected = async (i) => {
@@ -976,9 +632,7 @@ const handleActionMenuSelected = async (i) => {
     const round = G_model_battleGetCurrentRound(battle);
     switch (i) {
         case G_ACTION_STRIKE:
-            // here we could 'await' target selection instead of randomly picking one
             const target = await selectTarget(battle);
-            // handles the case where ESC (or back or something) is pressed while targeting
             if (!target) {
                 return;
             }
@@ -1000,8 +654,6 @@ const handleActionMenuSelected = async (i) => {
             console.error('Action', i, 'Is not implemented yet.');
     }
 };
-// This global variable holds the current battle.  It should only be accessed through
-// the following getters and setters
 let model_currentBattle = null;
 const G_model_setCurrentBattle = (battle) => {
     model_currentBattle = battle;
@@ -1053,17 +705,9 @@ const G_model_battleIsComplete = (battle) => {
 const G_model_actionToString = (i) => {
     return G_BATTLE_MENU_LABELS[i];
 };
-/*
-This file contains functions for creating and getting an HTML Canvas element
-*/
-/*
-global
-*/
 let model_canvas = null;
 let model_frameMultiplier = 1;
 let model_elapsedMs = 0;
-// Create a canvas element given a width and a height, returning a reference to the
-// canvas, the rendering context, width, and height
 const G_model_createCanvas = (width, height) => {
     const canvas = document.createElement('canvas');
     canvas.width = width;
@@ -1075,8 +719,6 @@ const G_model_createCanvas = (width, height) => {
         height,
     ];
 };
-// get a reference to the current canvas.  If it has not been made yet, then create it,
-// append it to the body, then return a reference to it.
 const G_model_getCanvas = () => {
     if (model_canvas) {
         return model_canvas;
@@ -1090,14 +732,9 @@ const G_model_getCanvas = () => {
         return canvas;
     }
 };
-// get a reference to the current rendering context
 const G_model_getCtx = () => {
     return G_model_getCanvas().getContext('2d');
 };
-// return the value to multiply all position and time values by in order to simulate
-// rendering at a consistent speed (as if it were 60 FPS).
-// Without this value, the game's physics are tied to the FPS, so a higher FPS results
-// in a faster game, while lower FPS results in a slower game.
 const G_model_setFrameMultiplier = (v) => {
     model_frameMultiplier = v;
 };
@@ -1113,13 +750,6 @@ const G_model_getElapsedMs = () => {
 const G_model_getScreenSize = () => {
     return 512;
 };
-/*
-This file contains functions that do something when an input is pressed.
- */
-/*
-global
-G_model_getCurrentRoom
-*/
 const model_keys = {};
 const G_KEY_RIGHT = 'ArrowRight';
 const G_KEY_LEFT = 'ArrowLeft';
@@ -1137,17 +767,6 @@ const G_model_setKeyUp = (key) => {
 const G_model_isKeyDown = (key) => {
     return model_keys[key];
 };
-/*
-global
-G_model_actorSetFacing
-G_model_actorSetPosition
-G_model_getCtx
-G_view_drawActor
-G_view_drawText
-G_view_playSound
-
-G_FACING_RIGHT
-*/
 const MENU_DEFAULT_LINE_HEIGHT = 16;
 const G_model_createVerticalMenu = (x, y, w, items, cb, disabledItems, bg, lineHeight) => {
     lineHeight = lineHeight || MENU_DEFAULT_LINE_HEIGHT;
@@ -1184,7 +803,6 @@ const G_model_menuSetNextCursorIndex = (menu, diff) => {
         curIndex = nextIndex;
     } while (menu.disabledItems.includes(nextIndex));
     menu.i = nextIndex;
-    // G_view_playSound('menuMove');
 };
 const G_model_menuSelectCurrentItem = (menu) => {
     menu.cb(menu.i);
@@ -1192,13 +810,6 @@ const G_model_menuSelectCurrentItem = (menu) => {
 const G_model_menuSelectNothing = (menu) => {
     menu.cb(-1);
 };
-/*
- */
-/*
-global
-G_model_createActor
-G_model_actorSetPosition
-*/
 const PLAYER_SPRITE_INDEX = 0;
 const G_model_createPlayer = () => {
     const actor = G_model_createActor(PLAYER_SPRITE_INDEX);
@@ -1207,22 +818,11 @@ const G_model_createPlayer = () => {
         actor,
     };
 };
-/*
-A Room is a collection of tiles, actors, and triggers.
-*/
-/*
-global
-G_utils_to1d
-G_model_createCanvas
-G_view_drawSprite
-*/
 let model_room = null;
-// maps an rgb color (as a string) to a tile id
 const colors = {
     '15610052': 0,
     '1718254': 1,
     '022854': 2,
-    // ... to be added later
     '000': 15,
 };
 const G_model_setCurrentRoom = (room) => {
@@ -1272,19 +872,6 @@ const G_model_roomGetCollidableTiles = (room, actor) => {
 const G_model_tileIsFullyCollidable = (tile) => {
     return [0, 1].includes(tile.id);
 };
-/*
-This file handles operations related to Sprites: loading them and getting info about them.
-A Sprite is a sub-image of a parent image.  The sub image is represented by a rectangle
-within the parent image (the four numbers: x, y, width, height).
-*/
-/*
-global
-G_controller_unitLives
-G_model_createCanvas
-G_model_getCurrentBattle
-G_utils_isAlly
-G_view_drawSprite
-*/
 const createSprite = (img, x, y, w, h) => {
     return [img, x, y, w, h];
 };
@@ -1295,7 +882,6 @@ const G_SPRITE_MOD_ROT180 = '_r2';
 const G_SPRITE_MOD_ROT270 = '_r3';
 const G_SPRITE_MOD_FLROT90 = '_fr1';
 let model_sprites = null;
-// given an inputCanvas, return a new canvas rotated to the right by 90 degrees
 const createRotatedImg = (inputCanvas) => {
     const [canvas, ctx, width, height] = G_model_createCanvas(inputCanvas.width, inputCanvas.height);
     const x = width / 2;
@@ -1305,7 +891,6 @@ const createRotatedImg = (inputCanvas) => {
     ctx.drawImage(inputCanvas, -x, -y);
     return canvas;
 };
-// given an inputCanvas, return a new canvas flipped horizontally
 const createFlippedImg = (inputCanvas) => {
     const [canvas, ctx, width] = G_model_createCanvas(inputCanvas.width, inputCanvas.height);
     ctx.translate(width, 0);
@@ -1313,19 +898,13 @@ const createFlippedImg = (inputCanvas) => {
     ctx.drawImage(inputCanvas, 0, 0);
     return canvas;
 };
-// given a Sprite, create and return a new image from the sprite
 const spriteToCanvas = (sprite) => {
     const [, , , spriteWidth, spriteHeight] = sprite;
     const [canvas, ctx] = G_model_createCanvas(spriteWidth, spriteHeight);
     G_view_drawSprite(sprite, 0, 0, 1, ctx);
     return canvas;
 };
-// load a set of sprites from an image, each sprite loaded with also have a set of rotated
-// and flipped variants
-const loadSpritesFromImage = (spriteMap, // collection in which to put created sprites
-image, // parent image
-spritePrefix, // created sprites are named <spritePrefix>_<index>
-spriteWidth, spriteHeight) => {
+const loadSpritesFromImage = (spriteMap, image, spritePrefix, spriteWidth, spriteHeight) => {
     const addSprite = (name, image, x, y, w, h) => {
         return (spriteMap[name] = createSprite(image, x, y, w, h));
     };
@@ -1340,14 +919,11 @@ spriteWidth, spriteHeight) => {
     const numRows = image.height / spriteHeight;
     for (let i = 0; i < numRows; i++) {
         for (let j = 0; j < numColumns; j++) {
-            // create original sprite: <baseSpriteName>
             const baseSpriteName = `${spritePrefix}_${i * numColumns + j}`;
             const sprite = addSprite(baseSpriteName, image, j * spriteWidth, i * spriteHeight, spriteWidth, spriteHeight);
-            // create rotated sprites:<baseSpriteName>_rN
             addRotatedSprite(spriteToCanvas(sprite), baseSpriteName, 1);
             addRotatedSprite(spriteToCanvas(sprite), baseSpriteName, 2);
             addRotatedSprite(spriteToCanvas(sprite), baseSpriteName, 3);
-            // create flipped sprite: <baseSpriteName>_f
             addSprite(`${baseSpriteName}${G_SPRITE_MOD_FLIPPED}`, createFlippedImg(spriteToCanvas(sprite)), 0, 0, spriteWidth, spriteHeight);
             addSprite(`${baseSpriteName}${G_SPRITE_MOD_FLROT90}`, createRotatedImg(createFlippedImg(spriteToCanvas(sprite))), 0, 0, spriteWidth, spriteHeight);
         }
@@ -1362,7 +938,6 @@ const loadImage = (imagePath) => {
         img.src = imagePath;
     });
 };
-// exported functions --------------------------------------------------------------------
 const G_model_loadImagesAndSprites = async () => {
     const spriteMap = {};
     const spriteSheetWidth = 16 * 4;
@@ -1376,18 +951,8 @@ const G_model_loadImagesAndSprites = async () => {
     loadSpritesFromImage(spriteMap, bottomLeftSpritesheet, 'map', 16, 16);
     model_sprites = spriteMap;
 };
-// get a Sprite given a sprite name
 const G_model_getSprite = (spriteName) => model_sprites[spriteName];
 const G_model_getSpriteSize = () => 16;
-/*
-global
-G_model_actorSetFacing
-G_model_actorSetPosition
-G_model_battleGetScreenPosition
-G_model_createActor
-G_FACING_LEFT
-G_FACING_RIGHT
-*/
 const model_createStats = (hp, dmg, def, mag, spd) => {
     return { hp, dmg, def, mag, spd, iCnt: mag, cCnt: 0 };
 };
@@ -1440,33 +1005,6 @@ const G_model_unitGainCharge = (unit) => {
 const G_model_unitResetDef = (unit) => {
     unit.cS.def = unit.bS.def;
 };
-//draw.ts
-/*
-This file contains functions that can draw things on the screen
-*/
-/*
-global
-G_model_actorSetPosition
-G_model_actorGetCurrentSprite
-G_model_actorGetPosition
-G_model_actorSetFacing
-G_model_battleGetCurrentRound
-G_model_battleGetScreenPosition
-G_model_getCanvas
-G_model_getCtx
-G_model_getBattleInputEnabled
-G_model_getSprite
-G_model_roundGetActingUnit
-G_view_drawBattleText
-G_view_drawInfo
-G_view_drawMenu
-
-G_ALLEGIANCE_ALLY
-G_ALLEGIANCE_ENEMY
-G_FACING_LEFT
-G_FACING_RIGHT
-BATTLE_MENU
-*/
 const G_BLACK = '#000';
 const G_WHITE = '#FFF';
 const DEFAULT_TEXT_PARAMS = {
@@ -1475,7 +1013,6 @@ const DEFAULT_TEXT_PARAMS = {
     size: 14,
     align: 'left',
 };
-// for(let i = 70; i <= 160; i+=30)
 const gradientCache = {};
 const G_view_clearScreen = () => {
     const canvas = G_model_getCanvas();
@@ -1540,7 +1077,6 @@ const G_view_drawBattle = (battle) => {
     const actionMenu = actionMenuStack[0];
     for (let i = 0; i < allies.length; i++) {
         const [x, y] = G_model_actorGetPosition(allies[i].actor);
-        // const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ALLY);
         G_model_actorSetPosition(allies[i].actor, x, y);
         G_view_drawActor(allies[i].actor, 2);
         G_view_drawText(`${allies[i].name}`, x * 2 + 16, y * 2 - 5, {
@@ -1550,9 +1086,7 @@ const G_view_drawBattle = (battle) => {
     G_view_drawInfo(battle, G_ALLEGIANCE_ALLY);
     G_view_drawInfo(battle, G_ALLEGIANCE_ENEMY);
     for (let i = 0; i < enemies.length; i++) {
-        // const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ENEMY);
         const [x, y] = G_model_actorGetPosition(enemies[i].actor);
-        // G_model_actorSetPosition(enemies[i].actor, x, y);
         G_view_drawActor(enemies[i].actor, 2);
         G_view_drawText(`${enemies[i].name}: ${enemies[i].cS.hp.toString()}/${enemies[i].bS.hp.toString()}`, x * 2 + 5, y * 2 - 5, {
             align: 'center',
@@ -1566,10 +1100,6 @@ const G_view_drawBattle = (battle) => {
         G_view_drawBattleText(battle.text);
     }
 };
-/*
-global
-zzfx
-*/
 let model_sounds = null;
 const loadSound = (soundMap, key, soundArr) => {
     soundMap[key] = soundArr;
@@ -1770,18 +1300,6 @@ const G_model_loadSounds = () => {
 const G_view_playSound = (soundName) => {
     zzfx(...model_sounds[soundName]);
 };
-/*
-global
-G_model_getCtx
-G_model_getScreenSize
-G_view_drawRect
-G_view_drawText
-
-G_ALLEGIANCE_ALLY
-G_ALLEGIANCE_ENEMY
-G_BLACK
-G_WHITE
-*/
 const G_CURSOR_WIDTH = 16;
 const G_CURSOR_HEIGHT = 16;
 const G_view_drawUiBackground = (x, y, w, h) => {
@@ -1833,7 +1351,6 @@ const G_view_drawBattleText = (text) => {
 const G_view_drawHeaders = (x, y) => {
     const screenSize = G_model_getScreenSize();
     const w = 200;
-    // const x = 0;
     const h = 25;
     const y2 = y - h;
     G_view_drawUiBackground(x, y2, w, h);
@@ -1843,7 +1360,6 @@ const G_view_drawHeaders = (x, y) => {
     G_view_drawText('Int', x + 170, y2 + h / 2);
 };
 const G_view_drawInfo = (battle, allegiance) => {
-    // For players, contains name, HP, currentCharge
     const lineHeight = 20;
     const screenSize = G_model_getScreenSize();
     const w = 200;
@@ -1869,4 +1385,3 @@ const G_view_drawInfo = (battle, allegiance) => {
         }
     }
 };
-//# sourceMappingURL=main.js.map
