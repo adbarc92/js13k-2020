@@ -17,8 +17,6 @@ jobs:
         run: |
           yarn
           yarn build
-          git add dist -f
-          git commit -a
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
