@@ -63,7 +63,6 @@ const build = async () => {
     'unsafe_math',
     'hoist_funs',
     'toplevel',
-    // 'drop_console',
     'pure_funcs=[console.info,console.log,console.debug,console.warn]',
     'ecma=9',
   ];
@@ -74,7 +73,6 @@ const build = async () => {
       ','
     )} --mangle -o ${__dirname}/../.build/main.js -- ${__dirname}/../.build/main.tmp.js`
   );
-  // await execAsync('uglifycss --output public/style.css .build/style.tmp.css');
   console.log('minify html...');
   fs.writeFileSync(
     '.build/index.html',
@@ -100,7 +98,7 @@ const build = async () => {
   try {
     await execAsync(`advzip -z -4 ${__dirname}/../${outputDirName}.zip`);
   } catch (e) {
-    console.log('advzip is not installed, cannot proceed with build');
+    console.log('advzip is not installed, cannot zip build');
     return;
   }
   const result = await execAsync(
