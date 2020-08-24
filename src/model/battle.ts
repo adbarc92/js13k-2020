@@ -1,16 +1,20 @@
 /*
 global
+G_controller_battleActionCharge
 G_controller_roundApplyAction
 G_controller_unitLives
-G_controller_killUnit
 G_model_createVerticalMenu
 G_model_getScreenSize
 G_model_getSprite
+G_model_menuSetNextCursorIndex
+G_model_unitLives
 G_view_drawBattle
 G_view_drawMenu
 G_utils_areAllUnitsDead
-G_utils_getRandArrElem
 G_utils_isAlly
+G_utils_getRandArrElem
+
+G_ACTION_CHARGE
 G_CURSOR_WIDTH
 G_CURSOR_HEIGHT
 */
@@ -82,6 +86,7 @@ const G_model_createBattle = (allies: Unit[], enemies: Unit[]): Battle => {
       menuWidth,
       G_BATTLE_MENU_LABELS,
       handleActionMenuSelected,
+      [],
       true,
       lineHeight
     ),
@@ -129,9 +134,18 @@ const selectTarget = async (battle: Battle): Promise<Unit | null> => {
           resolve(null);
         }
       },
+      battle.enemies
+        .filter(unit => {
+          return !G_model_unitLives(unit);
+        })
+        .map((_, i) => {
+          return i;
+        }),
       false,
       h
     );
+    targetMenu.i = -1;
+    G_model_menuSetNextCursorIndex(targetMenu, 1);
     battle.actionMenuStack.unshift(targetMenu); // transfers input to the newly-created menu
   });
 };
@@ -149,6 +163,12 @@ const handleActionMenuSelected = async (i: RoundAction) => {
         return;
       }
       G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
+      break;
+    case G_ACTION_CHARGE:
+      G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
+      break;
+    case G_ACTION_DEFEND:
+      G_controller_roundApplyAction(G_ACTION_DEFEND, round, null);
       break;
     case G_ACTION_HEAL:
       G_controller_roundApplyAction(G_ACTION_HEAL, round, null);

@@ -1,47 +1,58 @@
 /*
 global
-G_model_createActor
 G_model_setBattleInputEnabled
 G_model_battleGetCurrentRound
 G_model_actionToString
+G_model_actorSetAnimState
 G_model_actorSetFacing
 G_model_battleAddRound
 G_model_battleIncrementIndex
 G_model_battleIsComplete
+G_model_createActor
 G_model_createBattle
 G_model_createMenu
 G_model_createUnit
+G_model_createVerticalMenu
 G_model_createRound
-G_model_getCurrentBattle
 G_model_getBattlePostActionCb
+G_model_getCurrentBattle
+G_model_getScreenSize
+G_model_menuSetNextCursorIndex
 G_model_roundGetActingUnit
 G_model_roundIncrementIndex
 G_model_statsModifyHp
 G_model_setCurrentBattle
 G_model_setBattlePostActionCb
 G_model_roundIsOver
+G_model_unitLives
 G_model_unitMoveForward
+G_model_unitResetDef
 G_model_unitResetPosition
-
 G_view_drawBattleText
-G_utils_isAlly
 G_utils_getRandArrElem
+G_utils_isAlly
 G_utils_waitMs
-G_ACTION_STRIKE
+
+G_ACTION_CHARGE
+G_ACTION_DEFEND
 G_ACTION_HEAL
-G_FACING_UP
+G_ACTION_STRIKE
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
+G_ANIM_ATTACKING
+G_ANIM_DEFAULT
+G_ANIM_WALKING
+G_BATTLE_MENU_LABELS
+G_FACING_UP
 G_FACING_UP_LEFT
 G_FACING_UP_RIGHT
-G_model_unitLives
 */
 
 const G_controller_initBattle = () => {
   const jimothy = G_model_createUnit(
     'Jimothy',
     100,
-    200,
+    10,
     5,
     5,
     5,
@@ -51,40 +62,40 @@ const G_controller_initBattle = () => {
   const seph = G_model_createUnit(
     'Seph',
     100,
-    2,
-    4,
-    3,
+    10,
+    5,
+    5,
+    5,
     1,
-    1,
     G_ALLEGIANCE_ALLY
   );
-  const kana = G_model_createUnit(
-    'Kana',
-    100,
-    8,
-    3,
-    2,
-    7,
-    2,
-    G_ALLEGIANCE_ALLY
-  );
-  const widdly2Diddly = G_model_createUnit(
-    'widdly2Diddly',
-    100,
-    7,
-    7,
-    7,
-    7,
-    3,
-    G_ALLEGIANCE_ALLY
-  );
+  // const kana = G_model_createUnit(
+  //   'Kana',
+  //   100,
+  //   8,
+  //   3,
+  //   2,
+  //   7,
+  //   2,
+  //   G_ALLEGIANCE_ALLY
+  // );
+  // const widdly2Diddly = G_model_createUnit(
+  //   'widdly2Diddly',
+  //   100,
+  //   7,
+  //   7,
+  //   7,
+  //   7,
+  //   3,
+  //   G_ALLEGIANCE_ALLY
+  // );
 
   const karst = G_model_createUnit(
     'Karst',
     100,
-    4,
-    4,
-    3,
+    10,
+    5,
+    5,
     5,
     0,
     G_ALLEGIANCE_ENEMY
@@ -92,47 +103,44 @@ const G_controller_initBattle = () => {
   const urien = G_model_createUnit(
     'Urien',
     100,
-    20,
-    4,
-    3,
-    2,
+    10,
+    5,
+    5,
+    5,
     1,
     G_ALLEGIANCE_ENEMY
   );
-  const shreth = G_model_createUnit(
-    'Shrike',
-    100,
-    8,
-    6,
-    3,
-    2,
-    2,
-    G_ALLEGIANCE_ENEMY
-  );
-  const pDiddy = G_model_createUnit(
-    'P Diddy',
-    100,
-    5,
-    5,
-    5,
-    5,
-    3,
-    G_ALLEGIANCE_ENEMY
-  );
+  // const shreth = G_model_createUnit(
+  //   'Shrike',
+  //   100,
+  //   8,
+  //   6,
+  //   3,
+  //   2,
+  //   2,
+  //   G_ALLEGIANCE_ENEMY
+  // );
+  // const pDiddy = G_model_createUnit(
+  //   'P Diddy',
+  //   100,
+  //   5,
+  //   5,
+  //   5,
+  //   5,
+  //   3,
+  //   G_ALLEGIANCE_ENEMY
+  // );
 
-  const battle = G_model_createBattle(
-    [jimothy, seph, kana, widdly2Diddly],
-    [karst, urien, shreth, pDiddy]
-  );
+  const battle = G_model_createBattle([jimothy, seph], [karst, urien]);
   const firstRound = G_model_createRound([
     jimothy,
     karst,
     seph,
     urien,
-    kana,
-    shreth,
-    widdly2Diddly,
-    pDiddy,
+    // kana,
+    // shreth,
+    // widdly2Diddly,
+    // pDiddy,
   ]);
 
   G_model_battleAddRound(battle, firstRound);
@@ -176,12 +184,23 @@ const controller_battleSimulateTurn = async (
 ): Promise<void> => {
   const actingUnit = G_model_roundGetActingUnit(round) as Unit;
   if (!G_model_unitLives(actingUnit)) {
+    round.nextTurnOrder.push(actingUnit);
     return;
   }
-  console.log(actingUnit.name, 'beginning turn');
+  if (actingUnit.cS.def !== actingUnit.bS.def) {
+    G_model_unitResetDef(actingUnit);
+  }
   return new Promise(resolve => {
     G_model_setBattlePostActionCb(resolve);
+    const actionMenu = battle.actionMenuStack[0];
     if (G_utils_isAlly(battle, actingUnit)) {
+      if (actingUnit.cS.cCnt <= 0) {
+        actionMenu.disabledItems = [2, 4];
+      } else {
+        actionMenu.disabledItems = [];
+      }
+      actionMenu.i = -1;
+      G_model_menuSetNextCursorIndex(actionMenu, 1);
       G_model_setBattleInputEnabled(true);
     } else {
       setTimeout(() => {
@@ -203,6 +222,7 @@ const G_controller_roundApplyAction = async (
   const battle = G_model_getCurrentBattle();
   const actingUnit = G_model_roundGetActingUnit(round) as Unit;
   G_model_unitMoveForward(actingUnit);
+  G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING);
   battle.text = G_model_actionToString(action);
 
   await G_utils_waitMs(1000);
@@ -217,6 +237,12 @@ const G_controller_roundApplyAction = async (
         G_model_actorSetFacing((target as Unit).actor, facing);
       }
       break;
+    case G_ACTION_CHARGE:
+      G_controller_battleActionCharge(actingUnit);
+      break;
+    case G_ACTION_DEFEND:
+      G_controller_battleActionDefend(actingUnit);
+      break;
     case G_ACTION_HEAL:
       G_controller_battleActionHeal(actingUnit);
       break;
@@ -227,6 +253,7 @@ const G_controller_roundApplyAction = async (
 
   await G_utils_waitMs(2000);
   G_model_unitResetPosition(actingUnit);
+  G_model_actorSetAnimState(actingUnit.actor, G_ANIM_DEFAULT);
   battle.text = '';
 
   await G_utils_waitMs(500);
@@ -249,7 +276,7 @@ const G_controller_battleActionStrike = (
   const { def } = cS;
   const { dmg } = attacker.bS;
 
-  const dmgDone = -Math.max(dmg - def, 1);
+  const dmgDone = -Math.floor(Math.max(dmg - def, 1));
   G_model_statsModifyHp(cS, bS, dmgDone);
   console.log(
     `${attacker.name} strikes ${victim.name} for ${-dmgDone} damage! (${
@@ -261,19 +288,27 @@ const G_controller_battleActionStrike = (
   return dmgDone;
 };
 
-const G_controller_battleActionCharge = (actor: Unit) => {
-  const { cS } = actor;
+const G_controller_battleActionCharge = (unit: Unit) => {
+  const { cS } = unit;
   cS.cCnt++;
   // modSpd
   // animation?
 };
 
-const G_controller_battleActionHeal = (actor: Unit) => {
-  const { cS, bS } = actor;
-  if (cS.iCnt < 2) {
-    console.log('Insufficient charge');
-  } else {
-    cS.iCnt--;
-    cS.hp = bS.hp;
-  }
+const G_controller_battleActionHeal = (unit: Unit) => {
+  const { cS, bS } = unit;
+  cS.iCnt--;
+  cS.hp = bS.hp;
 };
+
+const G_controller_battleActionDefend = (unit: Unit) => {
+  const { cS } = unit;
+  cS.def *= 1.5;
+};
+
+// const G_controller_battleEnemyTurn = (unit: Unit) => {
+// 	const {cS, bS} = unit;
+// 	if (cS.cCnt === bS.mag) {
+
+// 	}
+// };

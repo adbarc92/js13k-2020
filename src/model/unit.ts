@@ -1,11 +1,11 @@
 /*
 global
-G_model_createActor
 G_model_actorSetFacing
-G_FACING_LEFT
-G_FACING_RIGHT
 G_model_actorSetPosition
 G_model_battleGetScreenPosition
+G_model_createActor
+G_FACING_LEFT
+G_FACING_RIGHT
 */
 
 interface Stats {
@@ -96,4 +96,12 @@ const G_model_unitLives = (unit: Unit): boolean => {
     return true;
   }
   return false;
+};
+
+const G_model_unitGainCharge = (unit: Unit) => {
+  unit.cS.cCnt++;
+};
+
+const G_model_unitResetDef = (unit: Unit) => {
+  unit.cS.def = unit.bS.def;
 };

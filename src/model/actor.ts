@@ -3,12 +3,12 @@ An Actor is an entity on the screen which is affected by gravity.
 */
 /*
 global
+G_model_getElapsedMs
+G_utils_floorNearestMultiple
 G_SPRITE_MOD_FLIPPED
 G_SPRITE_MOD_FLROT90
 G_SPRITE_MOD_ROT90
 G_SPRITE_MOD_ROT270
-G_model_getElapsedMs
-G_utils_floorNearestMultiple
 */
 
 type Facing = 0 | 1 | 2 | 3;
@@ -17,10 +17,11 @@ const G_FACING_RIGHT: Facing = 1;
 const G_FACING_UP_RIGHT: Facing = 2;
 const G_FACING_UP_LEFT: Facing = 3;
 
-type AnimState = 0 | 1 | 2;
+type AnimState = 0 | 1 | 2 | 3;
 const G_ANIM_DEFAULT: AnimState = 0;
 const G_ANIM_WALKING: AnimState = 1;
 const G_ANIM_JUMPING: AnimState = 2;
+const G_ANIM_ATTACKING: AnimState = 3;
 
 interface Actor {
   sprite: string;
@@ -89,6 +90,8 @@ const G_model_actorGetCurrentSprite = (actor: Actor): string => {
     // alternate between two frames (anim = 1 and anim = 0) every 100 ms
     anim = (anim -
       Math.floor((G_model_getElapsedMs() % 200) / 100)) as AnimState;
+  } else if (anim === G_ANIM_ATTACKING) {
+    anim = (2 - Math.floor((G_model_getElapsedMs() % 500) / 250)) as AnimState;
   }
   let mod = '';
   switch (facing) {
