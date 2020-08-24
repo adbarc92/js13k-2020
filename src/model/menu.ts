@@ -70,13 +70,15 @@ const G_model_menuSetNextCursorIndex = (menu: Menu, diff: MenuIncrement) => {
     curIndex = nextIndex;
   } while (menu.disabledItems.includes(nextIndex));
   menu.i = nextIndex;
-  // G_view_playSound('menuMove');
+  G_view_playSound('menuMove');
 };
 
 const G_model_menuSelectCurrentItem = (menu: Menu) => {
   menu.cb(menu.i);
+  G_view_playSound('menuConfirm');
 };
 
 const G_model_menuSelectNothing = (menu: Menu) => {
   menu.cb(-1);
+  G_view_playSound('menuCancel');
 };

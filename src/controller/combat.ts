@@ -29,6 +29,7 @@ G_model_unitMoveForward
 G_model_unitResetDef
 G_model_unitResetPosition
 G_view_drawBattleText
+G_view_playSound
 G_utils_getRandArrElem
 G_utils_isAlly
 G_utils_waitMs
@@ -230,6 +231,7 @@ const G_controller_roundApplyAction = async (
     case G_ACTION_STRIKE:
       const dmg = G_controller_battleActionStrike(actingUnit, target as Unit);
       battle.text = 'Did ' + -dmg + " damage. It's somewhat effective.";
+      G_view_playSound('actionStrike');
       if (!G_model_unitLives(target as Unit)) {
         const facing = G_utils_isAlly(battle, target as Unit)
           ? G_FACING_UP_RIGHT
@@ -239,9 +241,11 @@ const G_controller_roundApplyAction = async (
       break;
     case G_ACTION_CHARGE:
       G_controller_battleActionCharge(actingUnit);
+      G_view_playSound('actionCharge');
       break;
     case G_ACTION_DEFEND:
       G_controller_battleActionDefend(actingUnit);
+      G_view_playSound('actionDefend');
       break;
     case G_ACTION_HEAL:
       G_controller_battleActionHeal(actingUnit);
@@ -305,10 +309,3 @@ const G_controller_battleActionDefend = (unit: Unit) => {
   const { cS } = unit;
   cS.def *= 1.5;
 };
-
-// const G_controller_battleEnemyTurn = (unit: Unit) => {
-// 	const {cS, bS} = unit;
-// 	if (cS.cCnt === bS.mag) {
-
-// 	}
-// };

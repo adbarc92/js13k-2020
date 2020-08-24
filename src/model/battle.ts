@@ -163,15 +163,12 @@ const handleActionMenuSelected = async (i: RoundAction) => {
       if (!target) {
         return;
       }
-      G_view_playSound('actionStrike');
       G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
       break;
     case G_ACTION_CHARGE:
-      G_view_playSound('actionCharge');
       G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
       break;
     case G_ACTION_DEFEND:
-      G_view_playSound('actionDefend');
       G_controller_roundApplyAction(G_ACTION_DEFEND, round, null);
       break;
     case G_ACTION_HEAL:

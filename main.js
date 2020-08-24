@@ -269,6 +269,7 @@ G_model_unitMoveForward
 G_model_unitResetDef
 G_model_unitResetPosition
 G_view_drawBattleText
+G_view_playSound
 G_utils_getRandArrElem
 G_utils_isAlly
 G_utils_waitMs
@@ -414,6 +415,7 @@ const G_controller_roundApplyAction = async (action, round, target) => {
         case G_ACTION_STRIKE:
             const dmg = G_controller_battleActionStrike(actingUnit, target);
             battle.text = 'Did ' + -dmg + " damage. It's somewhat effective.";
+            G_view_playSound('actionStrike');
             if (!G_model_unitLives(target)) {
                 const facing = G_utils_isAlly(battle, target)
                     ? G_FACING_UP_RIGHT
@@ -423,9 +425,11 @@ const G_controller_roundApplyAction = async (action, round, target) => {
             break;
         case G_ACTION_CHARGE:
             G_controller_battleActionCharge(actingUnit);
+            G_view_playSound('actionCharge');
             break;
         case G_ACTION_DEFEND:
             G_controller_battleActionDefend(actingUnit);
+            G_view_playSound('actionDefend');
             break;
         case G_ACTION_HEAL:
             G_controller_battleActionHeal(actingUnit);
@@ -472,11 +476,6 @@ const G_controller_battleActionDefend = (unit) => {
     const { cS } = unit;
     cS.def *= 1.5;
 };
-// const G_controller_battleEnemyTurn = (unit: Unit) => {
-// 	const {cS, bS} = unit;
-// 	if (cS.cCnt === bS.mag) {
-// 	}
-// };
 /*
 This file contains logic for what happens when an event occurs: a keypress, button click, .etc
 */
@@ -495,7 +494,6 @@ G_model_menuSelectCurrentItem
 G_model_menuSelectNothing
 G_view_drawMenu
 G_view_drawBattle
-G_view_playSound
 G_controller_battleSimulateNextRound
 G_controller_battleActionCharge
 G_controller_battleActionHeal
@@ -512,19 +510,15 @@ window.addEventListener('keydown', ev => {
         const menu = battle.actionMenuStack[0];
         if (key === 'ArrowDown') {
             G_model_menuSetNextCursorIndex(menu, 1);
-            G_view_playSound('menuMove');
         }
         else if (key === 'ArrowUp') {
             G_model_menuSetNextCursorIndex(menu, -1);
-            G_view_playSound('menuMove');
         }
         else if (key === 'Enter') {
             G_model_menuSelectCurrentItem(menu);
-            G_view_playSound('menuConfirm');
         }
         else if (key === 'Escape') {
             if (battle.actionMenuStack.length > 1) {
-                G_view_playSound('menuCancel');
                 G_model_menuSelectNothing(menu);
             }
         }
@@ -982,15 +976,12 @@ const handleActionMenuSelected = async (i) => {
             if (!target) {
                 return;
             }
-            G_view_playSound('actionStrike');
             G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
             break;
         case G_ACTION_CHARGE:
-            G_view_playSound('actionCharge');
             G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
             break;
         case G_ACTION_DEFEND:
-            G_view_playSound('actionDefend');
             G_controller_roundApplyAction(G_ACTION_DEFEND, round, null);
             break;
         case G_ACTION_HEAL:
@@ -1184,13 +1175,15 @@ const G_model_menuSetNextCursorIndex = (menu, diff) => {
         curIndex = nextIndex;
     } while (menu.disabledItems.includes(nextIndex));
     menu.i = nextIndex;
-    // G_view_playSound('menuMove');
+    G_view_playSound('menuMove');
 };
 const G_model_menuSelectCurrentItem = (menu) => {
     menu.cb(menu.i);
+    G_view_playSound('menuConfirm');
 };
 const G_model_menuSelectNothing = (menu) => {
     menu.cb(-1);
+    G_view_playSound('menuCancel');
 };
 /*
  */
@@ -1578,7 +1571,7 @@ const G_model_loadSounds = () => {
     const soundMap = {};
     loadSound(soundMap, 'menuMove', [
         ,
-        ,
+        0,
         1964,
         ,
         ,
@@ -1587,15 +1580,15 @@ const G_model_loadSounds = () => {
         2.14,
         ,
         ,
-        462,
-        0.01,
+        500,
+        0.05,
         ,
         ,
         ,
         ,
         ,
         ,
-        0.02,
+        0.1,
     ]);
     loadSound(soundMap, 'menuConfirm', [
         ,
@@ -1621,44 +1614,23 @@ const G_model_loadSounds = () => {
     loadSound(soundMap, 'menuCancel', [
         ,
         ,
-        484,
+        1056,
+        0.03,
+        ,
+        0.06,
+        3,
+        0.74,
+        ,
+        0.3,
+        -38,
         0.04,
         ,
-        0.08,
-        3,
-        0.12,
-        74,
         ,
-        57,
-        0.2,
-        ,
-        ,
-        -8.8,
+        6,
         ,
         ,
         ,
-        0.02,
-    ]);
-    loadSound(soundMap, 'menuCancel', [
-        ,
-        ,
-        889,
-        ,
-        ,
-        0.09,
-        ,
-        1.47,
-        3.7,
-        ,
-        16,
-        0.12,
-        -0.01,
-        ,
-        -7,
-        0.1,
-        ,
-        0.74,
-        0.01,
+        0.03,
     ]);
     loadSound(soundMap, 'jump', [
         ,
@@ -1725,24 +1697,24 @@ const G_model_loadSounds = () => {
     ]);
     loadSound(soundMap, 'actionCharge', [
         ,
-        ,
-        978,
+        0,
+        11,
+        0.16,
+        0.34,
         0.06,
-        0.47,
-        0.82,
+        2,
+        2.05,
         ,
-        1.45,
-        9.6,
-        ,
-        23,
-        0.03,
-        0.1,
+        60,
         ,
         ,
-        0.1,
         ,
-        0.92,
-        0.08,
+        ,
+        -1.2,
+        0.5,
+        ,
+        ,
+        0.01,
     ]);
     loadSound(soundMap, 'actionDefend', [
         ,
