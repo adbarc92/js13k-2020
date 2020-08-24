@@ -245,6 +245,7 @@ G_model_battleGetCurrentRound
 G_model_actionToString
 G_model_actorSetAnimState
 G_model_actorSetFacing
+G_model_actorSetPosition
 G_model_battleAddRound
 G_model_battleIncrementIndex
 G_model_battleIsComplete
@@ -261,8 +262,8 @@ G_model_menuSetNextCursorIndex
 G_model_roundGetActingUnit
 G_model_roundIncrementIndex
 G_model_statsModifyHp
-G_model_setCurrentBattle
 G_model_setBattlePostActionCb
+G_model_setCurrentBattle
 G_model_roundIsOver
 G_model_unitLives
 G_model_unitMoveForward
@@ -376,9 +377,13 @@ const controller_battleSimulateTurn = async (battle, round) => {
         round.nextTurnOrder.push(actingUnit);
         return;
     }
+    // Reset stats if necessary, here
     if (actingUnit.cS.def !== actingUnit.bS.def) {
         G_model_unitResetDef(actingUnit);
     }
+    const { x, y } = actingUnit.actor;
+    const x2 = G_utils_isAlly(battle, actingUnit) ? x + 20 : x - 20;
+    G_model_actorSetPosition(actingUnit.actor, x2, y);
     return new Promise(resolve => {
         G_model_setBattlePostActionCb(resolve);
         const actionMenu = battle.actionMenuStack[0];
