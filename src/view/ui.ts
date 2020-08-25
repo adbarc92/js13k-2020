@@ -24,39 +24,55 @@ const G_view_drawUiBackground = (
   G_view_drawRect(x, y, w, h, G_WHITE, true);
 };
 
-const G_view_drawMenuCursor = (x: number, y: number) => {
+// const G_view_drawMenuCursor = (x: number, y: number) => {
+//   const ctx = G_model_getCtx();
+//   const cursorHeight = G_CURSOR_HEIGHT;
+//   const cursorWidth = G_CURSOR_WIDTH;
+//   ctx.save();
+//   ctx.translate(x - G_CURSOR_WIDTH / 2, y - G_CURSOR_HEIGHT / 2);
+//   ctx.beginPath();
+//   ctx.moveTo(0, 0);
+//   ctx.lineTo(0, cursorHeight);
+//   ctx.lineTo(cursorWidth, cursorHeight / 2);
+//   ctx.closePath();
+//   ctx.fillStyle = G_WHITE;
+//   ctx.fill();
+//   ctx.restore();
+// };
+
+// const G_view_drawDblCursor = (x: number, y: number, w: number, lh: number) => {
+//   const ctx = G_model_getCtx();
+//   const cursorHeight = G_CURSOR_HEIGHT / 2;
+//   const cursorWidth = G_CURSOR_WIDTH / 2;
+//   ctx.save();
+//   ctx.translate(x, y);
+//   ctx.beginPath();
+//   ctx.moveTo(w / 12, lh / 4);
+//   ctx.lineTo(w / 12, (lh * 3) / 4);
+//   ctx.lineTo(w / 8, lh / 2);
+//   ctx.closePath();
+//   ctx.fillStyle = G_WHITE;
+//   ctx.fill();
+//   ctx.beginPath();
+//   ctx.moveTo((w * 11) / 12, lh / 4);
+//   ctx.lineTo((w * 11) / 12, (lh * 3) / 4);
+//   ctx.lineTo((w * 7) / 8, lh / 2);
+//   ctx.closePath();
+//   ctx.fillStyle = G_WHITE;
+//   ctx.fill();
+//   ctx.restore();
+// };
+
+const G_view_drawCursorIn = (x: number, y: number, w: number, h: number) => {
   const ctx = G_model_getCtx();
   const cursorHeight = G_CURSOR_HEIGHT;
   const cursorWidth = G_CURSOR_WIDTH;
   ctx.save();
-  ctx.translate(x - G_CURSOR_WIDTH / 2, y - G_CURSOR_HEIGHT / 2);
+  ctx.translate(x + 2, y);
   ctx.beginPath();
   ctx.moveTo(0, 0);
   ctx.lineTo(0, cursorHeight);
   ctx.lineTo(cursorWidth, cursorHeight / 2);
-  ctx.closePath();
-  ctx.fillStyle = G_WHITE;
-  ctx.fill();
-  ctx.restore();
-};
-
-const G_view_drawDblCursor = (x: number, y: number, w: number, lh: number) => {
-  const ctx = G_model_getCtx();
-  const cursorHeight = G_CURSOR_HEIGHT / 2;
-  const cursorWidth = G_CURSOR_WIDTH / 2;
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.beginPath();
-  ctx.moveTo(w / 12, lh / 4);
-  ctx.lineTo(w / 12, (lh * 3) / 4);
-  ctx.lineTo(w / 8, lh / 2);
-  ctx.closePath();
-  ctx.fillStyle = G_WHITE;
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo((w * 11) / 12, lh / 4);
-  ctx.lineTo((w * 11) / 12, (lh * 3) / 4);
-  ctx.lineTo((w * 7) / 8, lh / 2);
   ctx.closePath();
   ctx.fillStyle = G_WHITE;
   ctx.fill();
@@ -80,7 +96,8 @@ const G_view_drawMenu = (menu: Menu) => {
     });
   });
   // G_view_drawMenuCursor(x - G_CURSOR_WIDTH, y + i * lh + lh / 2);
-  G_view_drawDblCursor(x, y + lh * i, w, lh);
+  // G_view_drawDblCursor(x, y + lh * i, w, lh);
+  G_view_drawCursorIn(x, y + lh * i, w, lh);
 };
 
 const G_view_drawBattleText = (text: string) => {
