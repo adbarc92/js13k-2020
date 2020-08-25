@@ -283,6 +283,7 @@ G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
 G_ANIM_ATTACKING
 G_ANIM_DEFAULT
+G_ANIM_STUNNED
 G_ANIM_WALKING
 G_BATTLE_MENU_LABELS
 G_FACING_UP
@@ -420,6 +421,9 @@ const G_controller_roundApplyAction = async (action, round, target) => {
         case G_ACTION_STRIKE:
             const dmg = G_controller_battleActionStrike(actingUnit, target);
             battle.text = 'Did ' + -dmg + " damage. It's somewhat effective.";
+            G_model_actorSetAnimState(target.actor, G_ANIM_STUNNED);
+            await G_utils_waitMs(400);
+            G_model_actorSetAnimState(target.actor, G_ANIM_DEFAULT);
             G_view_playSound('actionStrike');
             if (!G_model_unitLives(target)) {
                 const facing = G_utils_isAlly(battle, target)
@@ -798,6 +802,7 @@ const G_ANIM_DEFAULT = 0;
 const G_ANIM_WALKING = 1;
 const G_ANIM_JUMPING = 2;
 const G_ANIM_ATTACKING = 3;
+const G_ANIM_STUNNED = 4;
 const G_model_createActor = (spriteIndex) => {
     return {
         sprite: 'actors',
@@ -845,6 +850,9 @@ const G_model_actorGetCurrentSprite = (actor) => {
     }
     else if (anim === G_ANIM_ATTACKING) {
         anim = (2 - Math.floor((G_model_getElapsedMs() % 500) / 250));
+    }
+    else if (anim === G_ANIM_STUNNED) {
+        anim = 2;
     }
     let mod = '';
     switch (facing) {
@@ -1575,25 +1583,25 @@ const loadSound = (soundMap, key, soundArr) => {
 const G_model_loadSounds = () => {
     const soundMap = {};
     loadSound(soundMap, 'menuMove', [
+        0.6,
+        0,
+        1248,
+        0.04,
         ,
         0,
-        1964,
+        2,
+        2.23,
+        99,
+        0.8,
         ,
         ,
-        0.08,
-        1,
-        2.14,
         ,
         ,
-        500,
+        ,
+        ,
+        ,
+        0,
         0.05,
-        ,
-        ,
-        ,
-        ,
-        ,
-        ,
-        0.1,
     ]);
     loadSound(soundMap, 'menuConfirm', [
         ,

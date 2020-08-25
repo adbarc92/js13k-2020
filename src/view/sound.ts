@@ -17,25 +17,25 @@ const G_model_loadSounds = () => {
   const soundMap = {};
 
   loadSound(soundMap, 'menuMove', [
+    0.6,
+    0,
+    1248,
+    0.04,
     ,
     0,
-    1964,
+    2,
+    2.23,
+    99,
+    0.8,
     ,
     ,
-    0.08,
-    1,
-    2.14,
     ,
     ,
-    500,
+    ,
+    ,
+    ,
+    0,
     0.05,
-    ,
-    ,
-    ,
-    ,
-    ,
-    ,
-    0.1,
   ]);
 
   loadSound(soundMap, 'menuConfirm', [

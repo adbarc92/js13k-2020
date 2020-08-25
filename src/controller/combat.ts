@@ -43,6 +43,7 @@ G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
 G_ANIM_ATTACKING
 G_ANIM_DEFAULT
+G_ANIM_STUNNED
 G_ANIM_WALKING
 G_BATTLE_MENU_LABELS
 G_FACING_UP
@@ -236,6 +237,9 @@ const G_controller_roundApplyAction = async (
     case G_ACTION_STRIKE:
       const dmg = G_controller_battleActionStrike(actingUnit, target as Unit);
       battle.text = 'Did ' + -dmg + " damage. It's somewhat effective.";
+      G_model_actorSetAnimState((target as Unit).actor, G_ANIM_STUNNED);
+      await G_utils_waitMs(400);
+      G_model_actorSetAnimState((target as Unit).actor, G_ANIM_DEFAULT);
       G_view_playSound('actionStrike');
       if (!G_model_unitLives(target as Unit)) {
         const facing = G_utils_isAlly(battle, target as Unit)
