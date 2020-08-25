@@ -4,7 +4,7 @@
   "description": "A game",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf main.js main.js.map && tsc --sourceMap false && node scripts/build src",
     "watch": "tsc --watch",
     "encode-map": "node scripts/encode-map.js"
   },
@@ -32,8 +32,10 @@
     "eslint-plugin-babel": "^5.3.1",
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-scope": "^5.1.0",
+    "html-minifier": "^4.0.0",
     "pngjs": "^5.0.0",
     "prettier": "^2.0.5",
+    "terser": "^4.6.11",
     "typescript": "^3.9.6"
   }
 }

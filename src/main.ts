@@ -12,6 +12,7 @@ G_model_setCurrentRoom
 G_model_setElapsedMs
 G_model_setFrameMultiplier
 G_model_loadImagesAndSprites
+G_model_loadSounds
 G_view_clearScreen
 G_view_drawActor
 G_view_drawBattle
@@ -57,6 +58,7 @@ const runMainLoop = () => {
 
 const main = async () => {
   await G_model_loadImagesAndSprites();
+  G_model_loadSounds();
   runMainLoop();
 };
 

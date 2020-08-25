@@ -5,6 +5,7 @@ G_model_actorSetPosition
 G_model_getCtx
 G_view_drawActor
 G_view_drawText
+G_view_playSound
 
 G_FACING_RIGHT
 */
@@ -69,6 +70,7 @@ const G_model_menuSetNextCursorIndex = (menu: Menu, diff: MenuIncrement) => {
     curIndex = nextIndex;
   } while (menu.disabledItems.includes(nextIndex));
   menu.i = nextIndex;
+  // G_view_playSound('menuMove');
 };
 
 const G_model_menuSelectCurrentItem = (menu: Menu) => {

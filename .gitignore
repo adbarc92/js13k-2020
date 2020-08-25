@@ -3,3 +3,8 @@ node_modules/
 scratch/*.encoded.png
 scratch/*.csv
 *.zip
+main.js
+main.js.map
+dist/
+.build/
+package-lock.json

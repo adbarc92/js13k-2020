@@ -10,6 +10,7 @@ G_model_menuSetNextCursorIndex
 G_model_unitLives
 G_view_drawBattle
 G_view_drawMenu
+G_view_playSound
 G_utils_areAllUnitsDead
 G_utils_isAlly
 G_utils_getRandArrElem
@@ -162,12 +163,15 @@ const handleActionMenuSelected = async (i: RoundAction) => {
       if (!target) {
         return;
       }
+      G_view_playSound('actionStrike');
       G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
       break;
     case G_ACTION_CHARGE:
+      G_view_playSound('actionCharge');
       G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
       break;
     case G_ACTION_DEFEND:
+      G_view_playSound('actionDefend');
       G_controller_roundApplyAction(G_ACTION_DEFEND, round, null);
       break;
     case G_ACTION_HEAL:

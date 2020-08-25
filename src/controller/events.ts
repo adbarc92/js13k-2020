@@ -16,6 +16,7 @@ G_model_menuSelectCurrentItem
 G_model_menuSelectNothing
 G_view_drawMenu
 G_view_drawBattle
+G_view_playSound
 G_controller_battleSimulateNextRound
 G_controller_battleActionCharge
 G_controller_battleActionHeal
@@ -36,12 +37,16 @@ window.addEventListener('keydown', ev => {
     const menu = battle.actionMenuStack[0];
     if (key === 'ArrowDown') {
       G_model_menuSetNextCursorIndex(menu, 1);
+      G_view_playSound('menuMove');
     } else if (key === 'ArrowUp') {
       G_model_menuSetNextCursorIndex(menu, -1);
+      G_view_playSound('menuMove');
     } else if (key === 'Enter') {
       G_model_menuSelectCurrentItem(menu);
+      G_view_playSound('menuConfirm');
     } else if (key === 'Escape') {
       if (battle.actionMenuStack.length > 1) {
+        G_view_playSound('menuCancel');
         G_model_menuSelectNothing(menu);
       }
     }
