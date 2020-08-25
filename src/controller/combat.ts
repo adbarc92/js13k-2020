@@ -194,7 +194,7 @@ const controller_battleSimulateTurn = async (
     G_model_setBattlePostActionCb(resolve);
     const actionMenu = battle.actionMenuStack[0];
     if (G_utils_isAlly(battle, actingUnit)) {
-      if (actingUnit.cS.cCnt <= 0) {
+      if (actingUnit.cS.iCnt <= 0) {
         actionMenu.disabledItems = [2, 4];
       } else {
         actionMenu.disabledItems = [];

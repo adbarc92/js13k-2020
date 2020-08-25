@@ -380,7 +380,7 @@ const controller_battleSimulateTurn = async (battle, round) => {
         G_model_setBattlePostActionCb(resolve);
         const actionMenu = battle.actionMenuStack[0];
         if (G_utils_isAlly(battle, actingUnit)) {
-            if (actingUnit.cS.cCnt <= 0) {
+            if (actingUnit.cS.iCnt <= 0) {
                 actionMenu.disabledItems = [2, 4];
             }
             else {
@@ -1542,6 +1542,28 @@ const G_view_drawMenuCursor = (x, y) => {
     ctx.fill();
     ctx.restore();
 };
+const G_view_drawDblCursor = (x, y, w, lh) => {
+    const ctx = G_model_getCtx();
+    const cursorHeight = G_CURSOR_HEIGHT / 2;
+    const cursorWidth = G_CURSOR_WIDTH / 2;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.beginPath();
+    ctx.moveTo(w / 12, lh / 4);
+    ctx.lineTo(w / 12, (lh * 3) / 4);
+    ctx.lineTo(w / 8, lh / 2);
+    ctx.closePath();
+    ctx.fillStyle = G_WHITE;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo((w * 11) / 12, lh / 4);
+    ctx.lineTo((w * 11) / 12, (lh * 3) / 4);
+    ctx.lineTo((w * 7) / 8, lh / 2);
+    ctx.closePath();
+    ctx.fillStyle = G_WHITE;
+    ctx.fill();
+    ctx.restore();
+};
 const G_view_drawMenu = (menu) => {
     const { x, y, w, h, i, bg, items, lineHeight: lh } = menu;
     if (bg) {
@@ -1557,7 +1579,8 @@ const G_view_drawMenu = (menu) => {
             color,
         });
     });
-    G_view_drawMenuCursor(x - G_CURSOR_WIDTH, y + i * lh + lh / 2);
+    // G_view_drawMenuCursor(x - G_CURSOR_WIDTH, y + i * lh + lh / 2);
+    G_view_drawDblCursor(x, y + lh * i, w, lh);
 };
 const G_view_drawBattleText = (text) => {
     const x = 0;
