@@ -74,7 +74,6 @@ const G_view_drawBattleText = (text: string) => {
 
 const G_view_drawHeaders = (x: number, y: number) => {
   const w = 200;
-  // const x = 0;
   const h = 25;
   const y2 = y - h;
   G_view_drawUiBackground(x, y2, w, h);
@@ -111,3 +110,5 @@ const G_view_drawInfo = (battle: Battle, allegiance: Allegiance) => {
     }
   }
 };
+
+// const G_view_drawTurnOrder = (x: number, y: number) => {};

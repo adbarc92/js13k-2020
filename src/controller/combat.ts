@@ -9,6 +9,7 @@ G_model_actorSetPosition
 G_model_battleAddRound
 G_model_battleIncrementIndex
 G_model_battleIsComplete
+G_model_battleSetText
 G_model_createActor
 G_model_createBattle
 G_model_createMenu
@@ -19,6 +20,7 @@ G_model_getBattlePostActionCb
 G_model_getCurrentBattle
 G_model_getScreenSize
 G_model_menuSetNextCursorIndex
+G_model_modifySpeed
 G_model_roundGetActingUnit
 G_model_roundIncrementIndex
 G_model_statsModifyHp
@@ -32,12 +34,14 @@ G_model_unitResetPosition
 G_view_drawBattleText
 G_view_playSound
 G_utils_getRandArrElem
+G_utils_getRandNum
 G_utils_isAlly
 G_utils_waitMs
 
 G_ACTION_CHARGE
 G_ACTION_DEFEND
 G_ACTION_HEAL
+G_ACTION_INTERRUPT
 G_ACTION_STRIKE
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
@@ -68,7 +72,7 @@ const G_controller_initBattle = () => {
     10,
     5,
     5,
-    5,
+    4,
     1,
     G_ALLEGIANCE_ALLY
   );
@@ -194,6 +198,9 @@ const controller_battleSimulateTurn = async (
   if (actingUnit.cS.def !== actingUnit.bS.def) {
     G_model_unitResetDef(actingUnit);
   }
+  if (actingUnit.cS.spd === 0) {
+    actingUnit.cS.spd = actingUnit.bS.spd;
+  }
   const { x, y } = actingUnit.actor;
   const x2 = G_utils_isAlly(battle, actingUnit) ? x + 20 : x - 20;
   G_model_actorSetPosition(actingUnit.actor, x2, y);
@@ -233,10 +240,11 @@ const G_controller_roundApplyAction = async (
   battle.text = G_model_actionToString(action);
 
   await G_utils_waitMs(1000);
+  G_model_modifySpeed(actingUnit, action);
   switch (action) {
     case G_ACTION_STRIKE:
       const dmg = G_controller_battleActionStrike(actingUnit, target as Unit);
-      battle.text = 'Did ' + -dmg + " damage. It's somewhat effective.";
+      battle.text = 'Did ' + -dmg + ' damage.';
       G_model_actorSetAnimState((target as Unit).actor, G_ANIM_STUNNED);
       G_view_playSound('actionStrike');
       await G_utils_waitMs(800);
@@ -259,6 +267,8 @@ const G_controller_roundApplyAction = async (
     case G_ACTION_HEAL:
       G_controller_battleActionHeal(actingUnit);
       break;
+    case G_ACTION_INTERRUPT:
+      G_controller_battleActionInterrupt(actingUnit, target as Unit);
     default:
       console.error('No action:', action, 'exists.');
   }
@@ -273,8 +283,15 @@ const G_controller_roundApplyAction = async (
   G_model_getBattlePostActionCb()(); // resolve is called here
 };
 
+const controller_roundSort = (round: Round) => {
+  round.turnOrder = round.turnOrder.sort((a, b) => {
+    return b.cS.spd - a.cS.spd;
+  });
+};
+
 const controller_roundInit = (round: Round) => {
   console.log('Start new round:', round);
+  controller_roundSort(round);
 };
 
 const controller_roundEnd = (round: Round): Round => {
@@ -296,7 +313,6 @@ const G_controller_battleActionStrike = (
       victim.cS.hp
     } HP remaining)`
   );
-  // speed modification should be done here
 
   return dmgDone;
 };
@@ -304,8 +320,19 @@ const G_controller_battleActionStrike = (
 const G_controller_battleActionCharge = (unit: Unit) => {
   const { cS } = unit;
   cS.cCnt++;
-  // modSpd
-  // animation?
+};
+
+const G_controller_battleActionInterrupt = (attacker: Unit, victim: Unit) => {
+  // Interrupt starts at a 75% rate, and is modified by the differential between attacker's MAG and victim's MAG
+  const mod =
+    attacker.bS.mag - victim.bS.mag > 0 ? attacker.bS.mag - victim.bS.mag : 0;
+  if (mod + 75 > G_utils_getRandNum(100)) {
+    victim.cS.spd = 0;
+    victim.cS.cCnt = 0;
+    G_model_battleSetText('Interrupted!');
+  } else {
+    G_model_battleSetText('Interrupt failed...');
+  }
 };
 
 const G_controller_battleActionHeal = (unit: Unit) => {

@@ -14,7 +14,6 @@ G_model_battleGetCurrentRound
 G_model_menuSetNextCursorIndex
 G_model_menuSelectCurrentItem
 G_model_menuSelectNothing
-G_view_drawMenu
 G_view_drawBattle
 G_controller_battleSimulateNextRound
 G_controller_battleActionCharge

@@ -9,7 +9,6 @@ G_model_getSprite
 G_model_menuSetNextCursorIndex
 G_model_unitLives
 G_view_drawBattle
-G_view_drawMenu
 G_view_playSound
 G_utils_areAllUnitsDead
 G_utils_isAlly
@@ -109,6 +108,11 @@ const G_model_battleGetScreenPosition = (
   return allegiance === G_ALLEGIANCE_ALLY ? playerPos[i] : enemyPos[i];
 };
 
+const G_model_battleSetText = (text: string) => {
+  const battle = G_model_getCurrentBattle();
+  battle.text = text;
+};
+
 const selectTarget = async (battle: Battle): Promise<Unit | null> => {
   return new Promise(resolve => {
     const targets = battle.enemies;
@@ -119,7 +123,7 @@ const selectTarget = async (battle: Battle): Promise<Unit | null> => {
     );
 
     const x = startX * G_SCALE - G_CURSOR_WIDTH;
-    const y = startY * G_SCALE - 16; // offset by -16 so the cursor is centered on the sprite
+    const y = startY * G_SCALE + G_CURSOR_HEIGHT / 2; // ???
     const h = 30 * G_SCALE; // "30" is the difference in y values of the unit positions from the unit variables
     const targetMenu = G_model_createVerticalMenu(
       x,
@@ -158,7 +162,7 @@ const handleActionMenuSelected = async (i: RoundAction) => {
   switch (i) {
     case G_ACTION_STRIKE:
       // here we could 'await' target selection instead of randomly picking one
-      const target: Unit | null = await selectTarget(battle);
+      let target: Unit | null = await selectTarget(battle);
       // handles the case where ESC (or back or something) is pressed while targeting
       if (!target) {
         return;
@@ -173,6 +177,14 @@ const handleActionMenuSelected = async (i: RoundAction) => {
       break;
     case G_ACTION_HEAL:
       G_controller_roundApplyAction(G_ACTION_HEAL, round, null);
+      break;
+    case G_ACTION_INTERRUPT:
+      const target2: Unit | null = await selectTarget(battle); // QUESTION: cannot reassign within scope?!
+      // handles the case where ESC (or back or something) is pressed while targeting
+      if (!target2) {
+        return;
+      }
+      G_controller_roundApplyAction(G_ACTION_INTERRUPT, round, target2);
       break;
     default:
       console.error('Action', i, 'Is not implemented yet.');

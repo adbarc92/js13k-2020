@@ -221,8 +221,11 @@ const G_utils_areAllUnitsDead = (units) => {
         return everyoneIsDead && unit.cS.hp === 0;
     }, true);
 };
+const G_utils_getRandNum = (max) => {
+    return Math.floor(Math.random() * Math.floor(max));
+};
 const G_utils_getRandArrElem = (arr) => {
-    return arr[Math.floor(Math.random() * arr.length)];
+    return arr[G_utils_getRandNum(arr.length)];
 };
 const G_utils_isAlly = (battle, unit) => {
     return battle.allies.includes(unit);
@@ -240,6 +243,71 @@ const G_utils_waitMs = async (ms) => {
 };
 /*
 global
+G_controller_roundApplyAction
+G_utils_getRandArrElem
+G_ACTION_CHARGE
+G_ACTION_STRIKE
+*/
+// Attack weakest target
+// const G_utils_getWeakestEnemy = (enemies: Unit[]): Unit => {
+//   let weakest = enemies[0];
+//   for (let i = 0; i < enemies.length; i++) {
+//     if (enemies[i].cS.hp < weakest.cS.hp) {
+//       weakest = enemies[i];
+//     }
+//   }
+//   return weakest;
+// };
+const GET_LEAST = false;
+const GET_GREATEST = true;
+const G_utils_getOutlierByStat = (enemies, stat, greatest) => {
+    let outlier = enemies[0];
+    for (let i = 1; i < enemies.length; i++) {
+        if (greatest) {
+            if (enemies[i].cS[stat] > outlier[stat]) {
+                outlier = enemies[i];
+            }
+        }
+        else {
+            if (enemies[i].cS[stat] < outlier[stat]) {
+                outlier = enemies[i];
+            }
+        }
+    }
+    return outlier;
+};
+const G_model_aiTargetWeakest = (allies, round) => {
+    const target = G_utils_getOutlierByStat(allies, 'hp', GET_LEAST);
+    G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
+};
+// Standard: charge up and then strike
+const G_model_aiChargeStrike = (actingUnit, enemies, round) => {
+    if (actingUnit.cS.cCnt < actingUnit.cS.iCnt) {
+        G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
+    }
+    else {
+        const target = G_utils_getRandArrElem(enemies);
+        G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
+    }
+};
+const G_model_aiBoss = (actingUnit, battle, round) => {
+    // If Interrupt Count < 2, replenish
+    if (actingUnit.cS.iCnt < 2) {
+        battle.text = 'Replenishing';
+        actingUnit.cS.iCnt = actingUnit.bS.iCnt;
+    }
+    else {
+        const target = G_utils_getOutlierByStat(battle.allies, 'cCnt', GET_GREATEST);
+        // If an enemy has charge of >4, Interrupt
+        if (target.cS.cCnt > 4) {
+            // G_controller_roundApplyAction(G_ACTION_INTERRUPT, round, target);
+        }
+    }
+};
+// Alternate strike and charge
+//
+/*
+global
 G_model_setBattleInputEnabled
 G_model_battleGetCurrentRound
 G_model_actionToString
@@ -249,6 +317,7 @@ G_model_actorSetPosition
 G_model_battleAddRound
 G_model_battleIncrementIndex
 G_model_battleIsComplete
+G_model_battleSetText
 G_model_createActor
 G_model_createBattle
 G_model_createMenu
@@ -259,6 +328,7 @@ G_model_getBattlePostActionCb
 G_model_getCurrentBattle
 G_model_getScreenSize
 G_model_menuSetNextCursorIndex
+G_model_modifySpeed
 G_model_roundGetActingUnit
 G_model_roundIncrementIndex
 G_model_statsModifyHp
@@ -272,12 +342,14 @@ G_model_unitResetPosition
 G_view_drawBattleText
 G_view_playSound
 G_utils_getRandArrElem
+G_utils_getRandNum
 G_utils_isAlly
 G_utils_waitMs
 
 G_ACTION_CHARGE
 G_ACTION_DEFEND
 G_ACTION_HEAL
+G_ACTION_INTERRUPT
 G_ACTION_STRIKE
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
@@ -292,7 +364,7 @@ G_FACING_UP_RIGHT
 */
 const G_controller_initBattle = () => {
     const jimothy = G_model_createUnit('Jimothy', 100, 10, 5, 5, 5, 0, G_ALLEGIANCE_ALLY);
-    const seph = G_model_createUnit('Seph', 100, 10, 5, 5, 5, 1, G_ALLEGIANCE_ALLY);
+    const seph = G_model_createUnit('Seph', 100, 10, 5, 5, 4, 1, G_ALLEGIANCE_ALLY);
     // const kana = G_model_createUnit(
     //   'Kana',
     //   100,
@@ -382,6 +454,9 @@ const controller_battleSimulateTurn = async (battle, round) => {
     if (actingUnit.cS.def !== actingUnit.bS.def) {
         G_model_unitResetDef(actingUnit);
     }
+    if (actingUnit.cS.spd === 0) {
+        actingUnit.cS.spd = actingUnit.bS.spd;
+    }
     const { x, y } = actingUnit.actor;
     const x2 = G_utils_isAlly(battle, actingUnit) ? x + 20 : x - 20;
     G_model_actorSetPosition(actingUnit.actor, x2, y);
@@ -417,10 +492,11 @@ const G_controller_roundApplyAction = async (action, round, target) => {
     G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING); // Change animations here
     battle.text = G_model_actionToString(action);
     await G_utils_waitMs(1000);
+    G_model_modifySpeed(actingUnit, action);
     switch (action) {
         case G_ACTION_STRIKE:
             const dmg = G_controller_battleActionStrike(actingUnit, target);
-            battle.text = 'Did ' + -dmg + " damage. It's somewhat effective.";
+            battle.text = 'Did ' + -dmg + ' damage.';
             G_model_actorSetAnimState(target.actor, G_ANIM_STUNNED);
             G_view_playSound('actionStrike');
             await G_utils_waitMs(800);
@@ -443,6 +519,8 @@ const G_controller_roundApplyAction = async (action, round, target) => {
         case G_ACTION_HEAL:
             G_controller_battleActionHeal(actingUnit);
             break;
+        case G_ACTION_INTERRUPT:
+            G_controller_battleActionInterrupt(actingUnit, target);
         default:
             console.error('No action:', action, 'exists.');
     }
@@ -454,8 +532,14 @@ const G_controller_roundApplyAction = async (action, round, target) => {
     await G_utils_waitMs(500);
     G_model_getBattlePostActionCb()(); // resolve is called here
 };
+const controller_roundSort = (round) => {
+    round.turnOrder = round.turnOrder.sort((a, b) => {
+        return b.cS.spd - a.cS.spd;
+    });
+};
 const controller_roundInit = (round) => {
     console.log('Start new round:', round);
+    controller_roundSort(round);
 };
 const controller_roundEnd = (round) => {
     return G_model_createRound(round.nextTurnOrder); // Change
@@ -467,14 +551,23 @@ const G_controller_battleActionStrike = (attacker, victim) => {
     const dmgDone = -Math.floor(Math.max(dmg - def, 1));
     G_model_statsModifyHp(cS, bS, dmgDone);
     console.log(`${attacker.name} strikes ${victim.name} for ${-dmgDone} damage! (${victim.cS.hp} HP remaining)`);
-    // speed modification should be done here
     return dmgDone;
 };
 const G_controller_battleActionCharge = (unit) => {
     const { cS } = unit;
     cS.cCnt++;
-    // modSpd
-    // animation?
+};
+const G_controller_battleActionInterrupt = (attacker, victim) => {
+    // Interrupt starts at a 75% rate, and is modified by the differential between attacker's MAG and victim's MAG
+    const mod = attacker.bS.mag - victim.bS.mag > 0 ? attacker.bS.mag - victim.bS.mag : 0;
+    if (mod + 75 > G_utils_getRandNum(100)) {
+        victim.cS.spd = 0;
+        victim.cS.cCnt = 0;
+        G_model_battleSetText('Interrupted!');
+    }
+    else {
+        G_model_battleSetText('Interrupt failed...');
+    }
 };
 const G_controller_battleActionHeal = (unit) => {
     const { cS, bS } = unit;
@@ -501,7 +594,6 @@ G_model_battleGetCurrentRound
 G_model_menuSetNextCursorIndex
 G_model_menuSelectCurrentItem
 G_model_menuSelectNothing
-G_view_drawMenu
 G_view_drawBattle
 G_controller_battleSimulateNextRound
 G_controller_battleActionCharge
@@ -885,7 +977,6 @@ G_model_getSprite
 G_model_menuSetNextCursorIndex
 G_model_unitLives
 G_view_drawBattle
-G_view_drawMenu
 G_view_playSound
 G_utils_areAllUnitsDead
 G_utils_isAlly
@@ -948,12 +1039,16 @@ const G_model_createBattle = (allies, enemies) => {
 const G_model_battleGetScreenPosition = (i, allegiance) => {
     return allegiance === G_ALLEGIANCE_ALLY ? playerPos[i] : enemyPos[i];
 };
+const G_model_battleSetText = (text) => {
+    const battle = G_model_getCurrentBattle();
+    battle.text = text;
+};
 const selectTarget = async (battle) => {
     return new Promise(resolve => {
         const targets = battle.enemies;
         const [startX, startY] = G_model_battleGetScreenPosition(0, G_ALLEGIANCE_ENEMY);
         const x = startX * G_SCALE - G_CURSOR_WIDTH;
-        const y = startY * G_SCALE - 16; // offset by -16 so the cursor is centered on the sprite
+        const y = startY * G_SCALE + G_CURSOR_HEIGHT / 2; // ???
         const h = 30 * G_SCALE; // "30" is the difference in y values of the unit positions from the unit variables
         const targetMenu = G_model_createVerticalMenu(x, y, 100, // set this to 100 so I could debug by turning on the background
         Array(targets.length).fill(''), // wtf, that exists?  i never knew that...
@@ -984,7 +1079,7 @@ const handleActionMenuSelected = async (i) => {
     switch (i) {
         case G_ACTION_STRIKE:
             // here we could 'await' target selection instead of randomly picking one
-            const target = await selectTarget(battle);
+            let target = await selectTarget(battle);
             // handles the case where ESC (or back or something) is pressed while targeting
             if (!target) {
                 return;
@@ -999,6 +1094,14 @@ const handleActionMenuSelected = async (i) => {
             break;
         case G_ACTION_HEAL:
             G_controller_roundApplyAction(G_ACTION_HEAL, round, null);
+            break;
+        case G_ACTION_INTERRUPT:
+            const target2 = await selectTarget(battle); // QUESTION: cannot reassign within scope?!
+            // handles the case where ESC (or back or something) is pressed while targeting
+            if (!target2) {
+                return;
+            }
+            G_controller_roundApplyAction(G_ACTION_INTERRUPT, round, target2);
             break;
         default:
             console.error('Action', i, 'Is not implemented yet.');
@@ -1391,6 +1494,15 @@ G_model_actorSetFacing
 G_model_actorSetPosition
 G_model_battleGetScreenPosition
 G_model_createActor
+
+G_ACTION_STRIKE
+G_ACTION_CHARGE
+G_ACTION_INTERRUPT
+G_ACTION_DEFEND
+G_ACTION_HEAL
+G_ACTION_USE
+G_ACTION_FLEE
+
 G_FACING_LEFT
 G_FACING_RIGHT
 */
@@ -1445,6 +1557,34 @@ const G_model_unitGainCharge = (unit) => {
 };
 const G_model_unitResetDef = (unit) => {
     unit.cS.def = unit.bS.def;
+};
+const G_model_modifySpeed = (unit, action) => {
+    const { cS } = unit;
+    switch (action) {
+        case G_ACTION_STRIKE:
+            console.log('strike modifies speed; old speed:', cS.spd);
+            cS.spd += 2;
+            console.log('new speed:', cS.spd);
+            break;
+        case G_ACTION_CHARGE:
+            cS.spd += 2;
+            break;
+        case G_ACTION_INTERRUPT:
+            cS.spd += 0;
+            break;
+        case G_ACTION_DEFEND:
+            cS.spd += 3;
+            break;
+        case G_ACTION_HEAL:
+            cS.spd -= 1;
+            break;
+        case G_ACTION_USE:
+            cS.spd -= 2;
+            break;
+        case G_ACTION_FLEE:
+            cS.spd -= 3;
+            break;
+    }
 };
 //draw.ts
 /*
@@ -1817,7 +1957,6 @@ const G_view_drawBattleText = (text) => {
 };
 const G_view_drawHeaders = (x, y) => {
     const w = 200;
-    // const x = 0;
     const h = 25;
     const y2 = y - h;
     G_view_drawUiBackground(x, y2, w, h);
@@ -1853,4 +1992,5 @@ const G_view_drawInfo = (battle, allegiance) => {
         }
     }
 };
+// const G_view_drawTurnOrder = (x: number, y: number) => {};
 //# sourceMappingURL=main.js.map

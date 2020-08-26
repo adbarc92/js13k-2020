@@ -4,6 +4,15 @@ G_model_actorSetFacing
 G_model_actorSetPosition
 G_model_battleGetScreenPosition
 G_model_createActor
+
+G_ACTION_STRIKE
+G_ACTION_CHARGE
+G_ACTION_INTERRUPT
+G_ACTION_DEFEND
+G_ACTION_HEAL
+G_ACTION_USE
+G_ACTION_FLEE
+
 G_FACING_LEFT
 G_FACING_RIGHT
 */
@@ -104,4 +113,33 @@ const G_model_unitGainCharge = (unit: Unit) => {
 
 const G_model_unitResetDef = (unit: Unit) => {
   unit.cS.def = unit.bS.def;
+};
+
+const G_model_modifySpeed = (unit: Unit, action: RoundAction) => {
+  const { cS } = unit;
+  switch (action) {
+    case G_ACTION_STRIKE:
+      console.log('strike modifies speed; old speed:', cS.spd);
+      cS.spd += 2;
+      console.log('new speed:', cS.spd);
+      break;
+    case G_ACTION_CHARGE:
+      cS.spd += 2;
+      break;
+    case G_ACTION_INTERRUPT:
+      cS.spd += 0;
+      break;
+    case G_ACTION_DEFEND:
+      cS.spd += 3;
+      break;
+    case G_ACTION_HEAL:
+      cS.spd -= 1;
+      break;
+    case G_ACTION_USE:
+      cS.spd -= 2;
+      break;
+    case G_ACTION_FLEE:
+      cS.spd -= 3;
+      break;
+  }
 };
