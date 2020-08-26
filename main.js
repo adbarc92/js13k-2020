@@ -422,9 +422,9 @@ const G_controller_roundApplyAction = async (action, round, target) => {
             const dmg = G_controller_battleActionStrike(actingUnit, target);
             battle.text = 'Did ' + -dmg + " damage. It's somewhat effective.";
             G_model_actorSetAnimState(target.actor, G_ANIM_STUNNED);
-            await G_utils_waitMs(400);
-            G_model_actorSetAnimState(target.actor, G_ANIM_DEFAULT);
             G_view_playSound('actionStrike');
+            await G_utils_waitMs(800);
+            G_model_actorSetAnimState(target.actor, G_ANIM_DEFAULT);
             if (!G_model_unitLives(target)) {
                 const facing = G_utils_isAlly(battle, target)
                     ? G_FACING_UP_RIGHT
@@ -906,7 +906,7 @@ const G_BATTLE_MENU_LABELS = [
     // make sure these indices match above
     'Strike',
     'Charge',
-    'Interrupt',
+    'Break',
     'Defend',
     'Heal',
     'Use',
@@ -1778,7 +1778,7 @@ const G_view_drawMenuCursor = (x, y) => {
     const cursorHeight = G_CURSOR_HEIGHT;
     const cursorWidth = G_CURSOR_WIDTH;
     ctx.save();
-    ctx.translate(x - G_CURSOR_WIDTH / 2, y - G_CURSOR_HEIGHT / 2);
+    ctx.translate(x + 2, y);
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.lineTo(0, cursorHeight);
@@ -1803,7 +1803,7 @@ const G_view_drawMenu = (menu) => {
             color,
         });
     });
-    G_view_drawMenuCursor(x - G_CURSOR_WIDTH, y + i * lh + lh / 2);
+    G_view_drawMenuCursor(x, y + lh * i);
 };
 const G_view_drawBattleText = (text) => {
     const x = 0;
@@ -1816,7 +1816,6 @@ const G_view_drawBattleText = (text) => {
     });
 };
 const G_view_drawHeaders = (x, y) => {
-    const screenSize = G_model_getScreenSize();
     const w = 200;
     // const x = 0;
     const h = 25;

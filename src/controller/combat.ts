@@ -238,9 +238,9 @@ const G_controller_roundApplyAction = async (
       const dmg = G_controller_battleActionStrike(actingUnit, target as Unit);
       battle.text = 'Did ' + -dmg + " damage. It's somewhat effective.";
       G_model_actorSetAnimState((target as Unit).actor, G_ANIM_STUNNED);
-      await G_utils_waitMs(400);
-      G_model_actorSetAnimState((target as Unit).actor, G_ANIM_DEFAULT);
       G_view_playSound('actionStrike');
+      await G_utils_waitMs(800);
+      G_model_actorSetAnimState((target as Unit).actor, G_ANIM_DEFAULT);
       if (!G_model_unitLives(target as Unit)) {
         const facing = G_utils_isAlly(battle, target as Unit)
           ? G_FACING_UP_RIGHT

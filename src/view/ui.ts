@@ -29,7 +29,7 @@ const G_view_drawMenuCursor = (x: number, y: number) => {
   const cursorHeight = G_CURSOR_HEIGHT;
   const cursorWidth = G_CURSOR_WIDTH;
   ctx.save();
-  ctx.translate(x - G_CURSOR_WIDTH / 2, y - G_CURSOR_HEIGHT / 2);
+  ctx.translate(x + 2, y);
   ctx.beginPath();
   ctx.moveTo(0, 0);
   ctx.lineTo(0, cursorHeight);
@@ -56,7 +56,7 @@ const G_view_drawMenu = (menu: Menu) => {
       color,
     });
   });
-  G_view_drawMenuCursor(x - G_CURSOR_WIDTH, y + i * lh + lh / 2);
+  G_view_drawMenuCursor(x, y + lh * i);
 };
 
 const G_view_drawBattleText = (text: string) => {
@@ -73,7 +73,6 @@ const G_view_drawBattleText = (text: string) => {
 };
 
 const G_view_drawHeaders = (x: number, y: number) => {
-  const screenSize = G_model_getScreenSize();
   const w = 200;
   // const x = 0;
   const h = 25;

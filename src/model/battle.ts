@@ -47,7 +47,7 @@ const G_BATTLE_MENU_LABELS = [
   // make sure these indices match above
   'Strike',
   'Charge',
-  'Interrupt',
+  'Break',
   'Defend',
   'Heal',
   'Use',
