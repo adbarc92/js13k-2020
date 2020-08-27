@@ -214,6 +214,27 @@ const G_model_loadSounds = () => {
     0.03,
   ]);
 
+  loadSound(soundMap, 'death', [
+    1.1,
+    0,
+    170,
+    0.06,
+    ,
+    1.17,
+    4,
+    0.7,
+    0.8,
+    1.5,
+    50,
+    ,
+    ,
+    0.5,
+    ,
+    0.6,
+    ,
+    0.7,
+  ]); // Explosion 9)
+
   model_sounds = soundMap;
 };
 
