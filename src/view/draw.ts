@@ -18,28 +18,34 @@ G_model_roundGetActingUnit
 G_view_drawBattleText
 G_view_drawInfo
 G_view_drawMenu
+G_view_drawTurnOrder
 
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
+G_BATTLE_SCALE
 G_FACING_LEFT
 G_FACING_RIGHT
 BATTLE_MENU
+
 */
 
 const G_BLACK = '#000';
 const G_WHITE = '#FFF';
+const G_GOLD = '#E6D26D';
 
 interface DrawTextParams {
   font?: string;
   color?: string;
   size?: string;
   align?: 'left' | 'center' | 'right';
+  strokeColor?: string;
 }
 const DEFAULT_TEXT_PARAMS = {
   font: 'monospace',
   color: '#fff',
   size: 14,
   align: 'left',
+  strokeColor: '',
 };
 
 // for(let i = 70; i <= 160; i+=30)
@@ -68,6 +74,7 @@ const G_view_drawRect = (
   ctx?: CanvasRenderingContext2D
 ) => {
   ctx = ctx || G_model_getCtx();
+  ctx.lineWidth = 1;
   ctx[stroke ? 'strokeStyle' : 'fillStyle'] = color;
   ctx[stroke ? 'strokeRect' : 'fillRect'](x, y, w, h);
 };
@@ -79,7 +86,7 @@ const G_view_drawText = (
   textParams?: DrawTextParams,
   ctx?: CanvasRenderingContext2D
 ) => {
-  const { font, size, color, align } = {
+  const { font, size, color, align, strokeColor } = {
     ...DEFAULT_TEXT_PARAMS,
     ...(textParams || {}),
   };
@@ -89,6 +96,11 @@ const G_view_drawText = (
   ctx.textAlign = align as CanvasTextAlign;
   ctx.textBaseline = 'middle';
   ctx.fillText(text, x, y);
+  if (strokeColor) {
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = 0.5;
+    ctx.strokeText(text, x, y);
+  }
 };
 
 const G_view_drawVerticalGradient = (
@@ -173,7 +185,7 @@ const G_view_drawBattle = (battle: Battle) => {
     const [x, y] = G_model_actorGetPosition(allies[i].actor);
     // const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ALLY);
     G_model_actorSetPosition(allies[i].actor, x, y);
-    G_view_drawActor(allies[i].actor, 2);
+    G_view_drawActor(allies[i].actor, G_BATTLE_SCALE);
     G_view_drawText(`${allies[i].name}`, x * 2 + 16, y * 2 - 5, {
       align: 'center',
     });
@@ -185,7 +197,7 @@ const G_view_drawBattle = (battle: Battle) => {
     // const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ENEMY);
     const [x, y] = G_model_actorGetPosition(enemies[i].actor);
     // G_model_actorSetPosition(enemies[i].actor, x, y);
-    G_view_drawActor(enemies[i].actor, 2);
+    G_view_drawActor(enemies[i].actor, G_BATTLE_SCALE);
     G_view_drawText(
       `${enemies[i].name}: ${enemies[i].cS.hp.toString()}/${enemies[
         i
@@ -205,4 +217,5 @@ const G_view_drawBattle = (battle: Battle) => {
     console.log('Battle Text:', battle.text);
     G_view_drawBattleText(battle.text);
   }
+  G_view_drawTurnOrder(battle);
 };

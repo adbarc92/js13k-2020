@@ -51,7 +51,11 @@ const G_model_createVerticalMenu = (
   };
 };
 
-const G_model_menuSetNextCursorIndex = (menu: Menu, diff: MenuIncrement) => {
+const G_model_menuSetNextCursorIndex = (
+  menu: Menu,
+  diff: MenuIncrement,
+  muteSound?: boolean
+) => {
   const len = menu.items.length;
   let ctr = 0;
   let nextIndex: number = 0;
@@ -70,7 +74,9 @@ const G_model_menuSetNextCursorIndex = (menu: Menu, diff: MenuIncrement) => {
     curIndex = nextIndex;
   } while (menu.disabledItems.includes(nextIndex));
   menu.i = nextIndex;
-  G_view_playSound('menuMove');
+  if (!muteSound) {
+    G_view_playSound('menuMove');
+  }
 };
 
 const G_model_menuSelectCurrentItem = (menu: Menu) => {

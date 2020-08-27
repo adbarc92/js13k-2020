@@ -15,6 +15,7 @@ G_utils_isAlly
 G_utils_getRandArrElem
 
 G_ACTION_CHARGE
+G_BATTLE_SCALE
 G_CURSOR_WIDTH
 G_CURSOR_HEIGHT
 */
@@ -57,21 +58,21 @@ type Allegiance = 0 | 1;
 const G_ALLEGIANCE_ALLY = 0;
 const G_ALLEGIANCE_ENEMY = 1;
 
-const G_SCALE = 2;
+type BattlePosition = [number, number];
 
-const playerPos = [
-  [40, 70] as [number, number],
-  [40, 100] as [number, number],
-  [40, 130] as [number, number],
-  [40, 160] as [number, number],
-];
+const initOffset = 70; // temp
+const G_UNITOFFSET = 48; // temp
+const generateBattleCoords = (x: number) => {
+  const coords: BattlePosition[] = [];
+  for (let i = 0; i < 4; i++) {
+    coords.push([x, i * G_UNITOFFSET + initOffset]);
+  }
+  return coords;
+};
 
-const enemyPos = [
-  [200, 70] as [number, number],
-  [200, 100] as [number, number],
-  [200, 130] as [number, number],
-  [200, 160] as [number, number],
-];
+const playerPos = generateBattleCoords(40);
+
+const enemyPos = generateBattleCoords(200);
 
 const G_model_createBattle = (allies: Unit[], enemies: Unit[]): Battle => {
   const screenSize = G_model_getScreenSize();
@@ -122,9 +123,9 @@ const selectTarget = async (battle: Battle): Promise<Unit | null> => {
       G_ALLEGIANCE_ENEMY
     );
 
-    const x = startX * G_SCALE - G_CURSOR_WIDTH;
-    const y = startY * G_SCALE + G_CURSOR_HEIGHT / 2; // ???
-    const h = 30 * G_SCALE; // "30" is the difference in y values of the unit positions from the unit variables
+    const x = startX * G_BATTLE_SCALE - G_CURSOR_WIDTH;
+    const y = startY * G_BATTLE_SCALE + G_CURSOR_HEIGHT / 2; // ???
+    const h = 48 * G_BATTLE_SCALE; // "30" is the difference in y values of the unit positions from the unit variables
     const targetMenu = G_model_createVerticalMenu(
       x,
       y,

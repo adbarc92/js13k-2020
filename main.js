@@ -243,71 +243,6 @@ const G_utils_waitMs = async (ms) => {
 };
 /*
 global
-G_controller_roundApplyAction
-G_utils_getRandArrElem
-G_ACTION_CHARGE
-G_ACTION_STRIKE
-*/
-// Attack weakest target
-// const G_utils_getWeakestEnemy = (enemies: Unit[]): Unit => {
-//   let weakest = enemies[0];
-//   for (let i = 0; i < enemies.length; i++) {
-//     if (enemies[i].cS.hp < weakest.cS.hp) {
-//       weakest = enemies[i];
-//     }
-//   }
-//   return weakest;
-// };
-const GET_LEAST = false;
-const GET_GREATEST = true;
-const G_utils_getOutlierByStat = (enemies, stat, greatest) => {
-    let outlier = enemies[0];
-    for (let i = 1; i < enemies.length; i++) {
-        if (greatest) {
-            if (enemies[i].cS[stat] > outlier[stat]) {
-                outlier = enemies[i];
-            }
-        }
-        else {
-            if (enemies[i].cS[stat] < outlier[stat]) {
-                outlier = enemies[i];
-            }
-        }
-    }
-    return outlier;
-};
-const G_model_aiTargetWeakest = (allies, round) => {
-    const target = G_utils_getOutlierByStat(allies, 'hp', GET_LEAST);
-    G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
-};
-// Standard: charge up and then strike
-const G_model_aiChargeStrike = (actingUnit, enemies, round) => {
-    if (actingUnit.cS.cCnt < actingUnit.cS.iCnt) {
-        G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
-    }
-    else {
-        const target = G_utils_getRandArrElem(enemies);
-        G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
-    }
-};
-const G_model_aiBoss = (actingUnit, battle, round) => {
-    // If Interrupt Count < 2, replenish
-    if (actingUnit.cS.iCnt < 2) {
-        battle.text = 'Replenishing';
-        actingUnit.cS.iCnt = actingUnit.bS.iCnt;
-    }
-    else {
-        const target = G_utils_getOutlierByStat(battle.allies, 'cCnt', GET_GREATEST);
-        // If an enemy has charge of >4, Interrupt
-        if (target.cS.cCnt > 4) {
-            // G_controller_roundApplyAction(G_ACTION_INTERRUPT, round, target);
-        }
-    }
-};
-// Alternate strike and charge
-//
-/*
-global
 G_model_setBattleInputEnabled
 G_model_battleGetCurrentRound
 G_model_actionToString
@@ -362,19 +297,11 @@ G_FACING_UP
 G_FACING_UP_LEFT
 G_FACING_UP_RIGHT
 */
+const G_BATTLE_SCALE = 2;
 const G_controller_initBattle = () => {
     const jimothy = G_model_createUnit('Jimothy', 100, 10, 5, 5, 5, 0, G_ALLEGIANCE_ALLY);
     const seph = G_model_createUnit('Seph', 100, 10, 5, 5, 4, 1, G_ALLEGIANCE_ALLY);
-    // const kana = G_model_createUnit(
-    //   'Kana',
-    //   100,
-    //   8,
-    //   3,
-    //   2,
-    //   7,
-    //   2,
-    //   G_ALLEGIANCE_ALLY
-    // );
+    const kana = G_model_createUnit('Kana', 100, 8, 3, 2, 7, 2, G_ALLEGIANCE_ALLY);
     // const widdly2Diddly = G_model_createUnit(
     //   'widdly2Diddly',
     //   100,
@@ -387,16 +314,7 @@ const G_controller_initBattle = () => {
     // );
     const karst = G_model_createUnit('Karst', 100, 10, 5, 5, 5, 0, G_ALLEGIANCE_ENEMY);
     const urien = G_model_createUnit('Urien', 100, 10, 5, 5, 5, 1, G_ALLEGIANCE_ENEMY);
-    // const shreth = G_model_createUnit(
-    //   'Shrike',
-    //   100,
-    //   8,
-    //   6,
-    //   3,
-    //   2,
-    //   2,
-    //   G_ALLEGIANCE_ENEMY
-    // );
+    const shrike = G_model_createUnit('Shrike', 100, 8, 6, 3, 2, 2, G_ALLEGIANCE_ENEMY);
     // const pDiddy = G_model_createUnit(
     //   'P Diddy',
     //   100,
@@ -407,12 +325,14 @@ const G_controller_initBattle = () => {
     //   3,
     //   G_ALLEGIANCE_ENEMY
     // );
-    const battle = G_model_createBattle([jimothy, seph], [karst, urien]);
+    const battle = G_model_createBattle([jimothy, seph, kana], [karst, urien, shrike]);
     const firstRound = G_model_createRound([
         jimothy,
         karst,
         seph,
         urien,
+        kana,
+        shrike,
     ]);
     G_model_battleAddRound(battle, firstRound);
     console.log('First Round Turn Order:', firstRound);
@@ -456,6 +376,7 @@ const controller_battleSimulateTurn = async (battle, round) => {
     }
     if (actingUnit.cS.spd === 0) {
         actingUnit.cS.spd = actingUnit.bS.spd;
+        return;
     }
     const { x, y } = actingUnit.actor;
     const x2 = G_utils_isAlly(battle, actingUnit) ? x + 20 : x - 20;
@@ -471,7 +392,7 @@ const controller_battleSimulateTurn = async (battle, round) => {
                 actionMenu.disabledItems = [];
             }
             actionMenu.i = -1;
-            G_model_menuSetNextCursorIndex(actionMenu, 1);
+            G_model_menuSetNextCursorIndex(actionMenu, 1, true);
             G_model_setBattleInputEnabled(true);
         }
         else {
@@ -983,6 +904,7 @@ G_utils_isAlly
 G_utils_getRandArrElem
 
 G_ACTION_CHARGE
+G_BATTLE_SCALE
 G_CURSOR_WIDTH
 G_CURSOR_HEIGHT
 */
@@ -1005,19 +927,17 @@ const G_BATTLE_MENU_LABELS = [
 ];
 const G_ALLEGIANCE_ALLY = 0;
 const G_ALLEGIANCE_ENEMY = 1;
-const G_SCALE = 2;
-const playerPos = [
-    [40, 70],
-    [40, 100],
-    [40, 130],
-    [40, 160],
-];
-const enemyPos = [
-    [200, 70],
-    [200, 100],
-    [200, 130],
-    [200, 160],
-];
+const initOffset = 70; // temp
+const G_UNITOFFSET = 48; // temp
+const generateBattleCoords = (x) => {
+    const coords = [];
+    for (let i = 0; i < 4; i++) {
+        coords.push([x, i * G_UNITOFFSET + initOffset]);
+    }
+    return coords;
+};
+const playerPos = generateBattleCoords(40);
+const enemyPos = generateBattleCoords(200);
 const G_model_createBattle = (allies, enemies) => {
     const screenSize = G_model_getScreenSize();
     const menuWidth = 100;
@@ -1047,9 +967,9 @@ const selectTarget = async (battle) => {
     return new Promise(resolve => {
         const targets = battle.enemies;
         const [startX, startY] = G_model_battleGetScreenPosition(0, G_ALLEGIANCE_ENEMY);
-        const x = startX * G_SCALE - G_CURSOR_WIDTH;
-        const y = startY * G_SCALE + G_CURSOR_HEIGHT / 2; // ???
-        const h = 30 * G_SCALE; // "30" is the difference in y values of the unit positions from the unit variables
+        const x = startX * G_BATTLE_SCALE - G_CURSOR_WIDTH;
+        const y = startY * G_BATTLE_SCALE + G_CURSOR_HEIGHT / 2; // ???
+        const h = 48 * G_BATTLE_SCALE; // "30" is the difference in y values of the unit positions from the unit variables
         const targetMenu = G_model_createVerticalMenu(x, y, 100, // set this to 100 so I could debug by turning on the background
         Array(targets.length).fill(''), // wtf, that exists?  i never knew that...
         // this function is called when a target is selected
@@ -1271,7 +1191,7 @@ const G_model_createVerticalMenu = (x, y, w, items, cb, disabledItems, bg, lineH
         bg: !!bg,
     };
 };
-const G_model_menuSetNextCursorIndex = (menu, diff) => {
+const G_model_menuSetNextCursorIndex = (menu, diff, muteSound) => {
     const len = menu.items.length;
     let ctr = 0;
     let nextIndex = 0;
@@ -1291,7 +1211,9 @@ const G_model_menuSetNextCursorIndex = (menu, diff) => {
         curIndex = nextIndex;
     } while (menu.disabledItems.includes(nextIndex));
     menu.i = nextIndex;
-    G_view_playSound('menuMove');
+    if (!muteSound) {
+        G_view_playSound('menuMove');
+    }
 };
 const G_model_menuSelectCurrentItem = (menu) => {
     menu.cb(menu.i);
@@ -1606,20 +1528,25 @@ G_model_roundGetActingUnit
 G_view_drawBattleText
 G_view_drawInfo
 G_view_drawMenu
+G_view_drawTurnOrder
 
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
+G_BATTLE_SCALE
 G_FACING_LEFT
 G_FACING_RIGHT
 BATTLE_MENU
+
 */
 const G_BLACK = '#000';
 const G_WHITE = '#FFF';
+const G_GOLD = '#E6D26D';
 const DEFAULT_TEXT_PARAMS = {
     font: 'monospace',
     color: '#fff',
     size: 14,
     align: 'left',
+    strokeColor: '',
 };
 // for(let i = 70; i <= 160; i+=30)
 const gradientCache = {};
@@ -1629,17 +1556,23 @@ const G_view_clearScreen = () => {
 };
 const G_view_drawRect = (x, y, w, h, color, stroke, ctx) => {
     ctx = ctx || G_model_getCtx();
+    ctx.lineWidth = 1;
     ctx[stroke ? 'strokeStyle' : 'fillStyle'] = color;
     ctx[stroke ? 'strokeRect' : 'fillRect'](x, y, w, h);
 };
 const G_view_drawText = (text, x, y, textParams, ctx) => {
-    const { font, size, color, align } = Object.assign(Object.assign({}, DEFAULT_TEXT_PARAMS), (textParams || {}));
+    const { font, size, color, align, strokeColor } = Object.assign(Object.assign({}, DEFAULT_TEXT_PARAMS), (textParams || {}));
     ctx = ctx || G_model_getCtx();
     ctx.font = `${size}px ${font}`;
     ctx.fillStyle = color;
     ctx.textAlign = align;
     ctx.textBaseline = 'middle';
     ctx.fillText(text, x, y);
+    if (strokeColor) {
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 0.5;
+        ctx.strokeText(text, x, y);
+    }
 };
 const G_view_drawVerticalGradient = (x, y, w, h, colorStart, colorStop) => {
     const ctx = G_model_getCtx();
@@ -1688,7 +1621,7 @@ const G_view_drawBattle = (battle) => {
         const [x, y] = G_model_actorGetPosition(allies[i].actor);
         // const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ALLY);
         G_model_actorSetPosition(allies[i].actor, x, y);
-        G_view_drawActor(allies[i].actor, 2);
+        G_view_drawActor(allies[i].actor, G_BATTLE_SCALE);
         G_view_drawText(`${allies[i].name}`, x * 2 + 16, y * 2 - 5, {
             align: 'center',
         });
@@ -1699,7 +1632,7 @@ const G_view_drawBattle = (battle) => {
         // const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ENEMY);
         const [x, y] = G_model_actorGetPosition(enemies[i].actor);
         // G_model_actorSetPosition(enemies[i].actor, x, y);
-        G_view_drawActor(enemies[i].actor, 2);
+        G_view_drawActor(enemies[i].actor, G_BATTLE_SCALE);
         G_view_drawText(`${enemies[i].name}: ${enemies[i].cS.hp.toString()}/${enemies[i].bS.hp.toString()}`, x * 2 + 5, y * 2 - 5, {
             align: 'center',
         });
@@ -1711,6 +1644,7 @@ const G_view_drawBattle = (battle) => {
         console.log('Battle Text:', battle.text);
         G_view_drawBattleText(battle.text);
     }
+    G_view_drawTurnOrder(battle);
 };
 /*
 global
@@ -1890,6 +1824,27 @@ const G_model_loadSounds = () => {
         0.71,
         0.07,
     ]);
+    loadSound(soundMap, 'turnChime', [
+        ,
+        0,
+        750,
+        0.08,
+        0.05,
+        0.09,
+        1,
+        0.01,
+        ,
+        ,
+        ,
+        ,
+        0.02,
+        ,
+        ,
+        ,
+        0.15,
+        0.4,
+        0.03,
+    ]);
     model_sounds = soundMap;
 };
 const G_view_playSound = (soundName) => {
@@ -1897,20 +1852,26 @@ const G_view_playSound = (soundName) => {
 };
 /*
 global
+G_model_battleGetCurrentRound
 G_model_getCtx
 G_model_getScreenSize
+G_utils_isAlly
 G_view_drawRect
+G_view_drawSprite
 G_view_drawText
 
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
+G_BATTLE_SCALE
 G_BLACK
+G_GOLD
 G_WHITE
 */
 const G_CURSOR_WIDTH = 16;
 const G_CURSOR_HEIGHT = 16;
-const G_view_drawUiBackground = (x, y, w, h) => {
-    G_view_drawRect(x, y, w, h, G_BLACK);
+const G_view_drawUiBackground = (x, y, w, h, color) => {
+    color = color || G_BLACK;
+    G_view_drawRect(x, y, w, h, color);
     G_view_drawRect(x, y, w, h, G_WHITE, true);
 };
 const G_view_drawMenuCursor = (x, y) => {
@@ -1992,5 +1953,25 @@ const G_view_drawInfo = (battle, allegiance) => {
         }
     }
 };
-// const G_view_drawTurnOrder = (x: number, y: number) => {};
+const G_view_drawTurnOrder = (battle) => {
+    const boxHeight = 40; // 30x30 squares where the bottom 10px is the name
+    const boxWidth = 30;
+    const { turnOrder } = G_model_battleGetCurrentRound(battle);
+    const l = turnOrder.length;
+    let x = G_model_getScreenSize() / 2 - (l / 2) * boxWidth - 5; // start halfway across the screen, down 30 pixels for battleText
+    for (let i = 0; i < l; i++, x += boxWidth + 5) {
+        const { name, actor } = turnOrder[i];
+        const { sprite, spriteIndex } = actor;
+        const round = G_model_battleGetCurrentRound(battle);
+        const y = round.currentIndex === i ? 50 : 40;
+        G_view_drawUiBackground(x, y, boxWidth, boxHeight);
+        const y2 = G_utils_isAlly(battle, turnOrder[i]) ? y : y + boxHeight;
+        G_view_drawText(name.slice(0, 5), x + boxWidth / 2, y2, {
+            size: '10',
+            align: 'center',
+            strokeColor: G_WHITE,
+        });
+        G_view_drawSprite(`${sprite}_${spriteIndex}`, x, y, 2);
+    }
+};
 //# sourceMappingURL=main.js.map

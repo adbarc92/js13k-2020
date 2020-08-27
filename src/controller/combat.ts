@@ -55,6 +55,8 @@ G_FACING_UP_LEFT
 G_FACING_UP_RIGHT
 */
 
+const G_BATTLE_SCALE = 2;
+
 const G_controller_initBattle = () => {
   const jimothy = G_model_createUnit(
     'Jimothy',
@@ -76,16 +78,16 @@ const G_controller_initBattle = () => {
     1,
     G_ALLEGIANCE_ALLY
   );
-  // const kana = G_model_createUnit(
-  //   'Kana',
-  //   100,
-  //   8,
-  //   3,
-  //   2,
-  //   7,
-  //   2,
-  //   G_ALLEGIANCE_ALLY
-  // );
+  const kana = G_model_createUnit(
+    'Kana',
+    100,
+    8,
+    3,
+    2,
+    7,
+    2,
+    G_ALLEGIANCE_ALLY
+  );
   // const widdly2Diddly = G_model_createUnit(
   //   'widdly2Diddly',
   //   100,
@@ -117,16 +119,16 @@ const G_controller_initBattle = () => {
     1,
     G_ALLEGIANCE_ENEMY
   );
-  // const shreth = G_model_createUnit(
-  //   'Shrike',
-  //   100,
-  //   8,
-  //   6,
-  //   3,
-  //   2,
-  //   2,
-  //   G_ALLEGIANCE_ENEMY
-  // );
+  const shrike = G_model_createUnit(
+    'Shrike',
+    100,
+    8,
+    6,
+    3,
+    2,
+    2,
+    G_ALLEGIANCE_ENEMY
+  );
   // const pDiddy = G_model_createUnit(
   //   'P Diddy',
   //   100,
@@ -138,14 +140,17 @@ const G_controller_initBattle = () => {
   //   G_ALLEGIANCE_ENEMY
   // );
 
-  const battle = G_model_createBattle([jimothy, seph], [karst, urien]);
+  const battle = G_model_createBattle(
+    [jimothy, seph, kana],
+    [karst, urien, shrike]
+  );
   const firstRound = G_model_createRound([
     jimothy,
     karst,
     seph,
     urien,
-    // kana,
-    // shreth,
+    kana,
+    shrike,
     // widdly2Diddly,
     // pDiddy,
   ]);
@@ -200,6 +205,7 @@ const controller_battleSimulateTurn = async (
   }
   if (actingUnit.cS.spd === 0) {
     actingUnit.cS.spd = actingUnit.bS.spd;
+    return;
   }
   const { x, y } = actingUnit.actor;
   const x2 = G_utils_isAlly(battle, actingUnit) ? x + 20 : x - 20;
@@ -214,7 +220,7 @@ const controller_battleSimulateTurn = async (
         actionMenu.disabledItems = [];
       }
       actionMenu.i = -1;
-      G_model_menuSetNextCursorIndex(actionMenu, 1);
+      G_model_menuSetNextCursorIndex(actionMenu, 1, true);
       G_model_setBattleInputEnabled(true);
     } else {
       setTimeout(() => {

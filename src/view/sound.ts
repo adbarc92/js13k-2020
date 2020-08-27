@@ -192,6 +192,28 @@ const G_model_loadSounds = () => {
     0.07,
   ]);
 
+  loadSound(soundMap, 'turnChime', [
+    ,
+    0,
+    750,
+    0.08,
+    0.05,
+    0.09,
+    1,
+    0.01,
+    ,
+    ,
+    ,
+    ,
+    0.02,
+    ,
+    ,
+    ,
+    0.15,
+    0.4,
+    0.03,
+  ]);
+
   model_sounds = soundMap;
 };
 
