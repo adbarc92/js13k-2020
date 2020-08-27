@@ -9,13 +9,13 @@ G_model_getSprite
 G_model_menuSetNextCursorIndex
 G_model_unitLives
 G_view_drawBattle
-G_view_drawMenu
 G_view_playSound
 G_utils_areAllUnitsDead
 G_utils_isAlly
 G_utils_getRandArrElem
 
 G_ACTION_CHARGE
+G_BATTLE_SCALE
 G_CURSOR_WIDTH
 G_CURSOR_HEIGHT
 */
@@ -47,7 +47,7 @@ const G_BATTLE_MENU_LABELS = [
   // make sure these indices match above
   'Strike',
   'Charge',
-  'Interrupt',
+  'Break',
   'Defend',
   'Heal',
   'Use',
@@ -58,21 +58,21 @@ type Allegiance = 0 | 1;
 const G_ALLEGIANCE_ALLY = 0;
 const G_ALLEGIANCE_ENEMY = 1;
 
-const G_SCALE = 2;
+type BattlePosition = [number, number];
 
-const playerPos = [
-  [40, 70] as [number, number],
-  [40, 100] as [number, number],
-  [40, 130] as [number, number],
-  [40, 160] as [number, number],
-];
+const initOffset = 70; // temp
+const G_UNITOFFSET = 48; // temp
+const generateBattleCoords = (x: number) => {
+  const coords: BattlePosition[] = [];
+  for (let i = 0; i < 4; i++) {
+    coords.push([x, i * G_UNITOFFSET + initOffset]);
+  }
+  return coords;
+};
 
-const enemyPos = [
-  [200, 70] as [number, number],
-  [200, 100] as [number, number],
-  [200, 130] as [number, number],
-  [200, 160] as [number, number],
-];
+const playerPos = generateBattleCoords(40);
+
+const enemyPos = generateBattleCoords(200);
 
 const G_model_createBattle = (allies: Unit[], enemies: Unit[]): Battle => {
   const screenSize = G_model_getScreenSize();
@@ -109,6 +109,11 @@ const G_model_battleGetScreenPosition = (
   return allegiance === G_ALLEGIANCE_ALLY ? playerPos[i] : enemyPos[i];
 };
 
+const G_model_battleSetText = (text: string) => {
+  const battle = G_model_getCurrentBattle();
+  battle.text = text;
+};
+
 const selectTarget = async (battle: Battle): Promise<Unit | null> => {
   return new Promise(resolve => {
     const targets = battle.enemies;
@@ -118,9 +123,9 @@ const selectTarget = async (battle: Battle): Promise<Unit | null> => {
       G_ALLEGIANCE_ENEMY
     );
 
-    const x = startX * G_SCALE - G_CURSOR_WIDTH;
-    const y = startY * G_SCALE - 16; // offset by -16 so the cursor is centered on the sprite
-    const h = 30 * G_SCALE; // "30" is the difference in y values of the unit positions from the unit variables
+    const x = startX * G_BATTLE_SCALE - G_CURSOR_WIDTH;
+    const y = startY * G_BATTLE_SCALE + G_CURSOR_HEIGHT / 2; // ???
+    const h = 48 * G_BATTLE_SCALE; // "30" is the difference in y values of the unit positions from the unit variables
     const targetMenu = G_model_createVerticalMenu(
       x,
       y,
@@ -158,24 +163,29 @@ const handleActionMenuSelected = async (i: RoundAction) => {
   switch (i) {
     case G_ACTION_STRIKE:
       // here we could 'await' target selection instead of randomly picking one
-      const target: Unit | null = await selectTarget(battle);
+      let target: Unit | null = await selectTarget(battle);
       // handles the case where ESC (or back or something) is pressed while targeting
       if (!target) {
         return;
       }
-      G_view_playSound('actionStrike');
       G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
       break;
     case G_ACTION_CHARGE:
-      G_view_playSound('actionCharge');
       G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
       break;
     case G_ACTION_DEFEND:
-      G_view_playSound('actionDefend');
       G_controller_roundApplyAction(G_ACTION_DEFEND, round, null);
       break;
     case G_ACTION_HEAL:
       G_controller_roundApplyAction(G_ACTION_HEAL, round, null);
+      break;
+    case G_ACTION_INTERRUPT:
+      const target2: Unit | null = await selectTarget(battle); // QUESTION: cannot reassign within scope?!
+      // handles the case where ESC (or back or something) is pressed while targeting
+      if (!target2) {
+        return;
+      }
+      G_controller_roundApplyAction(G_ACTION_INTERRUPT, round, target2);
       break;
     default:
       console.error('Action', i, 'Is not implemented yet.');

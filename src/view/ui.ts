@@ -1,13 +1,18 @@
 /*
 global
+G_model_battleGetCurrentRound
 G_model_getCtx
 G_model_getScreenSize
+G_utils_isAlly
 G_view_drawRect
+G_view_drawSprite
 G_view_drawText
 
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
+G_BATTLE_SCALE
 G_BLACK
+G_GOLD
 G_WHITE
 */
 
@@ -18,9 +23,11 @@ const G_view_drawUiBackground = (
   x: number,
   y: number,
   w: number,
-  h: number
+  h: number,
+  color?: string
 ) => {
-  G_view_drawRect(x, y, w, h, G_BLACK);
+  color = color || G_BLACK;
+  G_view_drawRect(x, y, w, h, color);
   G_view_drawRect(x, y, w, h, G_WHITE, true);
 };
 
@@ -29,7 +36,7 @@ const G_view_drawMenuCursor = (x: number, y: number) => {
   const cursorHeight = G_CURSOR_HEIGHT;
   const cursorWidth = G_CURSOR_WIDTH;
   ctx.save();
-  ctx.translate(x - G_CURSOR_WIDTH / 2, y - G_CURSOR_HEIGHT / 2);
+  ctx.translate(x + 2, y);
   ctx.beginPath();
   ctx.moveTo(0, 0);
   ctx.lineTo(0, cursorHeight);
@@ -56,7 +63,7 @@ const G_view_drawMenu = (menu: Menu) => {
       color,
     });
   });
-  G_view_drawMenuCursor(x - G_CURSOR_WIDTH, y + i * lh + lh / 2);
+  G_view_drawMenuCursor(x, y + lh * i);
 };
 
 const G_view_drawBattleText = (text: string) => {
@@ -73,9 +80,7 @@ const G_view_drawBattleText = (text: string) => {
 };
 
 const G_view_drawHeaders = (x: number, y: number) => {
-  const screenSize = G_model_getScreenSize();
   const w = 200;
-  // const x = 0;
   const h = 25;
   const y2 = y - h;
   G_view_drawUiBackground(x, y2, w, h);
@@ -110,5 +115,28 @@ const G_view_drawInfo = (battle: Battle, allegiance: Allegiance) => {
         align: 'center',
       });
     }
+  }
+};
+
+const G_view_drawTurnOrder = (battle: Battle) => {
+  const boxHeight = 40; // 30x30 squares where the bottom 10px is the name
+  const boxWidth = 30;
+  const { turnOrder } = G_model_battleGetCurrentRound(battle);
+  const l = turnOrder.length;
+  let x = G_model_getScreenSize() / 2 - (l / 2) * boxWidth - 5; // start halfway across the screen, down 30 pixels for battleText
+  for (let i = 0; i < l; i++, x += boxWidth + 5) {
+    const { name, actor } = turnOrder[i];
+    const { sprite, spriteIndex } = actor;
+    const round = G_model_battleGetCurrentRound(battle);
+    const y = round.currentIndex === i ? 50 : 40;
+    G_view_drawUiBackground(x, y, boxWidth, boxHeight);
+    const y2 = G_utils_isAlly(battle, turnOrder[i]) ? y : y + boxHeight;
+    G_view_drawText(name.slice(0, 5), x + boxWidth / 2, y2, {
+      size: '10',
+      align: 'center',
+      strokeColor: G_WHITE,
+    });
+
+    G_view_drawSprite(`${sprite}_${spriteIndex}`, x, y, 2);
   }
 };

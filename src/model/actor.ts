@@ -17,11 +17,12 @@ const G_FACING_RIGHT: Facing = 1;
 const G_FACING_UP_RIGHT: Facing = 2;
 const G_FACING_UP_LEFT: Facing = 3;
 
-type AnimState = 0 | 1 | 2 | 3;
+type AnimState = 0 | 1 | 2 | 3 | 4;
 const G_ANIM_DEFAULT: AnimState = 0;
 const G_ANIM_WALKING: AnimState = 1;
 const G_ANIM_JUMPING: AnimState = 2;
 const G_ANIM_ATTACKING: AnimState = 3;
+const G_ANIM_STUNNED: AnimState = 4;
 
 interface Actor {
   sprite: string;
@@ -92,6 +93,8 @@ const G_model_actorGetCurrentSprite = (actor: Actor): string => {
       Math.floor((G_model_getElapsedMs() % 200) / 100)) as AnimState;
   } else if (anim === G_ANIM_ATTACKING) {
     anim = (2 - Math.floor((G_model_getElapsedMs() % 500) / 250)) as AnimState;
+  } else if (anim === G_ANIM_STUNNED) {
+    anim = 2 as AnimState;
   }
   let mod = '';
   switch (facing) {
