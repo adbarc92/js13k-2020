@@ -1081,7 +1081,6 @@ const G_model_modifySpeed = (unit, action) => {
 };
 const G_BLACK = '#000';
 const G_WHITE = '#FFF';
-const G_GOLD = '#E6D26D';
 const DEFAULT_TEXT_PARAMS = {
     font: 'monospace',
     color: '#fff',

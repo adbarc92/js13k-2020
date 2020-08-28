@@ -31,7 +31,6 @@ BATTLE_MENU
 
 const G_BLACK = '#000';
 const G_WHITE = '#FFF';
-const G_GOLD = '#E6D26D';
 
 interface DrawTextParams {
   font?: string;
@@ -47,8 +46,6 @@ const DEFAULT_TEXT_PARAMS = {
   align: 'left',
   strokeColor: '',
 };
-
-// for(let i = 70; i <= 160; i+=30)
 
 const gradientCache = {};
 
