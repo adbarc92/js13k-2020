@@ -25,15 +25,20 @@ G_SCALE
 (window as any).running = true;
 
 const runMainLoop = () => {
-  // const player = G_model_createPlayer();
-  // const room = G_model_createRoomFromSprite('map_0', player);
-  // G_model_setCurrentRoom(room);
+  /* Battle Code */
 
   const battle = G_controller_initBattle();
   G_controller_doBattle(battle);
 
+  /* Rendering Code */
   const startTime = performance.now();
   let prevNow = startTime;
+
+  /* Traversal Code */
+  // const player = G_model_createPlayer();
+  // const room = G_model_createRoomFromSprite('map_0', player);
+  // G_model_setCurrentRoom(room);
+
   const loop = (now: number) => {
     G_view_drawBattle(battle);
     const sixtyFpsMs = 16.666;
@@ -43,6 +48,7 @@ const runMainLoop = () => {
     G_model_setElapsedMs(now - startTime);
     prevNow = now;
 
+    /* Traversal Code */
     // G_view_clearScreen();
 
     // G_controller_updateRoom(room);

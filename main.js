@@ -97,22 +97,60 @@ const G_utils_waitMs = async (ms) => {
         setTimeout(resolve, ms);
     });
 };
+const GET_LEAST = false;
+const GET_GREATEST = true;
+const G_utils_getOutlierByStat = (enemies, stat, greatest) => {
+    let outlier = enemies[0];
+    for (let i = 1; i < enemies.length; i++) {
+        if (greatest) {
+            if (enemies[i].cS[stat] > outlier[stat]) {
+                outlier = enemies[i];
+            }
+        }
+        else {
+            if (enemies[i].cS[stat] < outlier[stat]) {
+                outlier = enemies[i];
+            }
+        }
+    }
+    return outlier;
+};
+const G_model_aiTargetWeakest = (allies, round) => {
+    const target = G_utils_getOutlierByStat(allies, 'hp', GET_LEAST);
+    G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
+};
+const G_model_aiChargeStrike = (actingUnit, enemies, round) => {
+    if (actingUnit.cS.cCnt < actingUnit.cS.iCnt) {
+        G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
+    }
+    else {
+        const target = G_utils_getRandArrElem(enemies);
+        G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
+    }
+};
+const G_model_aiBoss = (actingUnit, battle, round) => {
+    if (actingUnit.cS.iCnt < 2) {
+        battle.text = 'Replenishing';
+        actingUnit.cS.iCnt = actingUnit.bS.iCnt;
+    }
+    else {
+        const target = G_utils_getOutlierByStat(battle.allies, 'cCnt', GET_GREATEST);
+        if (target.cS.cCnt > 4) {
+        }
+    }
+};
 const G_BATTLE_SCALE = 2;
 const G_controller_initBattle = () => {
     const jimothy = G_model_createUnit('Jimothy', 100, 10, 5, 5, 5, 0, G_ALLEGIANCE_ALLY);
     const seph = G_model_createUnit('Seph', 100, 10, 5, 5, 4, 1, G_ALLEGIANCE_ALLY);
     const kana = G_model_createUnit('Kana', 100, 8, 3, 2, 7, 2, G_ALLEGIANCE_ALLY);
-    const karst = G_model_createUnit('Karst', 100, 10, 5, 5, 5, 0, G_ALLEGIANCE_ENEMY);
-    const urien = G_model_createUnit('Urien', 100, 10, 5, 5, 5, 1, G_ALLEGIANCE_ENEMY);
-    const shrike = G_model_createUnit('Shrike', 100, 8, 6, 3, 2, 2, G_ALLEGIANCE_ENEMY);
-    const battle = G_model_createBattle([jimothy, seph, kana], [karst, urien, shrike]);
+    const fairy1 = G_model_createUnit('Fairy1', 20, 10, 10, 10, 1, 0, G_ALLEGIANCE_ENEMY, G_model_createActor('monsters', 0));
+    const battle = G_model_createBattle([jimothy, seph, kana], [fairy1]);
     const firstRound = G_model_createRound([
         jimothy,
-        karst,
         seph,
-        urien,
         kana,
-        shrike,
+        fairy1,
     ]);
     G_model_battleAddRound(battle, firstRound);
     console.log('First Round Turn Order:', firstRound);
@@ -184,7 +222,9 @@ const G_controller_roundApplyAction = async (action, round, target) => {
     const battle = G_model_getCurrentBattle();
     const actingUnit = G_model_roundGetActingUnit(round);
     G_model_unitMoveForward(actingUnit);
-    G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING);
+    if (actingUnit.allegiance === G_ALLEGIANCE_ALLY) {
+        G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING);
+    }
     battle.text = G_model_actionToString(action);
     await G_utils_waitMs(1000);
     G_model_modifySpeed(actingUnit, action);
@@ -192,10 +232,12 @@ const G_controller_roundApplyAction = async (action, round, target) => {
         case G_ACTION_STRIKE:
             const dmg = G_controller_battleActionStrike(actingUnit, target);
             battle.text = 'Did ' + -dmg + ' damage.';
-            G_model_actorSetAnimState(target.actor, G_ANIM_STUNNED);
             G_view_playSound('actionStrike');
-            await G_utils_waitMs(800);
-            G_model_actorSetAnimState(target.actor, G_ANIM_DEFAULT);
+            if (actingUnit.allegiance === G_ALLEGIANCE_ENEMY) {
+                G_model_actorSetAnimState(target.actor, G_ANIM_STUNNED);
+                await G_utils_waitMs(800);
+                G_model_actorSetAnimState(target.actor, G_ANIM_DEFAULT);
+            }
             if (!G_model_unitLives(target)) {
                 const facing = G_utils_isAlly(battle, target)
                     ? G_FACING_UP_RIGHT
@@ -222,7 +264,9 @@ const G_controller_roundApplyAction = async (action, round, target) => {
     round.nextTurnOrder.push(actingUnit);
     await G_utils_waitMs(2000);
     G_model_unitResetPosition(actingUnit);
-    G_model_actorSetAnimState(actingUnit.actor, G_ANIM_DEFAULT);
+    if (actingUnit.allegiance === G_ALLEGIANCE_ALLY) {
+        G_model_actorSetAnimState(actingUnit.actor, G_ANIM_DEFAULT);
+    }
     battle.text = '';
     await G_utils_waitMs(500);
     G_model_getBattlePostActionCb()();
@@ -514,9 +558,9 @@ const G_ANIM_WALKING = 1;
 const G_ANIM_JUMPING = 2;
 const G_ANIM_ATTACKING = 3;
 const G_ANIM_STUNNED = 4;
-const G_model_createActor = (spriteIndex) => {
+const G_model_createActor = (sprite, spriteIndex) => {
     return {
-        sprite: 'actors',
+        sprite,
         spriteIndex,
         facing: G_FACING_LEFT,
         anim: G_ANIM_DEFAULT,
@@ -856,9 +900,37 @@ const G_model_menuSelectNothing = (menu) => {
     menu.cb(-1);
     G_view_playSound('menuCancel');
 };
+let G_Party = null;
+const G_model_getParty = () => {
+    return G_Party;
+};
+const G_model_setParty = (newParty) => {
+    G_Party = newParty;
+};
+const G_model_addUnitToParty = (unit) => {
+    const party = G_model_getParty();
+    party.units.push(unit);
+};
+const G_model_removeUnitFromParty = (unit) => {
+    const party = G_model_getParty();
+    const index = party.units.indexOf(unit);
+    if (index !== -1)
+        party.units.splice(index, 1);
+};
+const initParty = (name, hp, dmg, def, mag, spd) => {
+    const newUnit = G_model_createUnit(name, hp, dmg, def, mag, spd, 0, G_ALLEGIANCE_ALLY);
+    if (G_model_getParty() === null) {
+        const party = { units: [], inventory: [] };
+        party.units.push(newUnit);
+        G_model_setParty(party);
+    }
+    else {
+        G_model_addUnitToParty(newUnit);
+    }
+};
 const PLAYER_SPRITE_INDEX = 0;
 const G_model_createPlayer = () => {
-    const actor = G_model_createActor(PLAYER_SPRITE_INDEX);
+    const actor = G_model_createActor('actors', PLAYER_SPRITE_INDEX);
     G_model_actorSetPosition(actor, 0, 33);
     return {
         actor,
@@ -995,15 +1067,22 @@ const G_model_loadImagesAndSprites = async () => {
     loadSpritesFromImage(spriteMap, topRightSpritesheet, 'terrain', 16, 16);
     const bottomLeftSpritesheet = spriteToCanvas(createSprite(baseImage, 0, spriteSheetHeight, spriteSheetWidth, spriteSheetHeight));
     loadSpritesFromImage(spriteMap, bottomLeftSpritesheet, 'map', 16, 16);
+    const bottomRightSpriteSheet = spriteToCanvas(createSprite(baseImage, spriteSheetWidth, spriteSheetHeight, spriteSheetWidth, spriteSheetHeight));
+    loadSpritesFromImage(spriteMap, bottomRightSpriteSheet, 'monsters', 16, 16);
+    console.log('Sprites:', spriteMap);
     model_sprites = spriteMap;
 };
 const G_model_getSprite = (spriteName) => model_sprites[spriteName];
 const G_model_getSpriteSize = () => 16;
+const G_AI_PLAYER = 0;
+const G_AI_CHARGER = 1;
+const G_AI_STRIKER = 2;
+const G_AI_BOSS = 3;
 const model_createStats = (hp, dmg, def, mag, spd) => {
     return { hp, dmg, def, mag, spd, iCnt: mag, cCnt: 0 };
 };
 const G_model_createUnit = (name, hp, dmg, def, mag, spd, i, allegiance, actor) => {
-    actor = actor || G_model_createActor(0);
+    actor = actor || G_model_createActor('actors', 0);
     allegiance
         ? G_model_actorSetFacing(actor, G_FACING_LEFT)
         : G_model_actorSetFacing(actor, G_FACING_RIGHT);

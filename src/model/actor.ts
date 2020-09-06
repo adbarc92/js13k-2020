@@ -40,9 +40,9 @@ interface Actor {
   h: number;
 }
 
-const G_model_createActor = (spriteIndex: number): Actor => {
+const G_model_createActor = (sprite: string, spriteIndex: number): Actor => {
   return {
-    sprite: 'actors',
+    sprite,
     spriteIndex,
     facing: G_FACING_LEFT,
     anim: G_ANIM_DEFAULT,
