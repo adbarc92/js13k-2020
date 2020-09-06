@@ -15,6 +15,7 @@ G_model_createMenu
 G_model_createUnit
 G_model_createVerticalMenu
 G_model_createRound
+G_model_doAI
 G_model_getBattlePostActionCb
 G_model_getCurrentBattle
 G_model_getScreenSize
@@ -108,7 +109,21 @@ const G_controller_initBattle = () => {
     1,
     0,
     G_ALLEGIANCE_ENEMY,
-    G_model_createActor('monsters', 0)
+    G_model_createActor('monsters', 0),
+    1
+  );
+
+  const dogman = G_model_createUnit(
+    'Dogman1',
+    200,
+    10,
+    5,
+    1,
+    10,
+    1,
+    G_ALLEGIANCE_ENEMY,
+    G_model_createActor('monsters', 1),
+    2
   );
 
   // const karst = G_model_createUnit(
@@ -152,7 +167,7 @@ const G_controller_initBattle = () => {
   //   G_ALLEGIANCE_ENEMY
   // );
 
-  const battle = G_model_createBattle([jimothy, seph, kana], [fairy1]);
+  const battle = G_model_createBattle([jimothy, seph, kana], [fairy1, dogman]);
   const firstRound = G_model_createRound([
     jimothy,
     // karst,
@@ -160,6 +175,7 @@ const G_controller_initBattle = () => {
     // urien,
     kana,
     fairy1,
+    dogman,
     // shrike,
     // widdly2Diddly,
     // pDiddy,
@@ -234,9 +250,7 @@ const controller_battleSimulateTurn = async (
       G_model_setBattleInputEnabled(true);
     } else {
       setTimeout(() => {
-        // AI (the dumb version): select a random target and STRIKE
-        const target = G_utils_getRandArrElem(battle.allies);
-        G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
+        G_model_doAI(battle, round, actingUnit);
       }, 1000);
     }
   });

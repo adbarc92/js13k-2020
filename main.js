@@ -97,46 +97,21 @@ const G_utils_waitMs = async (ms) => {
         setTimeout(resolve, ms);
     });
 };
-const GET_LEAST = false;
-const GET_GREATEST = true;
-const G_utils_getOutlierByStat = (enemies, stat, greatest) => {
-    let outlier = enemies[0];
-    for (let i = 1; i < enemies.length; i++) {
-        if (greatest) {
-            if (enemies[i].cS[stat] > outlier[stat]) {
-                outlier = enemies[i];
+const G_model_doAI = (battle, round, actingUnit) => {
+    switch (actingUnit.ai) {
+        case 1:
+            if (actingUnit.cS.cCnt < actingUnit.cS.iCnt) {
+                G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
             }
-        }
-        else {
-            if (enemies[i].cS[stat] < outlier[stat]) {
-                outlier = enemies[i];
+            else {
+                const target = G_utils_getRandArrElem(battle.allies);
+                G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
             }
-        }
-    }
-    return outlier;
-};
-const G_model_aiTargetWeakest = (allies, round) => {
-    const target = G_utils_getOutlierByStat(allies, 'hp', GET_LEAST);
-    G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
-};
-const G_model_aiChargeStrike = (actingUnit, enemies, round) => {
-    if (actingUnit.cS.cCnt < actingUnit.cS.iCnt) {
-        G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
-    }
-    else {
-        const target = G_utils_getRandArrElem(enemies);
-        G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
-    }
-};
-const G_model_aiBoss = (actingUnit, battle, round) => {
-    if (actingUnit.cS.iCnt < 2) {
-        battle.text = 'Replenishing';
-        actingUnit.cS.iCnt = actingUnit.bS.iCnt;
-    }
-    else {
-        const target = G_utils_getOutlierByStat(battle.allies, 'cCnt', GET_GREATEST);
-        if (target.cS.cCnt > 4) {
-        }
+            break;
+        case 2:
+            const target = G_utils_getRandArrElem(battle.allies);
+            G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
+            break;
     }
 };
 const G_BATTLE_SCALE = 2;
@@ -144,13 +119,15 @@ const G_controller_initBattle = () => {
     const jimothy = G_model_createUnit('Jimothy', 100, 10, 5, 5, 5, 0, G_ALLEGIANCE_ALLY);
     const seph = G_model_createUnit('Seph', 100, 10, 5, 5, 4, 1, G_ALLEGIANCE_ALLY);
     const kana = G_model_createUnit('Kana', 100, 8, 3, 2, 7, 2, G_ALLEGIANCE_ALLY);
-    const fairy1 = G_model_createUnit('Fairy1', 20, 10, 10, 10, 1, 0, G_ALLEGIANCE_ENEMY, G_model_createActor('monsters', 0));
-    const battle = G_model_createBattle([jimothy, seph, kana], [fairy1]);
+    const fairy1 = G_model_createUnit('Fairy1', 20, 10, 10, 10, 1, 0, G_ALLEGIANCE_ENEMY, G_model_createActor('monsters', 0), 1);
+    const dogman = G_model_createUnit('Dogman1', 200, 10, 5, 1, 10, 1, G_ALLEGIANCE_ENEMY, G_model_createActor('monsters', 1), 2);
+    const battle = G_model_createBattle([jimothy, seph, kana], [fairy1, dogman]);
     const firstRound = G_model_createRound([
         jimothy,
         seph,
         kana,
         fairy1,
+        dogman,
     ]);
     G_model_battleAddRound(battle, firstRound);
     console.log('First Round Turn Order:', firstRound);
@@ -211,8 +188,7 @@ const controller_battleSimulateTurn = async (battle, round) => {
         }
         else {
             setTimeout(() => {
-                const target = G_utils_getRandArrElem(battle.allies);
-                G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
+                G_model_doAI(battle, round, actingUnit);
             }, 1000);
         }
     });
@@ -1081,8 +1057,9 @@ const G_AI_BOSS = 3;
 const model_createStats = (hp, dmg, def, mag, spd) => {
     return { hp, dmg, def, mag, spd, iCnt: mag, cCnt: 0 };
 };
-const G_model_createUnit = (name, hp, dmg, def, mag, spd, i, allegiance, actor) => {
+const G_model_createUnit = (name, hp, dmg, def, mag, spd, i, allegiance, actor, ai) => {
     actor = actor || G_model_createActor('actors', 0);
+    ai = ai || 0;
     allegiance
         ? G_model_actorSetFacing(actor, G_FACING_LEFT)
         : G_model_actorSetFacing(actor, G_FACING_RIGHT);
@@ -1093,6 +1070,7 @@ const G_model_createUnit = (name, hp, dmg, def, mag, spd, i, allegiance, actor) 
         actor,
         i,
         allegiance,
+        ai,
     };
     G_model_unitResetPosition(unit);
     return unit;

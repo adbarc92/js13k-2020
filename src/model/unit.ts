@@ -40,6 +40,7 @@ interface Unit {
   cS: Stats;
   i: number; // vertical index of unit
   allegiance: Allegiance;
+  ai: AI;
 }
 
 const model_createStats = (
@@ -61,9 +62,11 @@ const G_model_createUnit = (
   spd: number,
   i: number,
   allegiance: Allegiance,
-  actor?: Actor
+  actor?: Actor,
+  ai?: AI
 ): Unit => {
   actor = actor || G_model_createActor('actors', 0);
+  ai = ai || 0;
   allegiance
     ? G_model_actorSetFacing(actor, G_FACING_LEFT)
     : G_model_actorSetFacing(actor, G_FACING_RIGHT);
@@ -74,6 +77,7 @@ const G_model_createUnit = (
     actor,
     i,
     allegiance,
+    ai,
   };
   G_model_unitResetPosition(unit);
   return unit;
