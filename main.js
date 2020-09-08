@@ -292,6 +292,144 @@ const G_controller_battleActionDefend = (unit) => {
     const { cS } = unit;
     cS.def *= 1.5;
 };
+let addLine = text => {
+    console.log(text);
+};
+let catcher = new (function () {
+    let cb = () => { };
+    this.setK = _cb => (cb = _cb);
+    window.addEventListener('keydown', ev => {
+        if (this.disabled) {
+            return;
+        }
+        cb(String.fromCharCode(ev.which));
+    });
+})();
+let lastChooseNodeId;
+let lastChooseNodesSelected;
+var core = {
+    init() {
+        lastChooseNodeId = null;
+        lastChooseNodesSelected = [];
+    },
+    async say(text, cb) {
+        if (typeof text === 'object') {
+            if (text.length === 1) {
+                addLine(text);
+            }
+            else {
+                core.say(text[0], () => {
+                    core.say(text.slice(1), cb);
+                });
+                return;
+            }
+        }
+        else {
+            if (text.length <= 1) {
+                cb && cb();
+                return;
+            }
+            else {
+                addLine(text);
+            }
+        }
+        return new Promise(resolve => {
+            addLine();
+            addLine('&nbsp&nbsp&nbsp&nbsp&nbspPress any key to continue...');
+            catcher.setK(() => {
+                cb && cb();
+                resolve();
+            });
+        });
+    },
+    async choose(text, nodeId, choices) {
+        return new Promise(resolve => {
+            const sep = '----------';
+            if (text) {
+                addLine(text);
+                addLine();
+            }
+            addLine(sep, 'choiceStyle');
+            const actualChoices = choices.filter(choice => {
+                if (choice.c()) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            });
+            if (lastChooseNodeId !== nodeId) {
+                lastChooseNodeId = nodeId;
+                lastChooseNodesSelected = [];
+            }
+            let ctr = 1;
+            actualChoices.forEach(choice => {
+                addLine('<b>  ' + ctr + '.) ' + choice.t + '</b>', 'choiceStyle');
+                ctr++;
+            });
+            addLine(sep, 'choiceStyle');
+            catcher.setK(async (key) => {
+                const choice = actualChoices[key - 1];
+                if (choice) {
+                    lastChooseNodesSelected.push(choice.t);
+                    catcher.setK(() => { });
+                    addLine();
+                    addLine(choice.t, 'chosenStyle');
+                    addLine();
+                    await choice.cb();
+                    resolve();
+                }
+            });
+        });
+    },
+    async defer(func, args) {
+        args = args || [player.get('curIN2n'), player.get('curIN2f')];
+        await func.apply(null, args);
+    },
+    exit() { },
+};
+var player = {
+    state: {},
+    get(path) {
+        let _helper = (paths, obj) => {
+            let k = paths.shift();
+            if (!paths.length) {
+                return obj[k] === undefined ? undefined : obj[k];
+            }
+            let nextObj = obj[k];
+            if (nextObj !== undefined) {
+                return _helper(paths, nextObj);
+            }
+            else {
+                return undefined;
+            }
+        };
+        return _helper(path.split('.'), this.state);
+    },
+    set(path, val) {
+        val = val === undefined ? true : val;
+        let _helper = (keys, obj) => {
+            let k = keys.shift();
+            if (k === undefined) {
+                return;
+            }
+            if (!keys.length) {
+                obj[k] = val;
+                return;
+            }
+            if (!obj[k]) {
+                obj[k] = {};
+            }
+            _helper(keys, obj[k]);
+        };
+        _helper(path.split('.'), this.state);
+    },
+    setIfUnset(path, val) {
+        if (this.get(path) === null) {
+            this.set(path, val);
+        }
+    },
+};
 window.addEventListener('keydown', ev => {
     G_model_setKeyDown(ev.key);
     if (ev.key === 'q') {
@@ -525,6 +663,62 @@ zzfx;
     return J.getChannelData(0).set(G), (H.buffer = J), H.start(), H;
 }),
     (zzfxX = new AudioContext());
+function run(isDryRun) {
+    const files = {};
+    const scope = {};
+    const CURRENT_NODE_VAR = 'curIN2n';
+    const CURRENT_FILE_VAR = 'curIN2f';
+    const LAST_FILE_VAR = 'lasIN2f';
+    files[`Intro.json`] = id => {
+        player.set(CURRENT_FILE_VAR, 'Intro.json');
+        scope.cuL = () => {
+            player.set(CURRENT_NODE_VAR, 'cuL');
+            let text = `Controls`;
+            core.say(text, scope.t2H);
+        };
+        scope.t2H = () => {
+            player.set(CURRENT_NODE_VAR, 't2H');
+            let text = `Movement/Menu Choice: Arrow Keys`;
+            core.say(text, scope.yqO);
+        };
+        scope.yqO = () => {
+            player.set(CURRENT_NODE_VAR, 'yqO');
+            let text = `Jump: Spacebar`;
+            core.say(text, scope.KQf);
+        };
+        scope.KQf = () => {
+            player.set(CURRENT_NODE_VAR, 'KQf');
+            let text = `Select Menu Option: Enter`;
+            core.say(text, scope.UPr);
+        };
+        scope.UPr = () => {
+            player.set(LAST_FILE_VAR, player.get(CURRENT_FILE_VAR));
+            let key = `IntroEnd.json`;
+            let func = files[key];
+            if (func) {
+                func();
+            }
+            else {
+                core.say(`EXECUTION WARNING, no file exists named ${key}. You are probably running a subset of all the files, and not the whole scenario. ` +
+                    Object.keys(files), files.exit);
+            }
+        };
+        if (id === undefined) {
+            scope.cuL();
+        }
+        else if (id) {
+            scope[id]();
+        }
+        return player.state;
+    };
+    files.exit = () => {
+        core.exit();
+    };
+    if (!isDryRun) {
+        files['Intro.json']();
+    }
+    return { files, scope };
+}
 const G_FACING_LEFT = 0;
 const G_FACING_RIGHT = 1;
 const G_FACING_UP_RIGHT = 2;
