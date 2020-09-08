@@ -6,3 +6,4 @@ scratch/*.csv
 dist/
 .build/
 package-lock.json
+src/main.js

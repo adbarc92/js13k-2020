@@ -2,6 +2,8 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const minifyHtml = require('html-minifier').minify;
 
+const DIRNAME = __dirname.replace(/\\/g, '/');
+
 const outputDirName = process.argv[2];
 
 const CLIENT_FILES = ['../main.js'];
@@ -25,7 +27,7 @@ const build = async () => {
   console.log('Concat files...');
 
   let htmlFile = fs
-    .readFileSync(`${__dirname}/../index.html`)
+    .readFileSync(`${DIRNAME}/../index.html`)
     .toString()
     .replace('src/main.js', 'main.js');
   const mainFile = (
@@ -34,27 +36,24 @@ const build = async () => {
         prev +
         '\n' +
         fs
-          .readFileSync(__dirname + '/../' + outputDirName + '/' + curr)
+          .readFileSync(DIRNAME + '/../' + outputDirName + '/' + curr)
           .toString()
       );
     }, '(() => {\n') + '\n})()'
   ).replace(/res\//g, '');
 
   await execAsync(
-    `rm -rf ${__dirname}/../.build ${__dirname}/../${outputDirName}.zip`
+    `rm -rf ${DIRNAME}/../.build ${DIRNAME}/../${outputDirName}.zip`
   );
-  await execAsync(`mkdir -p ${__dirname}/../.build`);
-  await execAsync(
-    `cp -r ${__dirname}/../res/*.png ${__dirname}/../.build/ || :`
-  );
-  await execAsync(
-    `cp -r ${__dirname}/../index.html ${__dirname}/../.build/ || :`
-  );
-  await execAsync(`rm -rf ${__dirname}/../${outputDirName}/*.map`);
+  // await execAsync(`mkdir -p "${DIRNAME}/../.build"`);
+  fs.mkdirSync(`${DIRNAME}/../.build`, { recursive: true });
+  await execAsync(`cp -r ${DIRNAME}/../res/*.png ${DIRNAME}/../.build/ || :`);
+  await execAsync(`cp -r ${DIRNAME}/../index.html ${DIRNAME}/../.build/ || :`);
+  await execAsync(`rm -rf ${DIRNAME}/../${outputDirName}/*.map`);
 
   console.log('Write tmp files...');
-  fs.writeFileSync(`${__dirname}/../.build/main.tmp.js`, mainFile);
-  fs.writeFileSync(`${__dirname}/../.build/index.tmp.html`, htmlFile);
+  fs.writeFileSync(`${DIRNAME}/../.build/main.tmp.js`, mainFile);
+  fs.writeFileSync(`${DIRNAME}/../.build/index.tmp.html`, htmlFile);
 
   const terserArgs = [
     'passes=3',
@@ -69,9 +68,9 @@ const build = async () => {
 
   console.log('Minify code...');
   await execAsync(
-    `${__dirname}/../node_modules/.bin/terser --compress ${terserArgs.join(
+    `${DIRNAME}/../node_modules/.bin/terser --compress ${terserArgs.join(
       ','
-    )} --mangle -o ${__dirname}/../.build/main.js -- ${__dirname}/../.build/main.tmp.js`
+    )} --mangle -o ${DIRNAME}/../.build/main.js -- ${DIRNAME}/../.build/main.tmp.js`
   );
   console.log('minify html...');
   fs.writeFileSync(
@@ -89,25 +88,38 @@ const build = async () => {
       useShortDoctype: true,
     })
   );
+  fs.mkdirSync(`${DIRNAME}/../dist`, { recursive: true });
   await execAsync(
-    `mkdir -p dist && cp .build/index.html dist && cp .build/main.js dist && cp .build/*.png dist`
+    `cp .build/index.html dist && cp .build/main.js dist && cp .build/*.png dist`
   );
   await execAsync(
-    `cd .build && zip -9 ${__dirname}/../${outputDirName}.zip index.html main.js *.png`
+    `cd .build && zip -9 ${DIRNAME}/../${outputDirName}.zip index.html main.js *.png`
   );
   try {
-    await execAsync(`advzip -z -4 ${__dirname}/../${outputDirName}.zip`);
+    await execAsync(`advzip -z -4 ${DIRNAME}/../${outputDirName}.zip`);
   } catch (e) {
     console.log('advzip is not installed, cannot zip build');
     return;
   }
-  const result = await execAsync(
-    `stat -c '%n %s' ${__dirname}/../${outputDirName}.zip`
-  );
+  let result;
+  if (process.platform === 'darwin') {
+    result = await execAsync(`stat -f%z ${DIRNAME}/../${outputDirName}.zip`);
+    const bytes = parseInt(result.split(' ')[0]);
+    const kb13 = 13312;
+    console.log(
+      `${bytes}b of ${kb13}b (${((bytes * 100) / kb13).toFixed(2)}%)`
+    );
+  } else {
+    result = await execAsync(
+      `stat -c '%n %s' ${DIRNAME}/../${outputDirName}.zip`
+    );
+    const bytes = parseInt(result.split(' ')[1]);
+    const kb13 = 13312;
+    console.log(
+      `${bytes}b of ${kb13}b (${((bytes * 100) / kb13).toFixed(2)}%)`
+    );
+  }
   await execAsync(`mv src.zip dist/dist.zip`);
-  const bytes = parseInt(result.split(' ')[1]);
-  const kb13 = 13312;
-  console.log(`${bytes}b of ${kb13}b (${((bytes * 100) / kb13).toFixed(2)}%)`);
 };
 
 build();

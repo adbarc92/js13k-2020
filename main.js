@@ -1608,4 +1608,3 @@ const G_view_hideDialogBox = () => {
     (_a = document.getElementById('dialogBox')) === null || _a === void 0 ? void 0 : _a.setAttribute('style', 'display: none');
     G_model_setShowingDialogue();
 };
-//# sourceMappingURL=main.js.map
