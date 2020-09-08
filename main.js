@@ -1,18 +1,18 @@
 const G_SCALE = 2;
 window.running = true;
 const runMainLoop = () => {
+    const battle = G_controller_initBattle();
+    G_controller_doBattle(battle);
     const startTime = performance.now();
     let prevNow = startTime;
     const loop = (now) => {
+        G_view_drawBattle(battle);
         const sixtyFpsMs = 16.666;
         const dt = now - prevNow;
         const fm = dt / sixtyFpsMs;
         G_model_setFrameMultiplier(fm > 2 ? 2 : fm);
         G_model_setElapsedMs(now - startTime);
         prevNow = now;
-        G_controller_updateRoom(room);
-        G_view_drawRoom(room, 0, 0, G_SCALE);
-        G_view_drawActor(player.actor, G_SCALE);
         if (window.running)
             requestAnimationFrame(loop);
     };
