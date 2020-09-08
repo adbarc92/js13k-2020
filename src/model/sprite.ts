@@ -210,6 +210,17 @@ const G_model_loadImagesAndSprites = async () => {
   );
   loadSpritesFromImage(spriteMap, bottomLeftSpritesheet, 'map', 16, 16);
 
+  const bottomRightSpriteSheet = spriteToCanvas(
+    createSprite(
+      baseImage,
+      spriteSheetWidth,
+      spriteSheetHeight,
+      spriteSheetWidth,
+      spriteSheetHeight
+    )
+  );
+  loadSpritesFromImage(spriteMap, bottomRightSpriteSheet, 'monsters', 16, 16);
+  console.log('Sprites:', spriteMap); // for debugging
   model_sprites = spriteMap;
 };
 

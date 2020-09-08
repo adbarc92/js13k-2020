@@ -10,17 +10,18 @@ G_model_battleAddRound
 G_model_battleIncrementIndex
 G_model_battleIsComplete
 G_model_battleSetText
-G_model_createActor
 G_model_createBattle
 G_model_createMenu
 G_model_createUnit
 G_model_createVerticalMenu
 G_model_createRound
+G_model_doAI
 G_model_getBattlePostActionCb
 G_model_getCurrentBattle
 G_model_getScreenSize
 G_model_menuSetNextCursorIndex
 G_model_modifySpeed
+G_model_createActor
 G_model_roundGetActingUnit
 G_model_roundIncrementIndex
 G_model_statsModifyHp
@@ -99,36 +100,62 @@ const G_controller_initBattle = () => {
   //   G_ALLEGIANCE_ALLY
   // );
 
-  const karst = G_model_createUnit(
-    'Karst',
-    100,
+  const fairy1 = G_model_createUnit(
+    'Fairy1',
+    20,
     10,
-    5,
-    5,
-    5,
+    10,
+    10,
+    1,
     0,
-    G_ALLEGIANCE_ENEMY
+    G_ALLEGIANCE_ENEMY,
+    G_model_createActor(4),
+    1
   );
-  const urien = G_model_createUnit(
-    'Urien',
-    100,
+
+  const dogman = G_model_createUnit(
+    'Dogman1',
+    200,
     10,
-    5,
-    5,
     5,
     1,
-    G_ALLEGIANCE_ENEMY
+    10,
+    1,
+    G_ALLEGIANCE_ENEMY,
+    G_model_createActor(5),
+    2
   );
-  const shrike = G_model_createUnit(
-    'Shrike',
-    100,
-    8,
-    6,
-    3,
-    2,
-    2,
-    G_ALLEGIANCE_ENEMY
-  );
+
+  // const karst = G_model_createUnit(
+  //   'Karst',
+  //   100,
+  //   10,
+  //   5,
+  //   5,
+  //   5,
+  //   0,
+  //   G_ALLEGIANCE_ENEMY
+  // );
+  // const urien = G_model_createUnit(
+  //   'Urien',
+  //   100,
+  //   10,
+  //   5,
+  //   5,
+  //   5,
+  //   1,
+  //   G_ALLEGIANCE_ENEMY
+  // );
+  // const shrike = G_model_createUnit(
+  //   'Shrike',
+  //   100,
+  //   8,
+  //   6,
+  //   3,
+  //   2,
+  //   2,
+  //   G_ALLEGIANCE_ENEMY
+  // );
   // const pDiddy = G_model_createUnit(
   //   'P Diddy',
   //   100,
@@ -140,17 +167,16 @@ const G_controller_initBattle = () => {
   //   G_ALLEGIANCE_ENEMY
   // );
 
-  const battle = G_model_createBattle(
-    [jimothy, seph, kana],
-    [karst, urien, shrike]
-  );
+  const battle = G_model_createBattle([jimothy, seph, kana], [fairy1, dogman]);
   const firstRound = G_model_createRound([
     jimothy,
-    karst,
+    // karst,
     seph,
-    urien,
+    // urien,
     kana,
-    shrike,
+    fairy1,
+    dogman,
+    // shrike,
     // widdly2Diddly,
     // pDiddy,
   ]);
@@ -224,9 +250,7 @@ const controller_battleSimulateTurn = async (
       G_model_setBattleInputEnabled(true);
     } else {
       setTimeout(() => {
-        // AI (the dumb version): select a random target and STRIKE
-        const target = G_utils_getRandArrElem(battle.allies);
-        G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
+        G_model_doAI(battle, round, actingUnit);
       }, 1000);
     }
   });
@@ -242,7 +266,10 @@ const G_controller_roundApplyAction = async (
   const battle = G_model_getCurrentBattle();
   const actingUnit = G_model_roundGetActingUnit(round) as Unit;
   G_model_unitMoveForward(actingUnit);
-  G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING); // Change animations here
+  // Change animations here
+  if (actingUnit.allegiance === G_ALLEGIANCE_ALLY) {
+    G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING);
+  }
   battle.text = G_model_actionToString(action);
 
   await G_utils_waitMs(1000);
@@ -251,10 +278,12 @@ const G_controller_roundApplyAction = async (
     case G_ACTION_STRIKE:
       const dmg = G_controller_battleActionStrike(actingUnit, target as Unit);
       battle.text = 'Did ' + -dmg + ' damage.';
-      G_model_actorSetAnimState((target as Unit).actor, G_ANIM_STUNNED);
       G_view_playSound('actionStrike');
-      await G_utils_waitMs(800);
-      G_model_actorSetAnimState((target as Unit).actor, G_ANIM_DEFAULT);
+      if (actingUnit.allegiance === G_ALLEGIANCE_ENEMY) {
+        G_model_actorSetAnimState((target as Unit).actor, G_ANIM_STUNNED);
+        await G_utils_waitMs(800);
+        G_model_actorSetAnimState((target as Unit).actor, G_ANIM_DEFAULT);
+      }
       if (!G_model_unitLives(target as Unit)) {
         const facing = G_utils_isAlly(battle, target as Unit)
           ? G_FACING_UP_RIGHT
@@ -282,7 +311,9 @@ const G_controller_roundApplyAction = async (
 
   await G_utils_waitMs(2000);
   G_model_unitResetPosition(actingUnit);
-  G_model_actorSetAnimState(actingUnit.actor, G_ANIM_DEFAULT);
+  if (actingUnit.allegiance === G_ALLEGIANCE_ALLY) {
+    G_model_actorSetAnimState(actingUnit.actor, G_ANIM_DEFAULT);
+  }
   battle.text = '';
 
   await G_utils_waitMs(500);

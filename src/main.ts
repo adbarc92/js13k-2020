@@ -13,27 +13,40 @@ G_model_setElapsedMs
 G_model_setFrameMultiplier
 G_model_loadImagesAndSprites
 G_model_loadSounds
+G_model_getCurrentBattle
+G_model_setCurrentBattle
 G_view_clearScreen
 G_view_drawActor
 G_view_drawBattle
 G_view_drawRoom
 
-G_SCALE
+G_view_showDialogBox
+
 */
 
 // const SCALE = 2;
+
+const G_SCALE = 2;
+
 (window as any).running = true;
 
 const runMainLoop = () => {
+  /* Battle Code */
+
+  const battle = G_controller_initBattle();
+  G_model_setCurrentBattle(battle);
+  G_controller_doBattle(battle);
+
+  /* Rendering Code */
+  const startTime = performance.now();
+  let prevNow = startTime;
+
+  /* Traversal Code */
   // const player = G_model_createPlayer();
   // const room = G_model_createRoomFromSprite('map_0', player);
   // G_model_setCurrentRoom(room);
 
-  const battle = G_controller_initBattle();
-  G_controller_doBattle(battle);
-
-  const startTime = performance.now();
-  let prevNow = startTime;
+  /* Draw Code */
   const loop = (now: number) => {
     G_view_drawBattle(battle);
     const sixtyFpsMs = 16.666;
@@ -43,6 +56,7 @@ const runMainLoop = () => {
     G_model_setElapsedMs(now - startTime);
     prevNow = now;
 
+    /* Traversal Code */
     // G_view_clearScreen();
 
     // G_controller_updateRoom(room);
@@ -60,6 +74,11 @@ const main = async () => {
   await G_model_loadImagesAndSprites();
   G_model_loadSounds();
   runMainLoop();
+  if (!G_model_getCurrentBattle()) {
+    G_view_showDialogBox(
+      "Ho ho, friend. Look yonder. There's a tonne of treasure in that pit over there. I certainly won't kick you into the pit. Trust me. I'm Patches the Spider."
+    );
+  }
 };
 
 window.addEventListener('load', main);

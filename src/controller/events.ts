@@ -18,14 +18,20 @@ G_view_drawBattle
 G_controller_battleSimulateNextRound
 G_controller_battleActionCharge
 G_controller_battleActionHeal
+G_view_hideDialogBox
+G_model_getShowingDialogue
 */
 
 window.addEventListener('keydown', ev => {
-  G_model_setKeyDown(ev.key);
+  if (!G_model_getShowingDialogue()) G_model_setKeyDown(ev.key);
   // console.log('KEY', ev.key);
 
   if (ev.key === 'q') {
     (window as any).running = false;
+  }
+
+  if (ev.key === ' ') {
+    G_view_hideDialogBox();
   }
 
   if (G_model_getBattleInputEnabled()) {

@@ -1,6 +1,8 @@
+const G_SCALE = 2;
 window.running = true;
 const runMainLoop = () => {
     const battle = G_controller_initBattle();
+    G_model_setCurrentBattle(battle);
     G_controller_doBattle(battle);
     const startTime = performance.now();
     let prevNow = startTime;
@@ -21,6 +23,9 @@ const main = async () => {
     await G_model_loadImagesAndSprites();
     G_model_loadSounds();
     runMainLoop();
+    if (!G_model_getCurrentBattle()) {
+        G_view_showDialogBox("Ho ho, friend. Look yonder. There's a tonne of treasure in that pit over there. I certainly won't kick you into the pit. Trust me. I'm Patches the Spider.");
+    }
 };
 window.addEventListener('load', main);
 const G_COLLISION_BOTTOM = 0;
@@ -97,22 +102,46 @@ const G_utils_waitMs = async (ms) => {
         setTimeout(resolve, ms);
     });
 };
+const G_model_getChargeStatus = (actingUnit, battle) => {
+    const chargeStatus = actingUnit.cS.cCnt / actingUnit.cS.iCnt;
+    if (chargeStatus < 0.2) {
+        battle.text = `${actingUnit.name} begins to glow ominously.`;
+    }
+    else if (chargeStatus < 0.5) {
+        battle.text = `${actingUnit.name} shines with contempt.`;
+    }
+};
+const G_model_doAI = (battle, round, actingUnit) => {
+    switch (actingUnit.ai) {
+        case 1:
+            if (actingUnit.cS.cCnt < actingUnit.cS.iCnt) {
+                G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
+            }
+            else {
+                const target = G_utils_getRandArrElem(battle.allies);
+                G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
+            }
+            break;
+        case 2:
+            const target = G_utils_getRandArrElem(battle.allies);
+            G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
+            break;
+    }
+};
 const G_BATTLE_SCALE = 2;
 const G_controller_initBattle = () => {
     const jimothy = G_model_createUnit('Jimothy', 100, 10, 5, 5, 5, 0, G_ALLEGIANCE_ALLY);
     const seph = G_model_createUnit('Seph', 100, 10, 5, 5, 4, 1, G_ALLEGIANCE_ALLY);
     const kana = G_model_createUnit('Kana', 100, 8, 3, 2, 7, 2, G_ALLEGIANCE_ALLY);
-    const karst = G_model_createUnit('Karst', 100, 10, 5, 5, 5, 0, G_ALLEGIANCE_ENEMY);
-    const urien = G_model_createUnit('Urien', 100, 10, 5, 5, 5, 1, G_ALLEGIANCE_ENEMY);
-    const shrike = G_model_createUnit('Shrike', 100, 8, 6, 3, 2, 2, G_ALLEGIANCE_ENEMY);
-    const battle = G_model_createBattle([jimothy, seph, kana], [karst, urien, shrike]);
+    const fairy1 = G_model_createUnit('Fairy1', 20, 10, 10, 10, 1, 0, G_ALLEGIANCE_ENEMY, G_model_createActor(4), 1);
+    const dogman = G_model_createUnit('Dogman1', 200, 10, 5, 1, 10, 1, G_ALLEGIANCE_ENEMY, G_model_createActor(5), 2);
+    const battle = G_model_createBattle([jimothy, seph, kana], [fairy1, dogman]);
     const firstRound = G_model_createRound([
         jimothy,
-        karst,
         seph,
-        urien,
         kana,
-        shrike,
+        fairy1,
+        dogman,
     ]);
     G_model_battleAddRound(battle, firstRound);
     console.log('First Round Turn Order:', firstRound);
@@ -173,8 +202,7 @@ const controller_battleSimulateTurn = async (battle, round) => {
         }
         else {
             setTimeout(() => {
-                const target = G_utils_getRandArrElem(battle.allies);
-                G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
+                G_model_doAI(battle, round, actingUnit);
             }, 1000);
         }
     });
@@ -184,7 +212,9 @@ const G_controller_roundApplyAction = async (action, round, target) => {
     const battle = G_model_getCurrentBattle();
     const actingUnit = G_model_roundGetActingUnit(round);
     G_model_unitMoveForward(actingUnit);
-    G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING);
+    if (actingUnit.allegiance === G_ALLEGIANCE_ALLY) {
+        G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING);
+    }
     battle.text = G_model_actionToString(action);
     await G_utils_waitMs(1000);
     G_model_modifySpeed(actingUnit, action);
@@ -192,10 +222,12 @@ const G_controller_roundApplyAction = async (action, round, target) => {
         case G_ACTION_STRIKE:
             const dmg = G_controller_battleActionStrike(actingUnit, target);
             battle.text = 'Did ' + -dmg + ' damage.';
-            G_model_actorSetAnimState(target.actor, G_ANIM_STUNNED);
             G_view_playSound('actionStrike');
-            await G_utils_waitMs(800);
-            G_model_actorSetAnimState(target.actor, G_ANIM_DEFAULT);
+            if (actingUnit.allegiance === G_ALLEGIANCE_ENEMY) {
+                G_model_actorSetAnimState(target.actor, G_ANIM_STUNNED);
+                await G_utils_waitMs(800);
+                G_model_actorSetAnimState(target.actor, G_ANIM_DEFAULT);
+            }
             if (!G_model_unitLives(target)) {
                 const facing = G_utils_isAlly(battle, target)
                     ? G_FACING_UP_RIGHT
@@ -222,7 +254,9 @@ const G_controller_roundApplyAction = async (action, round, target) => {
     round.nextTurnOrder.push(actingUnit);
     await G_utils_waitMs(2000);
     G_model_unitResetPosition(actingUnit);
-    G_model_actorSetAnimState(actingUnit.actor, G_ANIM_DEFAULT);
+    if (actingUnit.allegiance === G_ALLEGIANCE_ALLY) {
+        G_model_actorSetAnimState(actingUnit.actor, G_ANIM_DEFAULT);
+    }
     battle.text = '';
     await G_utils_waitMs(500);
     G_model_getBattlePostActionCb()();
@@ -273,9 +307,13 @@ const G_controller_battleActionDefend = (unit) => {
     cS.def *= 1.5;
 };
 window.addEventListener('keydown', ev => {
-    G_model_setKeyDown(ev.key);
+    if (!G_model_getShowingDialogue())
+        G_model_setKeyDown(ev.key);
     if (ev.key === 'q') {
         window.running = false;
+    }
+    if (ev.key === ' ') {
+        G_view_hideDialogBox();
     }
     if (G_model_getBattleInputEnabled()) {
         const battle = G_model_getCurrentBattle();
@@ -761,6 +799,7 @@ const G_model_createCanvas = (width, height) => {
     ];
 };
 const G_model_getCanvas = () => {
+    var _a;
     if (model_canvas) {
         return model_canvas;
     }
@@ -768,7 +807,7 @@ const G_model_getCanvas = () => {
         const [canvas, ctx] = G_model_createCanvas(512, 512);
         canvas.id = 'canv';
         ctx.imageSmoothingEnabled = false;
-        document.body.appendChild(canvas);
+        (_a = document.getElementById('innerDiv')) === null || _a === void 0 ? void 0 : _a.appendChild(canvas);
         model_canvas = canvas;
         return canvas;
     }
@@ -790,6 +829,13 @@ const G_model_getElapsedMs = () => {
 };
 const G_model_getScreenSize = () => {
     return 512;
+};
+let G_SHOWING_DIALOG = false;
+const G_model_getShowingDialogue = () => {
+    return G_SHOWING_DIALOG;
+};
+const G_model_setShowingDialogue = () => {
+    G_SHOWING_DIALOG = !G_SHOWING_DIALOG;
 };
 const model_keys = {};
 const G_KEY_RIGHT = 'ArrowRight';
@@ -855,6 +901,34 @@ const G_model_menuSelectCurrentItem = (menu) => {
 const G_model_menuSelectNothing = (menu) => {
     menu.cb(-1);
     G_view_playSound('menuCancel');
+};
+let G_Party = null;
+const G_model_getParty = () => {
+    return G_Party;
+};
+const G_model_setParty = (newParty) => {
+    G_Party = newParty;
+};
+const G_model_addUnitToParty = (unit) => {
+    const party = G_model_getParty();
+    party.units.push(unit);
+};
+const G_model_removeUnitFromParty = (unit) => {
+    const party = G_model_getParty();
+    const index = party.units.indexOf(unit);
+    if (index !== -1)
+        party.units.splice(index, 1);
+};
+const initParty = (name, hp, dmg, def, mag, spd) => {
+    const newUnit = G_model_createUnit(name, hp, dmg, def, mag, spd, 0, G_ALLEGIANCE_ALLY);
+    if (G_model_getParty() === null) {
+        const party = { units: [], inventory: [] };
+        party.units.push(newUnit);
+        G_model_setParty(party);
+    }
+    else {
+        G_model_addUnitToParty(newUnit);
+    }
 };
 const PLAYER_SPRITE_INDEX = 0;
 const G_model_createPlayer = () => {
@@ -995,15 +1069,23 @@ const G_model_loadImagesAndSprites = async () => {
     loadSpritesFromImage(spriteMap, topRightSpritesheet, 'terrain', 16, 16);
     const bottomLeftSpritesheet = spriteToCanvas(createSprite(baseImage, 0, spriteSheetHeight, spriteSheetWidth, spriteSheetHeight));
     loadSpritesFromImage(spriteMap, bottomLeftSpritesheet, 'map', 16, 16);
+    const bottomRightSpriteSheet = spriteToCanvas(createSprite(baseImage, spriteSheetWidth, spriteSheetHeight, spriteSheetWidth, spriteSheetHeight));
+    loadSpritesFromImage(spriteMap, bottomRightSpriteSheet, 'monsters', 16, 16);
+    console.log('Sprites:', spriteMap);
     model_sprites = spriteMap;
 };
 const G_model_getSprite = (spriteName) => model_sprites[spriteName];
 const G_model_getSpriteSize = () => 16;
+const G_AI_PLAYER = 0;
+const G_AI_CHARGER = 1;
+const G_AI_STRIKER = 2;
+const G_AI_BOSS = 3;
 const model_createStats = (hp, dmg, def, mag, spd) => {
     return { hp, dmg, def, mag, spd, iCnt: mag, cCnt: 0 };
 };
-const G_model_createUnit = (name, hp, dmg, def, mag, spd, i, allegiance, actor) => {
+const G_model_createUnit = (name, hp, dmg, def, mag, spd, i, allegiance, actor, ai) => {
     actor = actor || G_model_createActor(0);
+    ai = ai || 0;
     allegiance
         ? G_model_actorSetFacing(actor, G_FACING_LEFT)
         : G_model_actorSetFacing(actor, G_FACING_RIGHT);
@@ -1014,6 +1096,7 @@ const G_model_createUnit = (name, hp, dmg, def, mag, spd, i, allegiance, actor) 
         actor,
         i,
         allegiance,
+        ai,
     };
     G_model_unitResetPosition(unit);
     return unit;
@@ -1081,7 +1164,6 @@ const G_model_modifySpeed = (unit, action) => {
 };
 const G_BLACK = '#000';
 const G_WHITE = '#FFF';
-const G_GOLD = '#E6D26D';
 const DEFAULT_TEXT_PARAMS = {
     font: 'monospace',
     color: '#fff',
@@ -1508,5 +1590,22 @@ const G_view_drawTurnOrder = (battle) => {
         });
         G_view_drawSprite(`${sprite}_${spriteIndex}`, x, y, 2);
     }
+};
+const G_view_showDialogBox = (text) => {
+    const dialogElem = document.getElementById('dialogBox');
+    const screenSize = G_model_getScreenSize();
+    const h = 128;
+    dialogElem.innerHTML = text;
+    dialogElem.style['font-size'] = '24px';
+    dialogElem.style.border = '2px solid white';
+    dialogElem.style.height = `${h}px`;
+    dialogElem.style.width = `${screenSize - 54}px`;
+    dialogElem.style.top = `${screenSize - h}px`;
+    G_model_setShowingDialogue();
+};
+const G_view_hideDialogBox = () => {
+    var _a;
+    (_a = document.getElementById('dialogBox')) === null || _a === void 0 ? void 0 : _a.setAttribute('style', 'display: none');
+    G_model_setShowingDialogue();
 };
 //# sourceMappingURL=main.js.map

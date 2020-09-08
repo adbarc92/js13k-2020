@@ -6,6 +6,16 @@ global
 G_model_getCurrentRoom
 */
 
+let G_SHOWING_DIALOG = false;
+
+const G_model_getShowingDialogue = () => {
+  return G_SHOWING_DIALOG;
+};
+
+const G_model_setShowingDialogue = () => {
+  G_SHOWING_DIALOG = !G_SHOWING_DIALOG;
+};
+
 type KeysStatus = {
   [key: string]: boolean;
 };

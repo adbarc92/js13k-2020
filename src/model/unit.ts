@@ -17,6 +17,12 @@ G_FACING_LEFT
 G_FACING_RIGHT
 */
 
+type AI = 0 | 1 | 2 | 3;
+const G_AI_PLAYER: AI = 0;
+const G_AI_CHARGER: AI = 1;
+const G_AI_STRIKER: AI = 2;
+const G_AI_BOSS: AI = 3;
+
 interface Stats {
   hp: number;
   dmg: number;
@@ -34,6 +40,7 @@ interface Unit {
   cS: Stats;
   i: number; // vertical index of unit
   allegiance: Allegiance;
+  ai: AI;
 }
 
 const model_createStats = (
@@ -55,9 +62,11 @@ const G_model_createUnit = (
   spd: number,
   i: number,
   allegiance: Allegiance,
-  actor?: Actor
+  actor?: Actor,
+  ai?: AI
 ): Unit => {
   actor = actor || G_model_createActor(0);
+  ai = ai || 0;
   allegiance
     ? G_model_actorSetFacing(actor, G_FACING_LEFT)
     : G_model_actorSetFacing(actor, G_FACING_RIGHT);
@@ -68,6 +77,7 @@ const G_model_createUnit = (
     actor,
     i,
     allegiance,
+    ai,
   };
   G_model_unitResetPosition(unit);
   return unit;
