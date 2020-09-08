@@ -1,17 +1,18 @@
+const G_SCALE = 2;
 window.running = true;
 const runMainLoop = () => {
-    const battle = G_controller_initBattle();
-    G_controller_doBattle(battle);
     const startTime = performance.now();
     let prevNow = startTime;
     const loop = (now) => {
-        G_view_drawBattle(battle);
         const sixtyFpsMs = 16.666;
         const dt = now - prevNow;
         const fm = dt / sixtyFpsMs;
         G_model_setFrameMultiplier(fm > 2 ? 2 : fm);
         G_model_setElapsedMs(now - startTime);
         prevNow = now;
+        G_controller_updateRoom(room);
+        G_view_drawRoom(room, 0, 0, G_SCALE);
+        G_view_drawActor(player.actor, G_SCALE);
         if (window.running)
             requestAnimationFrame(loop);
     };
@@ -21,6 +22,7 @@ const main = async () => {
     await G_model_loadImagesAndSprites();
     G_model_loadSounds();
     runMainLoop();
+    G_view_showDialogBox("Ho ho, friend. Look yonder. There's a tonne of treasure in that pit over there. I certainly won't kick you into the pit. Trust me. I'm Patches the Spider.");
 };
 window.addEventListener('load', main);
 const G_COLLISION_BOTTOM = 0;
@@ -431,9 +433,13 @@ var player = {
     },
 };
 window.addEventListener('keydown', ev => {
-    G_model_setKeyDown(ev.key);
+    if (!G_model_getShowingDialogue())
+        G_model_setKeyDown(ev.key);
     if (ev.key === 'q') {
         window.running = false;
+    }
+    if (ev.key === ' ') {
+        G_view_hideDialogBox();
     }
     if (G_model_getBattleInputEnabled()) {
         const battle = G_model_getCurrentBattle();
@@ -975,6 +981,7 @@ const G_model_createCanvas = (width, height) => {
     ];
 };
 const G_model_getCanvas = () => {
+    var _a;
     if (model_canvas) {
         return model_canvas;
     }
@@ -982,7 +989,7 @@ const G_model_getCanvas = () => {
         const [canvas, ctx] = G_model_createCanvas(512, 512);
         canvas.id = 'canv';
         ctx.imageSmoothingEnabled = false;
-        document.body.appendChild(canvas);
+        (_a = document.getElementById('innerDiv')) === null || _a === void 0 ? void 0 : _a.appendChild(canvas);
         model_canvas = canvas;
         return canvas;
     }
@@ -1004,6 +1011,13 @@ const G_model_getElapsedMs = () => {
 };
 const G_model_getScreenSize = () => {
     return 512;
+};
+let G_SHOWING_DIALOG = false;
+const G_model_getShowingDialogue = () => {
+    return G_SHOWING_DIALOG;
+};
+const G_model_setShowingDialogue = () => {
+    G_SHOWING_DIALOG = !G_SHOWING_DIALOG;
 };
 const model_keys = {};
 const G_KEY_RIGHT = 'ArrowRight';
@@ -1758,5 +1772,22 @@ const G_view_drawTurnOrder = (battle) => {
         });
         G_view_drawSprite(`${sprite}_${spriteIndex}`, x, y, 2);
     }
+};
+const G_view_showDialogBox = (text) => {
+    const dialogElem = document.getElementById('dialogBox');
+    const screenSize = G_model_getScreenSize();
+    const h = 128;
+    dialogElem.innerHTML = text;
+    dialogElem.style['font-size'] = '24px';
+    dialogElem.style.border = '2px solid white';
+    dialogElem.style.height = `${h}px`;
+    dialogElem.style.width = `${screenSize - 54}px`;
+    dialogElem.style.top = `${screenSize - h}px`;
+    G_model_setShowingDialogue();
+};
+const G_view_hideDialogBox = () => {
+    var _a;
+    (_a = document.getElementById('dialogBox')) === null || _a === void 0 ? void 0 : _a.setAttribute('style', 'display: none');
+    G_model_setShowingDialogue();
 };
 //# sourceMappingURL=main.js.map

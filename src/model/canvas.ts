@@ -35,7 +35,9 @@ const G_model_getCanvas = (): HTMLCanvasElement => {
     const [canvas, ctx] = G_model_createCanvas(512, 512);
     canvas.id = 'canv';
     ctx.imageSmoothingEnabled = false;
-    document.body.appendChild(canvas);
+    // document.body.appendChild(canvas);
+    // document.body.children[0].appendChild(canvas);
+    document.getElementById('innerDiv')?.appendChild(canvas);
     model_canvas = canvas;
     return canvas;
   }

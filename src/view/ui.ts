@@ -8,6 +8,8 @@ G_view_drawRect
 G_view_drawSprite
 G_view_drawText
 
+G_model_setShowingDialogue
+
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
 G_BATTLE_SCALE
@@ -139,4 +141,23 @@ const G_view_drawTurnOrder = (battle: Battle) => {
 
     G_view_drawSprite(`${sprite}_${spriteIndex}`, x, y, 2);
   }
+};
+
+const G_view_showDialogBox = (text: string) => {
+  const dialogElem = document.getElementById('dialogBox') as HTMLElement;
+  const screenSize = G_model_getScreenSize();
+  const h = 128;
+  dialogElem.innerHTML = text;
+  dialogElem.style['font-size'] = '24px';
+  // dialog;
+  dialogElem.style.border = '2px solid white';
+  dialogElem.style.height = `${h}px`;
+  dialogElem.style.width = `${screenSize - 54}px`;
+  dialogElem.style.top = `${screenSize - h}px`;
+  G_model_setShowingDialogue();
+};
+
+const G_view_hideDialogBox = () => {
+  document.getElementById('dialogBox')?.setAttribute('style', 'display: none');
+  G_model_setShowingDialogue();
 };

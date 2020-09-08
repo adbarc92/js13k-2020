@@ -18,17 +18,27 @@ G_view_drawActor
 G_view_drawBattle
 G_view_drawRoom
 
-G_SCALE
+G_view_showDialogBox
+
 */
 
 // const SCALE = 2;
+
+const G_SCALE = 2;
+
 (window as any).running = true;
 
 const runMainLoop = () => {
+<<<<<<< Updated upstream
   /* Battle Code */
+=======
+  const player = G_model_createPlayer();
+  const room = G_model_createRoomFromSprite('map_0', player);
+  G_model_setCurrentRoom(room);
+>>>>>>> Stashed changes
 
-  const battle = G_controller_initBattle();
-  G_controller_doBattle(battle);
+  // const battle = G_controller_initBattle();
+  // G_controller_doBattle(battle);
 
   /* Rendering Code */
   const startTime = performance.now();
@@ -40,7 +50,7 @@ const runMainLoop = () => {
   // G_model_setCurrentRoom(room);
 
   const loop = (now: number) => {
-    G_view_drawBattle(battle);
+    // G_view_drawBattle(battle);
     const sixtyFpsMs = 16.666;
     const dt = now - prevNow;
     const fm = dt / sixtyFpsMs;
@@ -48,13 +58,17 @@ const runMainLoop = () => {
     G_model_setElapsedMs(now - startTime);
     prevNow = now;
 
+<<<<<<< Updated upstream
     /* Traversal Code */
     // G_view_clearScreen();
+=======
+    G_view_clearScreen();
+>>>>>>> Stashed changes
 
-    // G_controller_updateRoom(room);
+    G_controller_updateRoom(room);
 
-    // G_view_drawRoom(room, 0, 0, G_SCALE);
-    // G_view_drawActor(player.actor, G_SCALE);
+    G_view_drawRoom(room, 0, 0, G_SCALE);
+    G_view_drawActor(player.actor, G_SCALE);
 
     if ((window as any).running) requestAnimationFrame(loop);
     // if ((window as any).running) setTimeout(loop, 22); // for debugging
@@ -66,6 +80,9 @@ const main = async () => {
   await G_model_loadImagesAndSprites();
   G_model_loadSounds();
   runMainLoop();
+  G_view_showDialogBox(
+    "Ho ho, friend. Look yonder. There's a tonne of treasure in that pit over there. I certainly won't kick you into the pit. Trust me. I'm Patches the Spider."
+  );
 };
 
 window.addEventListener('load', main);
