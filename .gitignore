@@ -7,3 +7,4 @@ dist/
 .build/
 package-lock.json
 src/main.js
+main.js
