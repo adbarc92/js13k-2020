@@ -109,7 +109,7 @@ const G_controller_initBattle = () => {
     1,
     0,
     G_ALLEGIANCE_ENEMY,
-    G_model_createActor('monsters', 0),
+    G_model_createActor(4),
     1
   );
 
@@ -122,7 +122,7 @@ const G_controller_initBattle = () => {
     10,
     1,
     G_ALLEGIANCE_ENEMY,
-    G_model_createActor('monsters', 1),
+    G_model_createActor(5),
     2
   );
 

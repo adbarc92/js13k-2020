@@ -65,7 +65,7 @@ const G_model_createUnit = (
   actor?: Actor,
   ai?: AI
 ): Unit => {
-  actor = actor || G_model_createActor('actors', 0);
+  actor = actor || G_model_createActor(0);
   ai = ai || 0;
   allegiance
     ? G_model_actorSetFacing(actor, G_FACING_LEFT)

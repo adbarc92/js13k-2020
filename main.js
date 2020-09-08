@@ -2,6 +2,7 @@ const G_SCALE = 2;
 window.running = true;
 const runMainLoop = () => {
     const battle = G_controller_initBattle();
+    G_model_setCurrentBattle(battle);
     G_controller_doBattle(battle);
     const startTime = performance.now();
     let prevNow = startTime;
@@ -22,7 +23,9 @@ const main = async () => {
     await G_model_loadImagesAndSprites();
     G_model_loadSounds();
     runMainLoop();
-    G_view_showDialogBox("Ho ho, friend. Look yonder. There's a tonne of treasure in that pit over there. I certainly won't kick you into the pit. Trust me. I'm Patches the Spider.");
+    if (!G_model_getCurrentBattle()) {
+        G_view_showDialogBox("Ho ho, friend. Look yonder. There's a tonne of treasure in that pit over there. I certainly won't kick you into the pit. Trust me. I'm Patches the Spider.");
+    }
 };
 window.addEventListener('load', main);
 const G_COLLISION_BOTTOM = 0;
@@ -99,6 +102,15 @@ const G_utils_waitMs = async (ms) => {
         setTimeout(resolve, ms);
     });
 };
+const G_model_getChargeStatus = (actingUnit, battle) => {
+    const chargeStatus = actingUnit.cS.cCnt / actingUnit.cS.iCnt;
+    if (chargeStatus < 0.2) {
+        battle.text = `${actingUnit.name} begins to glow ominously.`;
+    }
+    else if (chargeStatus < 0.5) {
+        battle.text = `${actingUnit.name} shines with contempt.`;
+    }
+};
 const G_model_doAI = (battle, round, actingUnit) => {
     switch (actingUnit.ai) {
         case 1:
@@ -121,8 +133,8 @@ const G_controller_initBattle = () => {
     const jimothy = G_model_createUnit('Jimothy', 100, 10, 5, 5, 5, 0, G_ALLEGIANCE_ALLY);
     const seph = G_model_createUnit('Seph', 100, 10, 5, 5, 4, 1, G_ALLEGIANCE_ALLY);
     const kana = G_model_createUnit('Kana', 100, 8, 3, 2, 7, 2, G_ALLEGIANCE_ALLY);
-    const fairy1 = G_model_createUnit('Fairy1', 20, 10, 10, 10, 1, 0, G_ALLEGIANCE_ENEMY, G_model_createActor('monsters', 0), 1);
-    const dogman = G_model_createUnit('Dogman1', 200, 10, 5, 1, 10, 1, G_ALLEGIANCE_ENEMY, G_model_createActor('monsters', 1), 2);
+    const fairy1 = G_model_createUnit('Fairy1', 20, 10, 10, 10, 1, 0, G_ALLEGIANCE_ENEMY, G_model_createActor(4), 1);
+    const dogman = G_model_createUnit('Dogman1', 200, 10, 5, 1, 10, 1, G_ALLEGIANCE_ENEMY, G_model_createActor(5), 2);
     const battle = G_model_createBattle([jimothy, seph, kana], [fairy1, dogman]);
     const firstRound = G_model_createRound([
         jimothy,
@@ -293,144 +305,6 @@ const G_controller_battleActionHeal = (unit) => {
 const G_controller_battleActionDefend = (unit) => {
     const { cS } = unit;
     cS.def *= 1.5;
-};
-let addLine = text => {
-    console.log(text);
-};
-let catcher = new (function () {
-    let cb = () => { };
-    this.setK = _cb => (cb = _cb);
-    window.addEventListener('keydown', ev => {
-        if (this.disabled) {
-            return;
-        }
-        cb(String.fromCharCode(ev.which));
-    });
-})();
-let lastChooseNodeId;
-let lastChooseNodesSelected;
-var core = {
-    init() {
-        lastChooseNodeId = null;
-        lastChooseNodesSelected = [];
-    },
-    async say(text, cb) {
-        if (typeof text === 'object') {
-            if (text.length === 1) {
-                addLine(text);
-            }
-            else {
-                core.say(text[0], () => {
-                    core.say(text.slice(1), cb);
-                });
-                return;
-            }
-        }
-        else {
-            if (text.length <= 1) {
-                cb && cb();
-                return;
-            }
-            else {
-                addLine(text);
-            }
-        }
-        return new Promise(resolve => {
-            addLine();
-            addLine('&nbsp&nbsp&nbsp&nbsp&nbspPress any key to continue...');
-            catcher.setK(() => {
-                cb && cb();
-                resolve();
-            });
-        });
-    },
-    async choose(text, nodeId, choices) {
-        return new Promise(resolve => {
-            const sep = '----------';
-            if (text) {
-                addLine(text);
-                addLine();
-            }
-            addLine(sep, 'choiceStyle');
-            const actualChoices = choices.filter(choice => {
-                if (choice.c()) {
-                    return true;
-                }
-                else {
-                    return false;
-                }
-            });
-            if (lastChooseNodeId !== nodeId) {
-                lastChooseNodeId = nodeId;
-                lastChooseNodesSelected = [];
-            }
-            let ctr = 1;
-            actualChoices.forEach(choice => {
-                addLine('<b>  ' + ctr + '.) ' + choice.t + '</b>', 'choiceStyle');
-                ctr++;
-            });
-            addLine(sep, 'choiceStyle');
-            catcher.setK(async (key) => {
-                const choice = actualChoices[key - 1];
-                if (choice) {
-                    lastChooseNodesSelected.push(choice.t);
-                    catcher.setK(() => { });
-                    addLine();
-                    addLine(choice.t, 'chosenStyle');
-                    addLine();
-                    await choice.cb();
-                    resolve();
-                }
-            });
-        });
-    },
-    async defer(func, args) {
-        args = args || [player.get('curIN2n'), player.get('curIN2f')];
-        await func.apply(null, args);
-    },
-    exit() { },
-};
-var player = {
-    state: {},
-    get(path) {
-        let _helper = (paths, obj) => {
-            let k = paths.shift();
-            if (!paths.length) {
-                return obj[k] === undefined ? undefined : obj[k];
-            }
-            let nextObj = obj[k];
-            if (nextObj !== undefined) {
-                return _helper(paths, nextObj);
-            }
-            else {
-                return undefined;
-            }
-        };
-        return _helper(path.split('.'), this.state);
-    },
-    set(path, val) {
-        val = val === undefined ? true : val;
-        let _helper = (keys, obj) => {
-            let k = keys.shift();
-            if (k === undefined) {
-                return;
-            }
-            if (!keys.length) {
-                obj[k] = val;
-                return;
-            }
-            if (!obj[k]) {
-                obj[k] = {};
-            }
-            _helper(keys, obj[k]);
-        };
-        _helper(path.split('.'), this.state);
-    },
-    setIfUnset(path, val) {
-        if (this.get(path) === null) {
-            this.set(path, val);
-        }
-    },
 };
 window.addEventListener('keydown', ev => {
     if (!G_model_getShowingDialogue())
@@ -669,62 +543,6 @@ zzfx;
     return J.getChannelData(0).set(G), (H.buffer = J), H.start(), H;
 }),
     (zzfxX = new AudioContext());
-function run(isDryRun) {
-    const files = {};
-    const scope = {};
-    const CURRENT_NODE_VAR = 'curIN2n';
-    const CURRENT_FILE_VAR = 'curIN2f';
-    const LAST_FILE_VAR = 'lasIN2f';
-    files[`Intro.json`] = id => {
-        player.set(CURRENT_FILE_VAR, 'Intro.json');
-        scope.cuL = () => {
-            player.set(CURRENT_NODE_VAR, 'cuL');
-            let text = `Controls`;
-            core.say(text, scope.t2H);
-        };
-        scope.t2H = () => {
-            player.set(CURRENT_NODE_VAR, 't2H');
-            let text = `Movement/Menu Choice: Arrow Keys`;
-            core.say(text, scope.yqO);
-        };
-        scope.yqO = () => {
-            player.set(CURRENT_NODE_VAR, 'yqO');
-            let text = `Jump: Spacebar`;
-            core.say(text, scope.KQf);
-        };
-        scope.KQf = () => {
-            player.set(CURRENT_NODE_VAR, 'KQf');
-            let text = `Select Menu Option: Enter`;
-            core.say(text, scope.UPr);
-        };
-        scope.UPr = () => {
-            player.set(LAST_FILE_VAR, player.get(CURRENT_FILE_VAR));
-            let key = `IntroEnd.json`;
-            let func = files[key];
-            if (func) {
-                func();
-            }
-            else {
-                core.say(`EXECUTION WARNING, no file exists named ${key}. You are probably running a subset of all the files, and not the whole scenario. ` +
-                    Object.keys(files), files.exit);
-            }
-        };
-        if (id === undefined) {
-            scope.cuL();
-        }
-        else if (id) {
-            scope[id]();
-        }
-        return player.state;
-    };
-    files.exit = () => {
-        core.exit();
-    };
-    if (!isDryRun) {
-        files['Intro.json']();
-    }
-    return { files, scope };
-}
 const G_FACING_LEFT = 0;
 const G_FACING_RIGHT = 1;
 const G_FACING_UP_RIGHT = 2;
@@ -734,9 +552,9 @@ const G_ANIM_WALKING = 1;
 const G_ANIM_JUMPING = 2;
 const G_ANIM_ATTACKING = 3;
 const G_ANIM_STUNNED = 4;
-const G_model_createActor = (sprite, spriteIndex) => {
+const G_model_createActor = (spriteIndex) => {
     return {
-        sprite,
+        sprite: 'actors',
         spriteIndex,
         facing: G_FACING_LEFT,
         anim: G_ANIM_DEFAULT,
@@ -1114,7 +932,7 @@ const initParty = (name, hp, dmg, def, mag, spd) => {
 };
 const PLAYER_SPRITE_INDEX = 0;
 const G_model_createPlayer = () => {
-    const actor = G_model_createActor('actors', PLAYER_SPRITE_INDEX);
+    const actor = G_model_createActor(PLAYER_SPRITE_INDEX);
     G_model_actorSetPosition(actor, 0, 33);
     return {
         actor,
@@ -1266,7 +1084,7 @@ const model_createStats = (hp, dmg, def, mag, spd) => {
     return { hp, dmg, def, mag, spd, iCnt: mag, cCnt: 0 };
 };
 const G_model_createUnit = (name, hp, dmg, def, mag, spd, i, allegiance, actor, ai) => {
-    actor = actor || G_model_createActor('actors', 0);
+    actor = actor || G_model_createActor(0);
     ai = ai || 0;
     allegiance
         ? G_model_actorSetFacing(actor, G_FACING_LEFT)

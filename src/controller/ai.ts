@@ -80,6 +80,18 @@ G_ACTION_STRIKE
 //   }
 // };
 
+const G_model_getChargeStatus = (actingUnit: Unit, battle: Battle) => {
+  const chargeStatus = actingUnit.cS.cCnt / actingUnit.cS.iCnt;
+  // 0%
+  if (chargeStatus < 0.2) {
+    battle.text = `${actingUnit.name} begins to glow ominously.`;
+  } else if (chargeStatus < 0.5) {
+    battle.text = `${actingUnit.name} shines with contempt.`;
+  }
+  // 50%
+  // 80%
+};
+
 const G_model_doAI = (battle: Battle, round: Round, actingUnit: Unit) => {
   switch (actingUnit.ai) {
     case 1: // Charger
@@ -97,6 +109,3 @@ const G_model_doAI = (battle: Battle, round: Round, actingUnit: Unit) => {
       break;
   }
 };
-// Alternate strike and charge
-
-//
