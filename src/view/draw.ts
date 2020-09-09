@@ -5,7 +5,7 @@ This file contains functions that can draw things on the screen
 /*
 global
 G_model_actorSetPosition
-G_model_actorGetCurrentSprite
+G_model_actorGetCurrentSpriteAndOffset
 G_model_actorGetPosition
 G_model_actorSetFacing
 G_model_battleGetCurrentRound
@@ -19,6 +19,7 @@ G_view_drawBattleText
 G_view_drawInfo
 G_view_drawMenu
 G_view_drawTurnOrder
+G_view_drawUiBackground
 
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
@@ -31,11 +32,13 @@ BATTLE_MENU
 
 const G_BLACK = '#000';
 const G_WHITE = '#FFF';
+const G_ENEMY_COLOR = '#FF004D';
+const G_ALLY_COLOR = '#29ADFF';
 
 interface DrawTextParams {
   font?: string;
   color?: string;
-  size?: string;
+  size?: number;
   align?: 'left' | 'center' | 'right';
   strokeColor?: string;
 }
@@ -165,17 +168,17 @@ const G_view_drawActor = (actor: Actor, scale?: number) => {
   const { x, y } = actor;
   const px = x * (scale as number);
   const py = y * (scale as number);
-  const sprite = G_model_actorGetCurrentSprite(actor);
-  G_view_drawSprite(sprite, px, py, scale);
+  const [sprite, xPos, yPos] = G_model_actorGetCurrentSpriteAndOffset(actor);
+  G_view_drawSprite(sprite, px + xPos, py + yPos, scale);
 };
 
 const G_view_drawBattle = (battle: Battle) => {
   G_view_clearScreen();
-  G_view_drawText(`Round: ${battle.roundIndex + 1}`, 10, 40);
   const actingUnit = G_model_roundGetActingUnit(
     G_model_battleGetCurrentRound(battle)
   );
-  G_view_drawText(`Turn: ${actingUnit?.name}`, 10, 60);
+  G_view_drawUiBackground(5, 15, 150, 20);
+  G_view_drawText(`Turn: ${actingUnit?.name}`, 10, 26);
   const { allies, enemies, actionMenuStack } = battle;
   const actionMenu = actionMenuStack[0];
   for (let i = 0; i < allies.length; i++) {

@@ -85,16 +85,32 @@ const G_model_actorIsMoving = (actor: Actor): boolean => {
   return actor.vx !== 0;
 };
 
-const G_model_actorGetCurrentSprite = (actor: Actor): string => {
+const G_model_actorGetCurrentSpriteAndOffset = (
+  actor: Actor
+): [string, number, number] => {
   let { facing, sprite, spriteIndex, anim } = actor;
+  let spriteIndexOffset = anim;
+  let hasMultiSprite = spriteIndex < 3;
+  // let yOff = 10 * Math.floor((G_model_getElapsedMs() % 200) / 100);
+  let yOff = 0;
   if (anim === G_ANIM_WALKING) {
     // alternate between two frames (anim = 1 and anim = 0) every 100 ms
-    anim = (anim -
+    spriteIndexOffset = (spriteIndexOffset -
       Math.floor((G_model_getElapsedMs() % 200) / 100)) as AnimState;
   } else if (anim === G_ANIM_ATTACKING) {
-    anim = (2 - Math.floor((G_model_getElapsedMs() % 500) / 250)) as AnimState;
+    if (hasMultiSprite) {
+      spriteIndexOffset = (2 -
+        Math.floor((G_model_getElapsedMs() % 500) / 250)) as AnimState;
+    } else {
+      spriteIndexOffset = 0;
+      yOff = 2 * Math.floor((G_model_getElapsedMs() % 200) / 100);
+    }
   } else if (anim === G_ANIM_STUNNED) {
-    anim = 2 as AnimState;
+    if (hasMultiSprite) {
+      spriteIndexOffset = 2;
+    } else {
+      spriteIndexOffset = 0;
+    }
   }
   let mod = '';
   switch (facing) {
@@ -111,7 +127,7 @@ const G_model_actorGetCurrentSprite = (actor: Actor): string => {
     default:
       break;
   }
-  return sprite + `_${spriteIndex + anim + mod}`;
+  return [sprite + `_${spriteIndex + spriteIndexOffset + mod}`, 0, yOff];
 };
 
 const G_model_actorSetAnimState = (actor: Actor, anim: AnimState) => {

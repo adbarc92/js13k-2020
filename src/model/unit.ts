@@ -4,6 +4,9 @@ G_model_actorSetFacing
 G_model_actorSetPosition
 G_model_battleGetScreenPosition
 G_model_createActor
+G_model_createStats
+G_model_getScreenSize
+G_model_getSpriteSize
 
 G_ACTION_STRIKE
 G_ACTION_CHARGE
@@ -13,15 +16,11 @@ G_ACTION_HEAL
 G_ACTION_USE
 G_ACTION_FLEE
 
+G_BATTLE_SCALE
+
 G_FACING_LEFT
 G_FACING_RIGHT
 */
-
-type AI = 0 | 1 | 2 | 3;
-const G_AI_PLAYER: AI = 0;
-const G_AI_CHARGER: AI = 1;
-const G_AI_STRIKER: AI = 2;
-const G_AI_BOSS: AI = 3;
 
 interface Stats {
   hp: number;
@@ -43,44 +42,59 @@ interface Unit {
   ai: AI;
 }
 
-const model_createStats = (
-  hp: number,
-  dmg: number,
-  def: number,
-  mag: number,
-  spd: number
-): Stats => {
-  return { hp, dmg, def, mag, spd, iCnt: mag, cCnt: 0 };
-};
+// const G_model_createUnit = (
+//   name: string,
+//   hp: number,
+//   dmg: number,
+//   def: number,
+//   mag: number,
+//   spd: number,
+//   i: number,
+//   allegiance: Allegiance,
+//   actor?: Actor,
+//   ai?: AI
+// ): Unit => {
+//   actor = actor || G_model_createActor(0);
+//   ai = ai || 0;
+//   allegiance
+//     ? G_model_actorSetFacing(actor, G_FACING_LEFT)
+//     : G_model_actorSetFacing(actor, G_FACING_RIGHT);
+//   const unit = {
+//     name,
+//     bS: G_model_createStats(hp, dmg, def, mag, spd),
+//     cS: G_model_createStats(hp, dmg, def, mag, spd),
+//     actor,
+//     i,
+//     allegiance,
+//     ai,
+//   };
+//   G_model_unitResetPosition(unit);
+//   return unit;
+// };
 
 const G_model_createUnit = (
-  name: string,
-  hp: number,
-  dmg: number,
-  def: number,
-  mag: number,
-  spd: number,
+  charDef: CharacterDef,
   i: number,
-  allegiance: Allegiance,
-  actor?: Actor,
-  ai?: AI
+  allegiance: Allegiance
 ): Unit => {
-  actor = actor || G_model_createActor(0);
-  ai = ai || 0;
-  allegiance
-    ? G_model_actorSetFacing(actor, G_FACING_LEFT)
-    : G_model_actorSetFacing(actor, G_FACING_RIGHT);
-  const unit = {
+  const { name, unit, sprI } = charDef;
+  if (!unit) {
+    throw new Error('CharacterDef has no unit');
+  }
+  const newUnit = {
     name,
-    bS: model_createStats(hp, dmg, def, mag, spd),
-    cS: model_createStats(hp, dmg, def, mag, spd),
-    actor,
+    actor: G_model_createActor(sprI),
+    bS: { ...unit.bS },
+    cS: { ...unit.bS },
     i,
     allegiance,
-    ai,
+    ai: unit.ai,
   };
-  G_model_unitResetPosition(unit);
-  return unit;
+  newUnit.allegiance
+    ? G_model_actorSetFacing(newUnit.actor, G_FACING_LEFT)
+    : G_model_actorSetFacing(newUnit.actor, G_FACING_RIGHT);
+  G_model_unitResetPosition(newUnit);
+  return newUnit;
 };
 
 const G_model_statsModifyHp = (
@@ -102,7 +116,14 @@ const G_model_statsModifyHp = (
 const G_model_unitMoveForward = (unit: Unit) => {
   const { allegiance } = unit;
   const [x, y] = G_model_battleGetScreenPosition(unit.i, allegiance);
-  G_model_actorSetPosition(unit.actor, x + (allegiance ? -50 : 50), y);
+  G_model_actorSetPosition(unit.actor, x + (allegiance ? -20 : 20), y);
+};
+
+const G_model_unitSetToCenter = (unit: Unit) => {
+  const screenSize = G_model_getScreenSize() / G_BATTLE_SCALE;
+  const spriteSize = G_model_getSpriteSize();
+  const center = screenSize / 2 - spriteSize / 2;
+  G_model_actorSetPosition(unit.actor, center, center);
 };
 
 const G_model_unitResetPosition = (unit: Unit) => {

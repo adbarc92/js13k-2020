@@ -3,6 +3,7 @@ global
 G_model_setBattleInputEnabled
 G_model_battleGetCurrentRound
 G_model_actionToString
+G_model_actorGetPosition
 G_model_actorSetAnimState
 G_model_actorSetFacing
 G_model_actorSetPosition
@@ -18,6 +19,7 @@ G_model_createRound
 G_model_doAI
 G_model_getBattlePostActionCb
 G_model_getCurrentBattle
+G_model_getParty
 G_model_getScreenSize
 G_model_menuSetNextCursorIndex
 G_model_modifySpeed
@@ -32,6 +34,7 @@ G_model_unitLives
 G_model_unitMoveForward
 G_model_unitResetDef
 G_model_unitResetPosition
+G_model_unitSetToCenter
 G_view_drawBattleText
 G_view_playSound
 G_utils_getRandArrElem
@@ -58,128 +61,21 @@ G_FACING_UP_RIGHT
 
 const G_BATTLE_SCALE = 2;
 
-const G_controller_initBattle = () => {
-  const jimothy = G_model_createUnit(
-    'Jimothy',
-    100,
-    10,
-    5,
-    5,
-    5,
-    0,
-    G_ALLEGIANCE_ALLY
-  );
-  const seph = G_model_createUnit(
-    'Seph',
-    100,
-    10,
-    5,
-    5,
-    4,
-    1,
-    G_ALLEGIANCE_ALLY
-  );
-  const kana = G_model_createUnit(
-    'Kana',
-    100,
-    8,
-    3,
-    2,
-    7,
-    2,
-    G_ALLEGIANCE_ALLY
-  );
-  // const widdly2Diddly = G_model_createUnit(
-  //   'widdly2Diddly',
-  //   100,
-  //   7,
-  //   7,
-  //   7,
-  //   7,
-  //   3,
-  //   G_ALLEGIANCE_ALLY
-  // );
+const makeBattleUnits = (units: CharacterDef[], allegiance: Allegiance) => {
+  const battleParty: Unit[] = [];
+  for (let i = 0; i < units.length; i++) {
+    battleParty.push(G_model_createUnit(units[i], i, allegiance));
+  }
+  return battleParty;
+};
 
-  const fairy1 = G_model_createUnit(
-    'Fairy1',
-    20,
-    10,
-    10,
-    10,
-    1,
-    0,
-    G_ALLEGIANCE_ENEMY,
-    G_model_createActor(4),
-    1
-  );
+const G_controller_initBattle = (party: Party, encounter: EncounterDef) => {
+  // use party and encounter to create Units
+  const combatParty = makeBattleUnits(party.units, G_ALLEGIANCE_ALLY);
+  const combatEnemies = makeBattleUnits(encounter.enemies, G_ALLEGIANCE_ENEMY);
 
-  const dogman = G_model_createUnit(
-    'Dogman1',
-    200,
-    10,
-    5,
-    1,
-    10,
-    1,
-    G_ALLEGIANCE_ENEMY,
-    G_model_createActor(5),
-    2
-  );
-
-  // const karst = G_model_createUnit(
-  //   'Karst',
-  //   100,
-  //   10,
-  //   5,
-  //   5,
-  //   5,
-  //   0,
-  //   G_ALLEGIANCE_ENEMY
-  // );
-  // const urien = G_model_createUnit(
-  //   'Urien',
-  //   100,
-  //   10,
-  //   5,
-  //   5,
-  //   5,
-  //   1,
-  //   G_ALLEGIANCE_ENEMY
-  // );
-  // const shrike = G_model_createUnit(
-  //   'Shrike',
-  //   100,
-  //   8,
-  //   6,
-  //   3,
-  //   2,
-  //   2,
-  //   G_ALLEGIANCE_ENEMY
-  // );
-  // const pDiddy = G_model_createUnit(
-  //   'P Diddy',
-  //   100,
-  //   5,
-  //   5,
-  //   5,
-  //   5,
-  //   3,
-  //   G_ALLEGIANCE_ENEMY
-  // );
-
-  const battle = G_model_createBattle([jimothy, seph, kana], [fairy1, dogman]);
-  const firstRound = G_model_createRound([
-    jimothy,
-    // karst,
-    seph,
-    // urien,
-    kana,
-    fairy1,
-    dogman,
-    // shrike,
-    // widdly2Diddly,
-    // pDiddy,
-  ]);
+  const battle = G_model_createBattle(combatParty, combatEnemies);
+  const firstRound = G_model_createRound(combatParty.concat(combatEnemies));
 
   G_model_battleAddRound(battle, firstRound);
   console.log('First Round Turn Order:', firstRound);
@@ -195,8 +91,8 @@ const G_controller_doBattle = async (battle: Battle) => {
   }
   console.log('Battle complete!');
   setTimeout(() => {
-    G_controller_initBattle();
-  }, 2000);
+    G_controller_initBattle(G_model_getParty(), G_ENCOUNTER_0);
+  }, 2000); // For debugging
 };
 
 // simulates a single round of combat
@@ -233,9 +129,7 @@ const controller_battleSimulateTurn = async (
     actingUnit.cS.spd = actingUnit.bS.spd;
     return;
   }
-  const { x, y } = actingUnit.actor;
-  const x2 = G_utils_isAlly(battle, actingUnit) ? x + 20 : x - 20;
-  G_model_actorSetPosition(actingUnit.actor, x2, y);
+  G_model_unitMoveForward(actingUnit);
   return new Promise(resolve => {
     G_model_setBattlePostActionCb(resolve);
     const actionMenu = battle.actionMenuStack[0];
@@ -265,11 +159,11 @@ const G_controller_roundApplyAction = async (
   G_model_setBattleInputEnabled(false);
   const battle = G_model_getCurrentBattle();
   const actingUnit = G_model_roundGetActingUnit(round) as Unit;
-  G_model_unitMoveForward(actingUnit);
+  G_model_unitSetToCenter(actingUnit);
   // Change animations here
-  if (actingUnit.allegiance === G_ALLEGIANCE_ALLY) {
-    G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING);
-  }
+
+  G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING);
+
   battle.text = G_model_actionToString(action);
 
   await G_utils_waitMs(1000);
@@ -279,11 +173,11 @@ const G_controller_roundApplyAction = async (
       const dmg = G_controller_battleActionStrike(actingUnit, target as Unit);
       battle.text = 'Did ' + -dmg + ' damage.';
       G_view_playSound('actionStrike');
-      if (actingUnit.allegiance === G_ALLEGIANCE_ENEMY) {
-        G_model_actorSetAnimState((target as Unit).actor, G_ANIM_STUNNED);
-        await G_utils_waitMs(800);
-        G_model_actorSetAnimState((target as Unit).actor, G_ANIM_DEFAULT);
-      }
+
+      G_model_actorSetAnimState((target as Unit).actor, G_ANIM_STUNNED);
+      await G_utils_waitMs(800);
+      G_model_actorSetAnimState((target as Unit).actor, G_ANIM_DEFAULT);
+
       if (!G_model_unitLives(target as Unit)) {
         const facing = G_utils_isAlly(battle, target as Unit)
           ? G_FACING_UP_RIGHT
@@ -304,6 +198,7 @@ const G_controller_roundApplyAction = async (
       break;
     case G_ACTION_INTERRUPT:
       G_controller_battleActionInterrupt(actingUnit, target as Unit);
+      break;
     default:
       console.error('No action:', action, 'exists.');
   }
@@ -311,9 +206,8 @@ const G_controller_roundApplyAction = async (
 
   await G_utils_waitMs(2000);
   G_model_unitResetPosition(actingUnit);
-  if (actingUnit.allegiance === G_ALLEGIANCE_ALLY) {
-    G_model_actorSetAnimState(actingUnit.actor, G_ANIM_DEFAULT);
-  }
+  G_model_actorSetAnimState(actingUnit.actor, G_ANIM_DEFAULT);
+
   battle.text = '';
 
   await G_utils_waitMs(500);

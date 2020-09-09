@@ -6,14 +6,17 @@ global
 G_controller_doBattle
 G_controller_initBattle
 G_controller_updateRoom
+G_model_addCharacterToParty
 G_model_createPlayer
 G_model_createRoomFromSprite
+G_model_getParty
 G_model_setCurrentRoom
 G_model_setElapsedMs
 G_model_setFrameMultiplier
 G_model_loadImagesAndSprites
 G_model_loadSounds
 G_model_getCurrentBattle
+G_model_initParty
 G_model_setCurrentBattle
 G_view_clearScreen
 G_view_drawActor
@@ -22,6 +25,10 @@ G_view_drawRoom
 
 G_view_showDialogBox
 
+G_jerry
+G_kana
+G_seph
+G_ENCOUNTER_0
 */
 
 // const SCALE = 2;
@@ -33,7 +40,14 @@ const G_SCALE = 2;
 const runMainLoop = () => {
   /* Battle Code */
 
-  const battle = G_controller_initBattle();
+  G_model_initParty();
+  const party = G_model_getParty();
+  // Create character
+  G_model_addCharacterToParty(party, G_jerry);
+  G_model_addCharacterToParty(party, G_seph);
+  G_model_addCharacterToParty(party, G_kana);
+
+  const battle = G_controller_initBattle(G_model_getParty(), G_ENCOUNTER_0);
   G_model_setCurrentBattle(battle);
   G_controller_doBattle(battle);
 

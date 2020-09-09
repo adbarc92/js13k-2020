@@ -60,8 +60,8 @@ const G_ALLEGIANCE_ENEMY = 1;
 
 type BattlePosition = [number, number];
 
-const initOffset = 70; // temp
-const G_UNITOFFSET = 48; // temp
+const initOffset = 80; // temp
+const G_UNITOFFSET = 28; // temp
 const generateBattleCoords = (x: number) => {
   const coords: BattlePosition[] = [];
   for (let i = 0; i < 4; i++) {

@@ -16,6 +16,8 @@ G_BATTLE_SCALE
 G_BLACK
 G_GOLD
 G_WHITE
+G_ALLY_COLOR
+G_ENEMY_COLOR
 */
 
 const G_CURSOR_WIDTH = 16;
@@ -70,14 +72,15 @@ const G_view_drawMenu = (menu: Menu) => {
 
 const G_view_drawBattleText = (text: string) => {
   const x = 0;
-  const y = 0;
+  const y = 90;
   const w = G_model_getScreenSize();
-  const h = 30;
+  const h = 50;
 
   G_view_drawUiBackground(x, y, w, h);
 
-  G_view_drawText(text, G_model_getScreenSize() / 2, 16, {
+  G_view_drawText(text, G_model_getScreenSize() / 2, y + 26, {
     align: 'center',
+    size: 20,
   });
 };
 
@@ -125,21 +128,31 @@ const G_view_drawTurnOrder = (battle: Battle) => {
   const boxWidth = 30;
   const { turnOrder } = G_model_battleGetCurrentRound(battle);
   const l = turnOrder.length;
-  let x = G_model_getScreenSize() / 2 - (l / 2) * boxWidth - 5; // start halfway across the screen, down 30 pixels for battleText
-  for (let i = 0; i < l; i++, x += boxWidth + 5) {
+  const top = 10;
+  const totalWidth = (boxWidth + 5) * l;
+  let left =
+    G_model_getScreenSize() - G_model_getScreenSize() / 3 - totalWidth / 2; // start halfway across the screen, down 30 pixels for battleText
+  G_view_drawUiBackground(left - 5, top - 5, totalWidth + 5, boxHeight + 40);
+  for (let i = 0; i < l; i++, left += boxWidth + 5) {
     const { name, actor } = turnOrder[i];
     const { sprite, spriteIndex } = actor;
     const round = G_model_battleGetCurrentRound(battle);
-    const y = round.currentIndex === i ? 50 : 40;
-    G_view_drawUiBackground(x, y, boxWidth, boxHeight);
-    const y2 = G_utils_isAlly(battle, turnOrder[i]) ? y : y + boxHeight;
-    G_view_drawText(name.slice(0, 5), x + boxWidth / 2, y2, {
-      size: '10',
+    const y = top + (round.currentIndex === i ? 20 : 10);
+    G_view_drawUiBackground(
+      left,
+      y,
+      boxWidth,
+      boxHeight,
+      G_utils_isAlly(battle, turnOrder[i]) ? G_ALLY_COLOR : G_ENEMY_COLOR
+    );
+    const y2 = G_utils_isAlly(battle, turnOrder[i]) ? y - 5 : y + boxHeight + 8;
+    G_view_drawText(name.slice(0, 5), left + boxWidth / 2, y2, {
+      size: 12,
       align: 'center',
       strokeColor: G_WHITE,
     });
 
-    G_view_drawSprite(`${sprite}_${spriteIndex}`, x, y, 2);
+    G_view_drawSprite(`${sprite}_${spriteIndex}`, left, y + 5, 2);
   }
 };
 
