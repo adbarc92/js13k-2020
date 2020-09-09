@@ -42,53 +42,24 @@ interface Unit {
   ai: AI;
 }
 
-// const G_model_createUnit = (
-//   name: string,
-//   hp: number,
-//   dmg: number,
-//   def: number,
-//   mag: number,
-//   spd: number,
-//   i: number,
-//   allegiance: Allegiance,
-//   actor?: Actor,
-//   ai?: AI
-// ): Unit => {
-//   actor = actor || G_model_createActor(0);
-//   ai = ai || 0;
-//   allegiance
-//     ? G_model_actorSetFacing(actor, G_FACING_LEFT)
-//     : G_model_actorSetFacing(actor, G_FACING_RIGHT);
-//   const unit = {
-//     name,
-//     bS: G_model_createStats(hp, dmg, def, mag, spd),
-//     cS: G_model_createStats(hp, dmg, def, mag, spd),
-//     actor,
-//     i,
-//     allegiance,
-//     ai,
-//   };
-//   G_model_unitResetPosition(unit);
-//   return unit;
-// };
-
 const G_model_createUnit = (
+  name: string,
   charDef: CharacterDef,
-  i: number,
-  allegiance: Allegiance
+  allegiance: Allegiance,
+  i: number
 ): Unit => {
-  const { name, unit, sprI } = charDef;
-  if (!unit) {
-    throw new Error('CharacterDef has no unit');
+  const { stats, sprI } = charDef;
+  if (!stats) {
+    throw new Error('CharacterDef has no stats');
   }
   const newUnit = {
     name,
     actor: G_model_createActor(sprI),
-    bS: { ...unit.bS },
-    cS: { ...unit.bS },
+    bS: { ...stats.bS },
+    cS: { ...stats.bS },
     i,
     allegiance,
-    ai: unit.ai,
+    ai: stats.ai,
   };
   newUnit.allegiance
     ? G_model_actorSetFacing(newUnit.actor, G_FACING_LEFT)

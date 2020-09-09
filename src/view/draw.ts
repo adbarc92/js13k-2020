@@ -183,7 +183,6 @@ const G_view_drawBattle = (battle: Battle) => {
   const actionMenu = actionMenuStack[0];
   for (let i = 0; i < allies.length; i++) {
     const [x, y] = G_model_actorGetPosition(allies[i].actor);
-    // const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ALLY);
     G_model_actorSetPosition(allies[i].actor, x, y);
     G_view_drawActor(allies[i].actor, G_BATTLE_SCALE);
     G_view_drawText(`${allies[i].name}`, x * 2 + 16, y * 2 - 5, {

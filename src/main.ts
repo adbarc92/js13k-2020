@@ -7,6 +7,7 @@ G_controller_doBattle
 G_controller_initBattle
 G_controller_updateRoom
 G_model_addCharacterToParty
+G_model_createCharacterFromTemplate
 G_model_createPlayer
 G_model_createRoomFromSprite
 G_model_getParty
@@ -26,6 +27,9 @@ G_view_drawRoom
 G_view_showDialogBox
 
 G_jerry
+G_CHARACTER_DEFENDER
+G_CHARACTER_SPEEDSTER
+G_CHARACTER_STRIKER
 G_kana
 G_seph
 G_ENCOUNTER_0
@@ -43,9 +47,21 @@ const runMainLoop = () => {
   G_model_initParty();
   const party = G_model_getParty();
   // Create character
-  G_model_addCharacterToParty(party, G_jerry);
-  G_model_addCharacterToParty(party, G_seph);
-  G_model_addCharacterToParty(party, G_kana);
+  const jerry = G_model_createCharacterFromTemplate(
+    'Jerry',
+    G_CHARACTER_STRIKER
+  );
+  const seph = G_model_createCharacterFromTemplate(
+    'Seph',
+    G_CHARACTER_DEFENDER
+  );
+  const kana = G_model_createCharacterFromTemplate(
+    'Kana',
+    G_CHARACTER_SPEEDSTER
+  );
+  G_model_addCharacterToParty(party, jerry);
+  G_model_addCharacterToParty(party, seph);
+  G_model_addCharacterToParty(party, kana);
 
   const battle = G_controller_initBattle(G_model_getParty(), G_ENCOUNTER_0);
   G_model_setCurrentBattle(battle);

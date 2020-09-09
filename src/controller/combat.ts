@@ -57,31 +57,47 @@ G_BATTLE_MENU_LABELS
 G_FACING_UP
 G_FACING_UP_LEFT
 G_FACING_UP_RIGHT
+
+G_ENCOUNTER_0
 */
 
 const G_BATTLE_SCALE = 2;
 
-const makeBattleUnits = (units: CharacterDef[], allegiance: Allegiance) => {
+const makeBattleParty = (characters: Character[]) => {
   const battleParty: Unit[] = [];
-  for (let i = 0; i < units.length; i++) {
-    battleParty.push(G_model_createUnit(units[i], i, allegiance));
+  for (let i = 0; i < characters.length; i++) {
+    const { unit } = characters[i];
+    if (!unit) {
+      throw new Error('Character has no unit when making battle party');
+    }
+    unit.i = i;
+    G_model_unitResetPosition(unit);
+    battleParty.push(unit);
   }
   return battleParty;
 };
 
+const makeMonsters = (monsters: CharacterDef[]) => {
+  const monsterParty: Unit[] = [];
+  for (let i = 0; i < monsters.length; i++) {
+    monsterParty.push(
+      G_model_createUnit(monsters[i].name, monsters[i], G_ALLEGIANCE_ENEMY, i)
+    );
+  }
+  return monsterParty;
+};
+
 const G_controller_initBattle = (party: Party, encounter: EncounterDef) => {
   // use party and encounter to create Units
-  const combatParty = makeBattleUnits(party.units, G_ALLEGIANCE_ALLY);
-  const combatEnemies = makeBattleUnits(encounter.enemies, G_ALLEGIANCE_ENEMY);
+  const combatParty = makeBattleParty(party.characters);
+  const combatEnemies = makeMonsters(encounter.enemies);
 
   const battle = G_model_createBattle(combatParty, combatEnemies);
   const firstRound = G_model_createRound(combatParty.concat(combatEnemies));
 
   G_model_battleAddRound(battle, firstRound);
-  console.log('First Round Turn Order:', firstRound);
   G_model_setCurrentBattle(battle);
   G_model_setBattleInputEnabled(false);
-  // doBattle(battle);
   return battle;
 };
 
