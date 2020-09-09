@@ -28,6 +28,7 @@ G_view_showDialogBox
 
 G_jerry
 G_CHARACTER_DEFENDER
+G_CHARACTER_SLAYER
 G_CHARACTER_SPEEDSTER
 G_CHARACTER_STRIKER
 G_kana
@@ -47,19 +48,16 @@ const runMainLoop = () => {
   G_model_initParty();
   const party = G_model_getParty();
   // Create character
-  const jerry = G_model_createCharacterFromTemplate(
-    'Jerry',
+  const jeremiah = G_model_createCharacterFromTemplate(
+    'Jeremiah',
     G_CHARACTER_STRIKER
   );
   const seph = G_model_createCharacterFromTemplate(
     'Seph',
     G_CHARACTER_DEFENDER
   );
-  const kana = G_model_createCharacterFromTemplate(
-    'Kana',
-    G_CHARACTER_SPEEDSTER
-  );
-  G_model_addCharacterToParty(party, jerry);
+  const kana = G_model_createCharacterFromTemplate('Kana', G_CHARACTER_SLAYER);
+  G_model_addCharacterToParty(party, jeremiah);
   G_model_addCharacterToParty(party, seph);
   G_model_addCharacterToParty(party, kana);
 

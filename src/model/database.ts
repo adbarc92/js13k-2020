@@ -69,7 +69,7 @@ interface RoamerDef {
 const golem: CharacterDef = {
   name: 'Golem',
   stats: {
-    bS: G_model_createStats(50, 30, 20, 10, 5),
+    bS: G_model_createStats(50, 20, 20, 10, 5),
     ai: G_AI_STRIKER,
   },
   sprI: 5,
@@ -91,7 +91,7 @@ const G_ENCOUNTER_1: EncounterDef = { enemies: [fairy, golem, fairy] };
 const G_CHARACTER_PROTAG: CharacterDef = {
   name: 'Runner',
   stats: {
-    bS: G_model_createStats(100, 25, 15, 5, 10),
+    bS: G_model_createStats(90, 100, 20, 5, 10),
     ai: G_AI_PLAYER,
   },
   sprI: 0,
@@ -100,7 +100,7 @@ const G_CHARACTER_PROTAG: CharacterDef = {
 const G_CHARACTER_STRIKER: CharacterDef = {
   name: 'Striker',
   stats: {
-    bS: G_model_createStats(70, 12, 6, 6, 12),
+    bS: G_model_createStats(85, 30, 16, 6, 12),
     ai: G_AI_PLAYER,
   },
   sprI: 0,
@@ -109,7 +109,7 @@ const G_CHARACTER_STRIKER: CharacterDef = {
 const G_CHARACTER_DEFENDER: CharacterDef = {
   name: 'Defender',
   stats: {
-    bS: G_model_createStats(100, 12, 13, 4, 6),
+    bS: G_model_createStats(60, 19, 25, 4, 6),
     ai: G_AI_PLAYER,
   },
   sprI: 0,
@@ -118,7 +118,7 @@ const G_CHARACTER_DEFENDER: CharacterDef = {
 const G_CHARACTER_SPEEDSTER: CharacterDef = {
   name: 'Speedster',
   stats: {
-    bS: G_model_createStats(80, 10, 7, 7, 15),
+    bS: G_model_createStats(80, 10, 12, 7, 15),
     ai: G_AI_PLAYER,
   },
   sprI: 0,
@@ -127,7 +127,7 @@ const G_CHARACTER_SPEEDSTER: CharacterDef = {
 const G_CHARACTER_SLAYER: CharacterDef = {
   name: 'Slayer',
   stats: {
-    bS: G_model_createStats(70, 20, 7, 7, 10),
+    bS: G_model_createStats(75, 23, 7, 7, 10),
     ai: G_AI_PLAYER,
   },
   sprI: 0,

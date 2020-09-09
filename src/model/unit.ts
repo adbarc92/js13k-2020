@@ -43,12 +43,11 @@ interface Unit {
 }
 
 const G_model_createUnit = (
-  name: string,
   charDef: CharacterDef,
   allegiance: Allegiance,
   i: number
 ): Unit => {
-  const { stats, sprI } = charDef;
+  const { stats, sprI, name } = charDef;
   if (!stats) {
     throw new Error('CharacterDef has no stats');
   }
@@ -121,9 +120,7 @@ const G_model_modifySpeed = (unit: Unit, action: RoundAction) => {
   const { cS } = unit;
   switch (action) {
     case G_ACTION_STRIKE:
-      console.log('strike modifies speed; old speed:', cS.spd);
       cS.spd += 2;
-      console.log('new speed:', cS.spd);
       break;
     case G_ACTION_CHARGE:
       cS.spd += 2;

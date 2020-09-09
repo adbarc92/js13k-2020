@@ -80,9 +80,7 @@ const makeBattleParty = (characters: Character[]) => {
 const makeMonsters = (monsters: CharacterDef[]) => {
   const monsterParty: Unit[] = [];
   for (let i = 0; i < monsters.length; i++) {
-    monsterParty.push(
-      G_model_createUnit(monsters[i].name, monsters[i], G_ALLEGIANCE_ENEMY, i)
-    );
+    monsterParty.push(G_model_createUnit(monsters[i], G_ALLEGIANCE_ENEMY, i));
   }
   return monsterParty;
 };
@@ -252,8 +250,11 @@ const G_controller_battleActionStrike = (
   const { cS, bS } = victim;
   const { def } = cS;
   const { dmg } = attacker.bS;
+  const { cCnt } = attacker.cS;
+  const damage = cCnt > 0 ? dmg * cCnt : dmg;
 
-  const dmgDone = -Math.floor(Math.max(dmg - def, 1));
+  const dmgDone = -Math.floor(Math.max(damage - def, 1));
+  attacker.cS.cCnt = 0;
   G_model_statsModifyHp(cS, bS, dmgDone);
   console.log(
     `${attacker.name} strikes ${victim.name} for ${-dmgDone} damage! (${

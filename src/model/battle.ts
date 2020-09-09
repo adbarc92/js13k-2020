@@ -2,7 +2,6 @@
 global
 G_controller_battleActionCharge
 G_controller_roundApplyAction
-G_controller_unitLives
 G_model_createVerticalMenu
 G_model_getScreenSize
 G_model_getSprite
@@ -124,13 +123,13 @@ const selectTarget = async (battle: Battle): Promise<Unit | null> => {
     );
 
     const x = startX * G_BATTLE_SCALE - G_CURSOR_WIDTH;
-    const y = startY * G_BATTLE_SCALE + G_CURSOR_HEIGHT / 2; // ???
-    const h = 48 * G_BATTLE_SCALE; // "30" is the difference in y values of the unit positions from the unit variables
+    const y = startY * G_BATTLE_SCALE + G_CURSOR_HEIGHT / 2;
+    const h = G_UNITOFFSET * G_BATTLE_SCALE; // "30" is the difference in y values of the unit positions from the unit variables
     const targetMenu = G_model_createVerticalMenu(
       x,
       y,
       100, // set this to 100 so I could debug by turning on the background
-      Array(targets.length).fill(''), // wtf, that exists?  i never knew that...
+      Array(targets.length).fill(''),
       // this function is called when a target is selected
       (i: number) => {
         battle.actionMenuStack.shift(); // returns input to the last menu

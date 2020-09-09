@@ -26,6 +26,6 @@ const G_model_createCharacterFromTemplate = (
   return {
     name,
     pos: [0, 0],
-    unit: G_model_createUnit(name, characterDef, G_ALLEGIANCE_ALLY, 0),
+    unit: G_model_createUnit(characterDef, G_ALLEGIANCE_ALLY, 0),
   };
 };
