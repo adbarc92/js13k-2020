@@ -1,6 +1,12 @@
+/*
+global
+G_model_getElapsedMs
+*/
+
 // A Rect is [x1, y1, x2, y2] (not (x, y, w, h))
 type Rect = [number, number, number, number];
 type Point = [number, number];
+type Vec2d = [number, number];
 
 // 4 Points where each point represents the TOP, BOTTOM, LEFT, RIGHT of a rect
 type CollisionPoints = [Point, Point, Point, Point];
@@ -104,4 +110,11 @@ const G_utils_waitMs = async (ms: number) => {
   return new Promise(resolve => {
     setTimeout(resolve, ms);
   });
+};
+
+// alternate to all numbers between 0 and nFrames where each frame is ms milliseconds
+// ex: G_utils_alternate(1, 100) alternates between 0 and 1 where each number lasts for 100 ms
+// ex: G_utils_alternate(5, 250) alternates between 0, 1, 2, 3, 4, 5, where each number lasts for 250 ms
+const G_utils_alternate = (nFrames: number, ms: number) => {
+  return Math.floor((G_model_getElapsedMs() % ((nFrames + 1) * ms)) / ms);
 };

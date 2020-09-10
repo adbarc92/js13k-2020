@@ -12,6 +12,7 @@ G_model_battleIncrementIndex
 G_model_battleIsComplete
 G_model_battleSetText
 G_model_createBattle
+G_model_createCharacterFromTemplate
 G_model_createMenu
 G_model_createUnit
 G_model_createVerticalMenu
@@ -35,6 +36,7 @@ G_model_unitMoveForward
 G_model_unitResetDef
 G_model_unitResetPosition
 G_model_unitSetToCenter
+
 G_view_drawBattleText
 G_view_playSound
 G_utils_getRandArrElem
@@ -63,51 +65,18 @@ G_ENCOUNTER_0
 
 const G_BATTLE_SCALE = 2;
 
-const makeBattleParty = (characters: Character[]) => {
-  const battleParty: Unit[] = [];
-  for (let i = 0; i < characters.length; i++) {
-    const { unit } = characters[i];
-    if (!unit) {
-      throw new Error('Character has no unit when making battle party');
-    }
-    unit.i = i;
-    G_model_unitResetPosition(unit);
-    battleParty.push(unit);
-  }
-  return battleParty;
-};
-
-const makeMonsters = (monsters: CharacterDef[]) => {
-  const monsterParty: Unit[] = [];
-  for (let i = 0; i < monsters.length; i++) {
-    monsterParty.push(
-      G_model_createUnit(monsters[i].name, monsters[i], G_ALLEGIANCE_ENEMY, i)
-    );
-  }
-  return monsterParty;
-};
-
-const G_controller_initBattle = (party: Party, encounter: EncounterDef) => {
-  // use party and encounter to create Units
-  const combatParty = makeBattleParty(party.characters);
-  const combatEnemies = makeMonsters(encounter.enemies);
-
-  const battle = G_model_createBattle(combatParty, combatEnemies);
-  const firstRound = G_model_createRound(combatParty.concat(combatEnemies));
-
-  G_model_battleAddRound(battle, firstRound);
+const G_controller_doBattle = async (battle: Battle) => {
   G_model_setCurrentBattle(battle);
   G_model_setBattleInputEnabled(false);
-  return battle;
-};
 
-const G_controller_doBattle = async (battle: Battle) => {
   while (!G_model_battleIsComplete(battle)) {
     await G_controller_battleSimulateNextRound(battle); // do the fight!
   }
   console.log('Battle complete!');
   setTimeout(() => {
-    G_controller_initBattle(G_model_getParty(), G_ENCOUNTER_0);
+    const battle2 = G_model_createBattle(battle.party, G_ENCOUNTER_0);
+    G_model_setCurrentBattle(battle2);
+    G_controller_doBattle(battle2);
   }, 2000); // For debugging
 };
 

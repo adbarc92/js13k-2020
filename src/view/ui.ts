@@ -167,10 +167,10 @@ const G_view_showDialogBox = (text: string) => {
   dialogElem.style.height = `${h}px`;
   dialogElem.style.width = `${screenSize - 54}px`;
   dialogElem.style.top = `${screenSize - h}px`;
-  G_model_setShowingDialogue();
+  G_model_setShowingDialogue(true);
 };
 
 const G_view_hideDialogBox = () => {
   document.getElementById('dialogBox')?.setAttribute('style', 'display: none');
-  G_model_setShowingDialogue();
+  G_model_setShowingDialogue(false);
 };

@@ -14,6 +14,10 @@ G_model_roomGetSizePx
 G_model_roomGetCollidableTiles
 G_model_tileIsFullyCollidable
 G_model_getFrameMultiplier
+G_model_getCurrentWorld
+G_model_partyGetProtag
+G_model_worldGetCurrentRoom
+G_model_worldSetCurrentRoomToAdjacentRoom
 G_utils_floorNearestMultiple
 G_utils_createRect
 G_utils_getCollisionsWithRect
@@ -140,20 +144,21 @@ const handleActorCollisions = (actor: Actor, room: Room) => {
     actor.vy = 0;
   }
   actor.isGround = hasCollisionWithGround;
-
-  //throw 'pizza';
 };
 
-const G_controller_updateRoom = (room: Room) => {
-  const { actors, player } = room;
-  actors.forEach(actor => {
+const G_controller_updateCurrentRoom = (world: World) => {
+  const room = G_model_worldGetCurrentRoom(world);
+  const { characters } = room;
+  characters.forEach(ch => {
+    const actor = ch.actor;
     G_controller_updateActor(actor, room);
   });
-  G_controller_updatePlayer(player, room);
+  G_controller_updatePlayer(world.party, room, world);
 };
 
-const G_controller_updatePlayer = (player: Player, room: Room) => {
-  const { actor } = player;
+const G_controller_updatePlayer = (party: Party, room: Room, world: World) => {
+  const protag = G_model_partyGetProtag(party);
+  const actor = protag.actor;
   const { ax, ay, isGround } = actor;
   G_model_actorSetAnimState(actor, G_ANIM_DEFAULT);
 
@@ -175,7 +180,6 @@ const G_controller_updatePlayer = (player: Player, room: Room) => {
   }
 
   if (G_model_isKeyDown(G_KEY_SPACE)) {
-    const actor = room.player.actor;
     if (actor.isGround) {
       nextAy = -PLAYER_JUMP_SPEED;
       actor.vy = 0;
@@ -188,11 +192,25 @@ const G_controller_updatePlayer = (player: Player, room: Room) => {
   }
 
   G_model_actorSetAcceleration(actor, nextAx, nextAy);
-  G_controller_updateActor(actor, room);
+  const [boundsOffsetX, boundsOffsetY] = G_controller_updateActor(actor, room);
+  if (boundsOffsetX || boundsOffsetY) {
+    console.log('Change bounds', boundsOffsetX, boundsOffsetY);
+    G_model_worldSetCurrentRoomToAdjacentRoom(
+      boundsOffsetX,
+      boundsOffsetY,
+      world
+    );
+  }
 };
 
-const G_controller_updateActor = (actor: Actor, room: Room) => {
+const G_controller_updateActor = (
+  actor: Actor,
+  room: Room
+): [number, number] => {
   applyGravity(actor);
+
+  let boundsOffsetX = 0;
+  let boundsOffsetY = 0;
 
   const fm = G_model_getFrameMultiplier();
   let { x, y, vx, vy, ax, ay, w, h } = actor;
@@ -213,13 +231,17 @@ const G_controller_updateActor = (actor: Actor, room: Room) => {
   // keep in bounds
   if (newX < 0) {
     newX = 0;
+    boundsOffsetX = -1;
   } else if (newX + w > roomWidthPx) {
     newX = roomWidthPx - w;
+    boundsOffsetX = 1;
   }
   if (newY < 0) {
     newY = 0;
+    boundsOffsetY = -1;
   } else if (newY + h > roomHeightPx) {
     newY = roomHeightPx - h;
+    boundsOffsetY = 1;
   }
   G_model_actorSetPosition(actor, newX, newY);
 
@@ -232,4 +254,6 @@ const G_controller_updateActor = (actor: Actor, room: Room) => {
   }
 
   G_model_actorSetAcceleration(actor, 0, 0);
+
+  return [boundsOffsetX, boundsOffsetY];
 };

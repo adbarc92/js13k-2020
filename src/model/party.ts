@@ -2,7 +2,6 @@
 global
 G_model_createUnit
 G_model_createCharacterFromTemplate
-G_ALLEGIANCE_ALLY
 G_CHARACTER_PROTAG
 */
 
@@ -15,33 +14,33 @@ interface Item {
 interface Party {
   characters: Character[];
   inventory: Item[];
+  worldX: 0;
+  worldY: 0;
 }
 
-let G_Party: Party | null = null;
-
-const G_model_getParty = () => {
-  return G_Party as Party;
+const G_model_createParty = (): Party => {
+  return {
+    characters: [
+      G_model_createCharacterFromTemplate(G_CHARACTER_PROTAG, 'Runner'),
+    ],
+    inventory: [] as Item[],
+    worldX: 0,
+    worldY: 0,
+  };
 };
 
-const G_model_setParty = (newParty: Party) => {
-  G_Party = newParty;
+const G_model_partyGetProtag = (party: Party): Character => {
+  return party.characters[0];
 };
-
-const G_model_addCharacterToParty = (party: Party, unit: Character) => {
+const G_model_partyAddCharacter = (party: Party, unit: Character) => {
   party.characters.push(unit);
 };
-
-const G_model_removeCharacterFromParty = (unit: Character) => {
-  const party = G_model_getParty() as Party;
-  const index = party.characters.indexOf(unit);
+const G_model_partyRemoveCharacter = (ch: Character, party: Party) => {
+  const index = party.characters.indexOf(ch);
+  if (index === 0) {
+    throw new Error(
+      'cannot remove character from party at index 0 (thats the protag, silly!)'
+    );
+  }
   if (index !== -1) party.characters.splice(index, 1);
-};
-
-const G_model_initParty = () => {
-  const party: Party = { characters: [], inventory: [] };
-
-  party.characters.push(
-    G_model_createCharacterFromTemplate('Runner', G_CHARACTER_PROTAG)
-  );
-  G_model_setParty(party);
 };

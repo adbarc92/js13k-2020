@@ -4,6 +4,7 @@ An Actor is an entity on the screen which is affected by gravity.
 /*
 global
 G_model_getElapsedMs
+G_utils_alternate
 G_utils_floorNearestMultiple
 G_SPRITE_MOD_FLIPPED
 G_SPRITE_MOD_FLROT90
@@ -91,19 +92,17 @@ const G_model_actorGetCurrentSpriteAndOffset = (
   let { facing, sprite, spriteIndex, anim } = actor;
   let spriteIndexOffset = anim;
   let hasMultiSprite = spriteIndex < 3;
-  // let yOff = 10 * Math.floor((G_model_getElapsedMs() % 200) / 100);
   let yOff = 0;
   if (anim === G_ANIM_WALKING) {
     // alternate between two frames (anim = 1 and anim = 0) every 100 ms
     spriteIndexOffset = (spriteIndexOffset -
-      Math.floor((G_model_getElapsedMs() % 200) / 100)) as AnimState;
+      G_utils_alternate(1, 100)) as AnimState;
   } else if (anim === G_ANIM_ATTACKING) {
     if (hasMultiSprite) {
-      spriteIndexOffset = (2 -
-        Math.floor((G_model_getElapsedMs() % 500) / 250)) as AnimState;
+      spriteIndexOffset = (2 - G_utils_alternate(1, 250)) as AnimState;
     } else {
       spriteIndexOffset = 0;
-      yOff = 2 * Math.floor((G_model_getElapsedMs() % 200) / 100);
+      yOff = 2 * G_utils_alternate(1, 100);
     }
   } else if (anim === G_ANIM_STUNNED) {
     if (hasMultiSprite) {

@@ -6,14 +6,14 @@ global
 G_model_getCurrentRoom
 */
 
-let G_SHOWING_DIALOG = false;
+let model_dialogVisible = false;
 
 const G_model_getShowingDialogue = () => {
-  return G_SHOWING_DIALOG;
+  return model_dialogVisible;
 };
 
-const G_model_setShowingDialogue = () => {
-  G_SHOWING_DIALOG = !G_SHOWING_DIALOG;
+const G_model_setShowingDialogue = (v: boolean) => {
+  model_dialogVisible = v;
 };
 
 type KeysStatus = {

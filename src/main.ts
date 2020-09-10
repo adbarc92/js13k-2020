@@ -4,9 +4,9 @@ This file is the main entry point for the game.
 /*
 global
 G_controller_doBattle
-G_controller_initBattle
-G_controller_updateRoom
+G_controller_updateCurrentRoom
 G_model_addCharacterToParty
+G_model_createBattle
 G_model_createCharacterFromTemplate
 G_model_createPlayer
 G_model_createRoomFromSprite
@@ -19,6 +19,10 @@ G_model_loadSounds
 G_model_getCurrentBattle
 G_model_initParty
 G_model_setCurrentBattle
+G_model_createWorld
+G_model_partyGetProtag
+G_model_partyAddCharacter
+G_model_worldGetCurrentRoom
 G_view_clearScreen
 G_view_drawActor
 G_view_drawBattle
@@ -42,57 +46,54 @@ const G_SCALE = 2;
 (window as any).running = true;
 
 const runMainLoop = () => {
-  /* Battle Code */
-
-  G_model_initParty();
-  const party = G_model_getParty();
-  // Create character
+  const world = G_model_createWorld();
+  (window as any).world = world;
+  console.log('WORLD', world);
+  const party = world.party;
   const jerry = G_model_createCharacterFromTemplate(
-    'Jerry',
-    G_CHARACTER_STRIKER
+    G_CHARACTER_STRIKER,
+    'Jerry'
   );
   const seph = G_model_createCharacterFromTemplate(
-    'Seph',
-    G_CHARACTER_DEFENDER
+    G_CHARACTER_DEFENDER,
+    'Seph'
   );
   const kana = G_model_createCharacterFromTemplate(
-    'Kana',
-    G_CHARACTER_SPEEDSTER
+    G_CHARACTER_SPEEDSTER,
+    'Kana'
   );
-  G_model_addCharacterToParty(party, jerry);
-  G_model_addCharacterToParty(party, seph);
-  G_model_addCharacterToParty(party, kana);
+  G_model_partyAddCharacter(party, jerry);
+  G_model_partyAddCharacter(party, seph);
+  G_model_partyAddCharacter(party, kana);
 
-  const battle = G_controller_initBattle(G_model_getParty(), G_ENCOUNTER_0);
-  G_model_setCurrentBattle(battle);
-  G_controller_doBattle(battle);
+  // uncomment to create and render a battle
+  // const battle = G_model_createBattle(party, G_ENCOUNTER_0);
+  // G_model_setCurrentBattle(battle);
+  // G_controller_doBattle(battle);
 
-  /* Rendering Code */
   const startTime = performance.now();
   let prevNow = startTime;
-
-  /* Traversal Code */
-  // const player = G_model_createPlayer();
-  // const room = G_model_createRoomFromSprite('map_0', player);
-  // G_model_setCurrentRoom(room);
-
-  /* Draw Code */
   const loop = (now: number) => {
-    G_view_drawBattle(battle);
     const sixtyFpsMs = 16.666;
     const dt = now - prevNow;
     const fm = dt / sixtyFpsMs;
     G_model_setFrameMultiplier(fm > 2 ? 2 : fm);
     G_model_setElapsedMs(now - startTime);
     prevNow = now;
+    G_view_clearScreen();
 
-    /* Traversal Code */
-    // G_view_clearScreen();
-
-    // G_controller_updateRoom(room);
-
-    // G_view_drawRoom(room, 0, 0, G_SCALE);
-    // G_view_drawActor(player.actor, G_SCALE);
+    // draw the battle
+    const battle = G_model_getCurrentBattle();
+    if (battle) {
+      G_view_drawBattle(battle);
+    } else {
+      const room = G_model_worldGetCurrentRoom(world);
+      const protag = G_model_partyGetProtag(party);
+      const actor = protag.actor;
+      G_controller_updateCurrentRoom(world);
+      G_view_drawRoom(room, 0, 0, G_SCALE);
+      G_view_drawActor(actor, G_SCALE);
+    }
 
     if ((window as any).running) requestAnimationFrame(loop);
     // if ((window as any).running) setTimeout(loop, 22); // for debugging
@@ -104,11 +105,11 @@ const main = async () => {
   await G_model_loadImagesAndSprites();
   G_model_loadSounds();
   runMainLoop();
-  if (!G_model_getCurrentBattle()) {
-    G_view_showDialogBox(
-      "Ho ho, friend. Look yonder. There's a tonne of treasure in that pit over there. I certainly won't kick you into the pit. Trust me. I'm Patches the Spider."
-    );
-  }
+  // if (!G_model_getCurrentBattle()) {
+  //   G_view_showDialogBox(
+  //     "Ho ho, friend. Look yonder. There's a tonne of treasure in that pit over there. I certainly won't kick you into the pit. Trust me. I'm Patches the Spider."
+  //   );
+  // }
 };
 
 window.addEventListener('load', main);

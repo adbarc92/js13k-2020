@@ -30,12 +30,12 @@ window.addEventListener('keydown', ev => {
     (window as any).running = false;
   }
 
-  if (ev.key === ' ') {
-    G_view_hideDialogBox();
-  }
+  // if (ev.key === ' ') {
+  //   G_view_hideDialogBox();
+  // }
 
-  if (G_model_getBattleInputEnabled()) {
-    const battle = G_model_getCurrentBattle();
+  const battle = G_model_getCurrentBattle();
+  if (G_model_getBattleInputEnabled() && battle) {
     const key = ev.key;
 
     const menu = battle.actionMenuStack[0];
