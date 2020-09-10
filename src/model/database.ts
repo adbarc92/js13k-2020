@@ -35,14 +35,6 @@ const G_model_createStats = (
   return { hp, dmg, def, mag, spd, iCnt: mag, cCnt: 0 };
 };
 
-const createItem = (
-  name: string,
-  description: string,
-  effect: () => void
-): Item => {
-  return { name, description, effect };
-};
-
 interface StatsDef {
   bS: Stats;
   ai: AI;
@@ -54,12 +46,13 @@ interface EncounterDef {
 }
 
 interface CharacterDef {
-  stats?: StatsDef;
   name: string;
+  sprI: number; // sprite index on the spritesheet to use for this character
+  stats?: StatsDef;
   spr?: string; // defaults to 'actors'
-  sprI: number;
-  label?: string; // text that appears when moving atop them
-  action?: () => {}; // function to run when when a player presses 'x' above a character
+  label?: string; // platforming: text that appears when moving atop this character
+  action?: () => {}; // platforming: function to run when when a player presses 'x' above this character
+  enc?: EncounterDef; // platforming: when colliding with this character start this encounter
 }
 
 interface RoamerDef {
@@ -72,7 +65,7 @@ interface RoamerDef {
 const golem: CharacterDef = {
   name: 'Golem',
   stats: {
-    bS: G_model_createStats(50, 30, 20, 10, 5),
+    bS: G_model_createStats(1, 20, 20, 10, 5),
     ai: G_AI_STRIKER,
   },
   sprI: 5,
@@ -93,7 +86,7 @@ const G_ENCOUNTER_1: EncounterDef = { enemies: [fairy, golem, fairy] };
 const G_CHARACTER_PROTAG: CharacterDef = {
   name: '',
   stats: {
-    bS: G_model_createStats(100, 25, 15, 5, 10),
+    bS: G_model_createStats(90, 100, 20, 5, 10),
     ai: G_AI_PLAYER,
   },
   sprI: 0,
@@ -101,7 +94,7 @@ const G_CHARACTER_PROTAG: CharacterDef = {
 const G_CHARACTER_STRIKER: CharacterDef = {
   name: '',
   stats: {
-    bS: G_model_createStats(70, 12, 6, 6, 12),
+    bS: G_model_createStats(85, 30, 16, 6, 12),
     ai: G_AI_PLAYER,
   },
   sprI: 0,
@@ -109,7 +102,7 @@ const G_CHARACTER_STRIKER: CharacterDef = {
 const G_CHARACTER_DEFENDER: CharacterDef = {
   name: '',
   stats: {
-    bS: G_model_createStats(100, 12, 13, 4, 6),
+    bS: G_model_createStats(60, 19, 25, 4, 6),
     ai: G_AI_PLAYER,
   },
   sprI: 0,
@@ -117,7 +110,7 @@ const G_CHARACTER_DEFENDER: CharacterDef = {
 const G_CHARACTER_SPEEDSTER: CharacterDef = {
   name: '',
   stats: {
-    bS: G_model_createStats(80, 10, 7, 7, 15),
+    bS: G_model_createStats(80, 10, 12, 7, 15),
     ai: G_AI_PLAYER,
   },
   sprI: 0,
@@ -125,7 +118,7 @@ const G_CHARACTER_SPEEDSTER: CharacterDef = {
 const G_CHARACTER_SLAYER: CharacterDef = {
   name: '',
   stats: {
-    bS: G_model_createStats(70, 20, 7, 7, 10),
+    bS: G_model_createStats(75, 23, 7, 7, 10),
     ai: G_AI_PLAYER,
   },
   sprI: 0,
@@ -135,6 +128,13 @@ const G_CHARACTER_OLD_MAN: CharacterDef = {
   name: 'Old Man',
   label: 'Speak with "Old Man"',
   sprI: 15,
+};
+
+const G_CHARACTER_POT: CharacterDef = {
+  name: 'Pot',
+  label: 'Check Pot',
+  spr: 'terrain',
+  sprI: 4,
 };
 
 const G_CHARACTER_STATUE_THINKER: CharacterDef = {

@@ -2,7 +2,6 @@
 global
 G_controller_battleActionCharge
 G_controller_roundApplyAction
-G_controller_unitLives
 G_model_createVerticalMenu
 G_model_createCharacterFromTemplate
 G_model_getScreenSize
@@ -164,6 +163,14 @@ const selectTarget = async (battle: Battle): Promise<Unit | null> => {
       G_ALLEGIANCE_ENEMY
     );
 
+    const disabledItems = battle.enemies
+      .map((_, i) => {
+        return i;
+      })
+      .filter(i => {
+        return !G_model_unitLives(battle.enemies[i]);
+      });
+
     const x = startX * G_BATTLE_SCALE - G_CURSOR_WIDTH;
     const y = startY * G_BATTLE_SCALE + G_CURSOR_HEIGHT / 2; // ???
     const h = G_UNIT_OFFSET * G_BATTLE_SCALE; // lineHeight in pixels
@@ -171,7 +178,7 @@ const selectTarget = async (battle: Battle): Promise<Unit | null> => {
       x,
       y,
       100, // set this to 100 so I could debug by turning on the background
-      Array(targets.length).fill(''), // wtf, that exists?  i never knew that...
+      Array(targets.length).fill(''),
       // this function is called when a target is selected
       (i: number) => {
         battle.actionMenuStack.shift(); // returns input to the last menu
@@ -181,13 +188,7 @@ const selectTarget = async (battle: Battle): Promise<Unit | null> => {
           resolve(null);
         }
       },
-      battle.enemies
-        .filter(unit => {
-          return !G_model_unitLives(unit);
-        })
-        .map((_, i) => {
-          return i;
-        }),
+      disabledItems,
       false,
       h
     );

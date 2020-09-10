@@ -8,18 +8,25 @@ G_ALLEGIANCE_ALLY
 interface Character {
   name: string;
   actor: Actor;
+  label: string;
+  action?: () => void;
   unit?: Unit; // should be optional
+  aText: string; //action text
 }
 
 const G_model_characterGetActor = (ch: Character): Actor => {
   return ch.actor;
 };
 
+const G_model_characterSetActionText = (v: string, ch: Character) => {
+  ch.aText = v;
+};
+
 const G_model_createCharacterFromTemplate = (
   characterDef: CharacterDef,
   chName?: string
 ): Character => {
-  const { sprI, spr, stats, name } = characterDef;
+  const { sprI, spr, stats, label, action, name } = characterDef;
   const actor = G_model_createActor(sprI);
   if (spr) {
     actor.sprite = spr;
@@ -27,6 +34,9 @@ const G_model_createCharacterFromTemplate = (
   return {
     name: chName || name,
     actor,
+    label: label || '',
+    action,
+    aText: '',
     unit: stats
       ? G_model_createUnit(name, actor, characterDef, G_ALLEGIANCE_ALLY, 0)
       : undefined,

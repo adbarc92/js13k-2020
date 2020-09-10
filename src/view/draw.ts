@@ -149,11 +149,11 @@ const G_view_drawSprite = (
 };
 
 const G_view_drawRoom = (room: Room, x: number, y: number, scale?: number) => {
-  scale = scale || 1;
+  const scaleV = scale || 1;
   room.tiles.forEach(tile => {
     const { id, x: tx, y: ty, size } = tile;
-    const px = (x + tx * size) * (scale as number);
-    const py = (y + ty * size) * (scale as number);
+    const px = (x + tx * size) * scaleV;
+    const py = (y + ty * size) * scaleV;
     const bgSprite = room.bgSprite;
     G_view_drawSprite(bgSprite, px, py, scale);
 
@@ -167,7 +167,23 @@ const G_view_drawRoom = (room: Room, x: number, y: number, scale?: number) => {
 
   room.characters.forEach(ch => {
     const actor = ch.actor;
-    G_view_drawActor(actor, 2);
+    G_view_drawActor(actor, scale);
+    const { x, y } = actor;
+    const px = x * scaleV;
+    const py = y * scaleV;
+
+    const actionText = ch.aText;
+    if (actionText) {
+      G_view_drawText(
+        actionText,
+        px + (16 * scaleV) / 2,
+        py - (16 * scaleV) / 2,
+        {
+          size: 16,
+          align: 'center',
+        }
+      );
+    }
   });
 };
 

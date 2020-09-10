@@ -32,6 +32,7 @@ G_view_showDialogBox
 
 G_jerry
 G_CHARACTER_DEFENDER
+G_CHARACTER_SLAYER
 G_CHARACTER_SPEEDSTER
 G_CHARACTER_STRIKER
 G_kana
@@ -52,7 +53,7 @@ const runMainLoop = () => {
   const party = world.party;
   const jerry = G_model_createCharacterFromTemplate(
     G_CHARACTER_STRIKER,
-    'Jerry'
+    'Jeremiah'
   );
   const seph = G_model_createCharacterFromTemplate(
     G_CHARACTER_DEFENDER,
@@ -67,9 +68,9 @@ const runMainLoop = () => {
   G_model_partyAddCharacter(party, kana);
 
   // uncomment to create and render a battle
-  // const battle = G_model_createBattle(party, G_ENCOUNTER_0);
-  // G_model_setCurrentBattle(battle);
-  // G_controller_doBattle(battle);
+  const battle = G_model_createBattle(party, G_ENCOUNTER_0);
+  G_model_setCurrentBattle(battle);
+  G_controller_doBattle(battle);
 
   const startTime = performance.now();
   let prevNow = startTime;

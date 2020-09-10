@@ -221,8 +221,11 @@ const G_controller_battleActionStrike = (
   const { cS, bS } = victim;
   const { def } = cS;
   const { dmg } = attacker.bS;
+  const { cCnt } = attacker.cS;
+  const damage = cCnt > 0 ? dmg * cCnt : dmg;
 
-  const dmgDone = -Math.floor(Math.max(dmg - def, 1));
+  const dmgDone = -Math.floor(Math.max(damage - def, 1));
+  attacker.cS.cCnt = 0;
   G_model_statsModifyHp(cS, bS, dmgDone);
   console.log(
     `${attacker.name} strikes ${victim.name} for ${-dmgDone} damage! (${

@@ -9,6 +9,8 @@ G_model_createCanvas
 G_model_createCharacterFromTemplate
 G_view_drawSprite
 G_CHARACTER_STATUE_THINKER
+G_CHARACTER_OLD_MAN
+G_CHARACTER_POT
 */
 
 interface Tile {
@@ -67,22 +69,27 @@ const G_model_createRoom = (spriteName: string, bgSprite: string): Room => {
     const tx = ctr % pngSize;
     const ty = Math.floor(ctr / pngSize);
 
+    let ch: Character | null = null;
+
     if (ind === MAP_TILE_OLD_MAN) {
       ind = G_MAP_TILE_NOTHING;
+      ch = G_model_createCharacterFromTemplate(G_CHARACTER_OLD_MAN);
     }
     if (ind === MAP_TILE_POT) {
       ind = G_MAP_TILE_NOTHING;
+      ch = G_model_createCharacterFromTemplate(G_CHARACTER_POT);
     }
     if (ind === MAP_TILE_SIGN) {
       ind = G_MAP_TILE_NOTHING;
     }
     if (ind === MAP_TILE_STATUE) {
-      const ch = G_model_createCharacterFromTemplate(
-        G_CHARACTER_STATUE_THINKER
-      );
+      ind = G_MAP_TILE_NOTHING;
+      ch = G_model_createCharacterFromTemplate(G_CHARACTER_STATUE_THINKER);
+    }
+
+    if (ch) {
       G_model_actorSetPosition(ch.actor, tx * 16, ty * 16);
       characters.push(ch);
-      ind = G_MAP_TILE_NOTHING;
     }
 
     tiles.push({

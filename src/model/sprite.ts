@@ -5,7 +5,6 @@ within the parent image (the four numbers: x, y, width, height).
 */
 /*
 global
-G_controller_unitLives
 G_model_createCanvas
 G_model_getCurrentBattle
 G_utils_isAlly

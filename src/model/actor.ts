@@ -6,6 +6,7 @@ global
 G_model_getElapsedMs
 G_utils_alternate
 G_utils_floorNearestMultiple
+G_utils_createRect
 G_SPRITE_MOD_FLIPPED
 G_SPRITE_MOD_FLROT90
 G_SPRITE_MOD_ROT90
@@ -131,4 +132,8 @@ const G_model_actorGetCurrentSpriteAndOffset = (
 
 const G_model_actorSetAnimState = (actor: Actor, anim: AnimState) => {
   actor.anim = anim;
+};
+
+const G_model_actorGetCollisionRect = (actor: Actor): Rect => {
+  return G_utils_createRect(actor.x, actor.y, actor.w, actor.h);
 };
