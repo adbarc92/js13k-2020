@@ -8,6 +8,7 @@ G_model_actorSetPosition
 G_model_createCanvas
 G_model_createCharacterFromTemplate
 G_view_drawSprite
+G_ACTORS_MAP
 G_CHARACTER_STATUE_THINKER
 G_CHARACTER_OLD_MAN
 G_CHARACTER_POT
@@ -31,10 +32,6 @@ interface Room {
 }
 
 const G_MAP_TILE_NOTHING = 15;
-const MAP_TILE_OLD_MAN = 3;
-const MAP_TILE_POT = 4;
-const MAP_TILE_SIGN = 5;
-const MAP_TILE_STATUE = 8;
 
 // maps an rgb color to a tile id (taken from scripts/encode-map.js)
 const colorsInverted = {
@@ -55,7 +52,12 @@ for (let i in colorsInverted) {
   colors[colorsInverted[i].join('')] = Number(i);
 }
 
-const G_model_createRoom = (spriteName: string, bgSprite: string): Room => {
+const G_model_createRoom = (
+  spriteName: string,
+  bgSprite: string,
+  worldX: number,
+  worldY: number
+): Room => {
   const tiles: Tile[] = [];
   const characters: Character[] = [];
   const pngSize = 16;
@@ -71,24 +73,13 @@ const G_model_createRoom = (spriteName: string, bgSprite: string): Room => {
 
     let ch: Character | null = null;
 
-    if (ind === MAP_TILE_OLD_MAN) {
-      ind = G_MAP_TILE_NOTHING;
-      ch = G_model_createCharacterFromTemplate(G_CHARACTER_OLD_MAN);
-    }
-    if (ind === MAP_TILE_POT) {
-      ind = G_MAP_TILE_NOTHING;
-      ch = G_model_createCharacterFromTemplate(G_CHARACTER_POT);
-    }
-    if (ind === MAP_TILE_SIGN) {
-      ind = G_MAP_TILE_NOTHING;
-    }
-    if (ind === MAP_TILE_STATUE) {
-      ind = G_MAP_TILE_NOTHING;
-      ch = G_model_createCharacterFromTemplate(G_CHARACTER_STATUE_THINKER);
+    const chTemplate = G_ACTORS_MAP[[worldX, worldY, tx, ty].join(',')];
+    if (chTemplate) {
+      ch = G_model_createCharacterFromTemplate(chTemplate);
     }
 
     if (ch) {
-      G_model_actorSetPosition(ch.actor, tx * 16, ty * 16);
+      G_model_actorSetPosition(ch.actor, tx * 16, ty * 16 - 16);
       characters.push(ch);
     }
 

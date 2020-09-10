@@ -152,3 +152,9 @@ const G_CHARACTER_STATUE_SPEAKER: CharacterDef = {
   spr: 'terrain',
   sprI: 8,
 };
+
+const G_SIGN_POT_ROOM: CharacterDef = {
+  name: 'Sign',
+  spr: 'terrain',
+  sprI: 5,
+};

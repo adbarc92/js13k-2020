@@ -50,7 +50,14 @@ const G_model_createWorld = (): World => {
     roomI: 5,
   };
   for (let i = 0; i < 16; i++) {
-    world.rooms.push(G_model_createRoom('map_' + i, mapIndexToBgSprite[i]));
+    world.rooms.push(
+      G_model_createRoom(
+        'map_' + i,
+        mapIndexToBgSprite[i],
+        i % 4,
+        Math.floor(i / 4)
+      )
+    );
   }
   return world;
 };

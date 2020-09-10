@@ -3,6 +3,7 @@ This file is the main entry point for the game.
 */
 /*
 global
+G_initActors
 G_controller_doBattle
 G_controller_updateCurrentRoom
 G_model_addCharacterToParty
@@ -68,9 +69,9 @@ const runMainLoop = () => {
   G_model_partyAddCharacter(party, kana);
 
   // uncomment to create and render a battle
-  const battle = G_model_createBattle(party, G_ENCOUNTER_0);
-  G_model_setCurrentBattle(battle);
-  G_controller_doBattle(battle);
+  // const battle = G_model_createBattle(party, G_ENCOUNTER_0);
+  // G_model_setCurrentBattle(battle);
+  // G_controller_doBattle(battle);
 
   const startTime = performance.now();
   let prevNow = startTime;
@@ -105,6 +106,7 @@ const runMainLoop = () => {
 const main = async () => {
   await G_model_loadImagesAndSprites();
   G_model_loadSounds();
+  G_initActors();
   runMainLoop();
   // if (!G_model_getCurrentBattle()) {
   //   G_view_showDialogBox(

@@ -1,6 +1,7 @@
 const fs = require('fs');
 const { exec } = require('child_process');
 const { PNG } = require('pngjs');
+const map = require('../scratch/map.js');
 
 const execAsync = async command => {
   return new Promise((resolve, reject) => {
@@ -29,14 +30,34 @@ const colors = {
   15: [0, 0, 0], // nothing
 };
 
-const mapArray = fs
-  .readFileSync(__dirname + '/../scratch/map.csv')
-  .toString()
-  .replace(/\r*\n/g, ',')
-  .split(',')
-  .filter(v => !!v);
+// const mapArray = fs
+//   .readFileSync(__dirname + '/../scratch/map_tiles.csv')
+//   .toString()
+//   .replace(/\r*\n/g, ',')
+//   .split(',')
+//   .filter(v => !!v);
+const mapArray = map.layers[0].data;
+const actorsArray = map.layers[1].objects;
 
-console.log('MAP ARRAY', mapArray);
+// #define TO1D(x,y) y*GAME_XMAPSIZE + x
+// #define TO4D(x,y) x/GAME_XMAPSIZE,y/GAME_YMAPSIZE,x%GAME_XMAPSIZE,y%GAME_YMAPSIZE
+
+fs.writeFileSync(
+  __dirname + '/../src/lib/actors.js',
+  actorsArray.reduce((file, { name, x, y }) => {
+    const xGlobal = Math.floor(x / 16);
+    const yGlobal = Math.floor(y / 16);
+    const xWorld = Math.floor(xGlobal / 16);
+    const yWorld = Math.floor(yGlobal / 16);
+    const xLocal = xGlobal % 16;
+    const yLocal = yGlobal % 16;
+    return `${file}\n  G_ACTORS_MAP['${[xWorld, yWorld, xLocal, yLocal].join(
+      ','
+    )}'] = ${name};`;
+  }, 'const G_ACTORS_MAP = {};\nconst G_initActors = () => {') + '\n};\n'
+);
+
+console.log('wrote', __dirname + '/../lib/actors.js');
 
 const path = __dirname + '/map-template.png';
 fs.createReadStream(path)
@@ -59,7 +80,7 @@ fs.createReadStream(path)
         let mapIndex = mapArray[i];
         let idx = (png.width * y + x) << 2;
 
-        if (!colors[mapIndex]) {
+        if (!colors[mapIndex - 1]) {
           console.log(
             'UNKNOWN INDEX',
             mapIndex,
@@ -74,7 +95,7 @@ fs.createReadStream(path)
           continue;
         }
 
-        const [r, g, b] = colors[mapIndex];
+        const [r, g, b] = colors[mapIndex - 1];
         // console.log(mapIndex, i, r, g, b);
         png.data[idx] = r;
         png.data[idx + 1] = g;
