@@ -10,10 +10,17 @@ G_model_actorSetPosition
 G_model_actorSetAcceleration
 G_model_actorSetFacing
 G_model_actorSetAnimState
+G_model_actorGetCollisionRect
+G_model_characterSetActionText
 G_model_roomGetSizePx
 G_model_roomGetCollidableTiles
 G_model_tileIsFullyCollidable
 G_model_getFrameMultiplier
+G_model_getCurrentWorld
+G_model_partyGetProtag
+G_model_worldGetCurrentRoom
+G_model_worldSetCurrentRoomToAdjacentRoom
+G_model_setInteractCb
 G_utils_floorNearestMultiple
 G_utils_createRect
 G_utils_getCollisionsWithRect
@@ -21,6 +28,7 @@ G_utils_rectToCollisionPoints
 G_KEY_LEFT
 G_KEY_RIGHT
 G_KEY_SPACE
+G_KEY_DOWN
 G_FACING_LEFT
 G_FACING_RIGHT
 G_ANIM_JUMPING
@@ -72,14 +80,16 @@ interface CollisionResult {
 // check collisions between this actor and all wall tiles.  If the actor is colliding,
 // then move the actor towards a position that is not colliding until the actor is no
 // longer colliding
-const handleActorCollisions = (actor: Actor, room: Room) => {
+const handleActorTileCollisions = (actor: Actor, room: Room) => {
   let hasCollision: boolean;
+  let hasCollisionPlatform: boolean;
   let hasCollisionWithGround = false;
   let ctr = 0;
   const collidableTiles = G_model_roomGetCollidableTiles(room);
   do {
     ctr++;
     hasCollision = false;
+    hasCollisionPlatform = false;
     const actorCollisionPoints = G_utils_rectToCollisionPoints(
       G_utils_createRect(actor.x, actor.y, actor.w, actor.h)
     );
@@ -108,7 +118,11 @@ const handleActorCollisions = (actor: Actor, room: Room) => {
       } else if (actor.y + actor.h / 2 < tile.py) {
         G_utils_getCollisionsWithRect(actorCollisionPoints, tileRect).forEach(
           side => {
-            if (side === G_COLLISION_BOTTOM) {
+            if (
+              side === G_COLLISION_BOTTOM &&
+              !actor.disablePlatformCollision
+            ) {
+              hasCollisionPlatform = true;
               hasCollision = true;
               collisionSideMap[side] = tile;
             }
@@ -124,15 +138,23 @@ const handleActorCollisions = (actor: Actor, room: Room) => {
 
     const correctionRate = 1;
     if (tileBottom) {
-      actor.y = G_utils_floorNearestMultiple(actor.y, 16);
-      hasCollisionWithGround = true;
+      if (actor.vy > 0) {
+        actor.y = G_utils_floorNearestMultiple(actor.y, 16);
+        hasCollisionWithGround = true;
+      }
     } else if (tileTop) {
-      actor.y += correctionRate;
-      actor.vy = 0;
+      if (!hasCollisionPlatform) {
+        actor.y += correctionRate;
+        actor.vy = 0;
+      }
     } else if (tileLeft) {
-      actor.x += correctionRate;
+      if (!hasCollisionPlatform) {
+        actor.x += correctionRate;
+      }
     } else if (tileRight) {
-      actor.x -= correctionRate;
+      if (!hasCollisionPlatform) {
+        actor.x -= correctionRate;
+      }
     }
   } while (hasCollision && ctr < 10);
 
@@ -140,22 +162,24 @@ const handleActorCollisions = (actor: Actor, room: Room) => {
     actor.vy = 0;
   }
   actor.isGround = hasCollisionWithGround;
-
-  //throw 'pizza';
 };
 
-const G_controller_updateRoom = (room: Room) => {
-  const { actors, player } = room;
-  actors.forEach(actor => {
+const G_controller_updateCurrentRoom = (world: World) => {
+  const room = G_model_worldGetCurrentRoom(world);
+  const { characters } = room;
+  characters.forEach(ch => {
+    const actor = ch.actor;
     G_controller_updateActor(actor, room);
   });
-  G_controller_updatePlayer(player, room);
+  G_controller_updatePlayer(world.party, room, world);
 };
 
-const G_controller_updatePlayer = (player: Player, room: Room) => {
-  const { actor } = player;
+const G_controller_updatePlayer = (party: Party, room: Room, world: World) => {
+  const protag = G_model_partyGetProtag(party);
+  const actor = protag.actor;
   const { ax, ay, isGround } = actor;
   G_model_actorSetAnimState(actor, G_ANIM_DEFAULT);
+  G_model_setInteractCb(null);
 
   let nextAx = ax;
   let nextAy = ay;
@@ -173,14 +197,15 @@ const G_controller_updatePlayer = (player: Player, room: Room) => {
     G_model_actorSetFacing(actor, G_FACING_RIGHT);
     G_model_actorSetAnimState(actor, G_ANIM_WALKING);
   }
-
   if (G_model_isKeyDown(G_KEY_SPACE)) {
-    const actor = room.player.actor;
     if (actor.isGround) {
       nextAy = -PLAYER_JUMP_SPEED;
       actor.vy = 0;
       actor.isGround = false;
     }
+  }
+  if (G_model_isKeyDown(G_KEY_DOWN)) {
+    actor.disablePlatformCollision = true;
   }
 
   if (!actor.isGround) {
@@ -188,11 +213,51 @@ const G_controller_updatePlayer = (player: Player, room: Room) => {
   }
 
   G_model_actorSetAcceleration(actor, nextAx, nextAy);
-  G_controller_updateActor(actor, room);
+  const [boundsOffsetX, boundsOffsetY] = G_controller_updateActor(actor, room);
+  if (boundsOffsetX || boundsOffsetY) {
+    G_model_worldSetCurrentRoomToAdjacentRoom(
+      boundsOffsetX,
+      boundsOffsetY,
+      world
+    );
+  }
+
+  const actorCollisionPoints = G_utils_rectToCollisionPoints(
+    G_model_actorGetCollisionRect(actor)
+  );
+  for (let i in room.characters) {
+    const ch = room.characters[i];
+    const chActor = ch.actor;
+    G_model_characterSetActionText('', ch);
+
+    const chRect = G_model_actorGetCollisionRect(chActor);
+    let hasCollision = false;
+    G_utils_getCollisionsWithRect(actorCollisionPoints, chRect).forEach(
+      (/*side*/) => {
+        // potentially back attack if side === back
+        hasCollision = true;
+      }
+    );
+    const text = ch.label || ch.name;
+    if (hasCollision && text) {
+      G_model_characterSetActionText(text, ch);
+      G_model_setInteractCb(() => {
+        if (ch.action) {
+          ch.action(ch);
+        }
+      });
+    }
+  }
 };
 
-const G_controller_updateActor = (actor: Actor, room: Room) => {
+const G_controller_updateActor = (
+  actor: Actor,
+  room: Room
+): [number, number] => {
   applyGravity(actor);
+
+  let boundsOffsetX = 0;
+  let boundsOffsetY = 0;
 
   const fm = G_model_getFrameMultiplier();
   let { x, y, vx, vy, ax, ay, w, h } = actor;
@@ -213,17 +278,21 @@ const G_controller_updateActor = (actor: Actor, room: Room) => {
   // keep in bounds
   if (newX < 0) {
     newX = 0;
+    boundsOffsetX = -1;
   } else if (newX + w > roomWidthPx) {
     newX = roomWidthPx - w;
+    boundsOffsetX = 1;
   }
   if (newY < 0) {
     newY = 0;
+    boundsOffsetY = -1;
   } else if (newY + h > roomHeightPx) {
     newY = roomHeightPx - h;
+    boundsOffsetY = 1;
   }
   G_model_actorSetPosition(actor, newX, newY);
 
-  handleActorCollisions(actor, room);
+  handleActorTileCollisions(actor, room);
   if (ax === 0) {
     decelerateVelocity(actor, 'vx');
   }
@@ -232,4 +301,6 @@ const G_controller_updateActor = (actor: Actor, room: Room) => {
   }
 
   G_model_actorSetAcceleration(actor, 0, 0);
+
+  return [boundsOffsetX, boundsOffsetY];
 };

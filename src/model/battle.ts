@@ -3,10 +3,12 @@ global
 G_controller_battleActionCharge
 G_controller_roundApplyAction
 G_model_createVerticalMenu
+G_model_createCharacterFromTemplate
 G_model_getScreenSize
 G_model_getSprite
 G_model_menuSetNextCursorIndex
 G_model_unitLives
+G_model_unitResetPosition
 G_view_drawBattle
 G_view_playSound
 G_utils_areAllUnitsDead
@@ -26,6 +28,7 @@ interface Round {
 }
 
 interface Battle {
+  party: Party;
   allies: Unit[];
   enemies: Unit[];
   rounds: Round[];
@@ -59,21 +62,51 @@ const G_ALLEGIANCE_ENEMY = 1;
 
 type BattlePosition = [number, number];
 
-const initOffset = 80; // temp
-const G_UNITOFFSET = 28; // temp
+const INIT_OFFSET = 80; // temp
+const G_UNIT_OFFSET = 28; // temp
 const generateBattleCoords = (x: number) => {
   const coords: BattlePosition[] = [];
   for (let i = 0; i < 4; i++) {
-    coords.push([x, i * G_UNITOFFSET + initOffset]);
+    coords.push([x, i * G_UNIT_OFFSET + INIT_OFFSET]);
   }
   return coords;
 };
-
 const playerPos = generateBattleCoords(40);
-
 const enemyPos = generateBattleCoords(200);
 
-const G_model_createBattle = (allies: Unit[], enemies: Unit[]): Battle => {
+const makeAllies = (characters: Character[]) => {
+  const battleParty: Unit[] = [];
+  for (let i = 0; i < characters.length; i++) {
+    const { unit, name } = characters[i];
+    if (!unit) {
+      throw new Error('Character has no unit when making battle party');
+    }
+    unit.name = name;
+    unit.i = i;
+    unit.allegiance = G_ALLEGIANCE_ALLY;
+    G_model_unitResetPosition(unit);
+    battleParty.push(unit);
+  }
+  return battleParty;
+};
+
+const makeEnemies = (monsters: CharacterDef[]) => {
+  const monsterParty: Unit[] = [];
+  for (let i = 0; i < monsters.length; i++) {
+    const ch = G_model_createCharacterFromTemplate(monsters[i]);
+    const unit = ch.unit as Unit;
+    unit.i = i;
+    unit.allegiance = G_ALLEGIANCE_ENEMY;
+    G_model_unitResetPosition(unit);
+    monsterParty.push(unit);
+  }
+  return monsterParty;
+};
+
+const G_model_createBattle = (
+  party: Party,
+  encounter: EncounterDef
+): Battle => {
   const screenSize = G_model_getScreenSize();
   const menuWidth = 100;
   const lineHeight = 20;
@@ -91,7 +124,11 @@ const G_model_createBattle = (allies: Unit[], enemies: Unit[]): Battle => {
       lineHeight
     ),
   ];
-  return {
+
+  const allies = makeAllies(party.characters);
+  const enemies = makeEnemies(encounter.enemies);
+  const battle: Battle = {
+    party,
     allies,
     enemies,
     rounds: [],
@@ -99,6 +136,10 @@ const G_model_createBattle = (allies: Unit[], enemies: Unit[]): Battle => {
     actionMenuStack,
     text: '',
   };
+
+  const firstRound = G_model_createRound(allies.concat(enemies));
+  G_model_battleAddRound(battle, firstRound);
+  return battle;
 };
 
 const G_model_battleGetScreenPosition = (
@@ -122,9 +163,17 @@ const selectTarget = async (battle: Battle): Promise<Unit | null> => {
       G_ALLEGIANCE_ENEMY
     );
 
+    const disabledItems = battle.enemies
+      .map((_, i) => {
+        return i;
+      })
+      .filter(i => {
+        return !G_model_unitLives(battle.enemies[i]);
+      });
+
     const x = startX * G_BATTLE_SCALE - G_CURSOR_WIDTH;
-    const y = startY * G_BATTLE_SCALE + G_CURSOR_HEIGHT / 2;
-    const h = G_UNITOFFSET * G_BATTLE_SCALE; // "30" is the difference in y values of the unit positions from the unit variables
+    const y = startY * G_BATTLE_SCALE + G_CURSOR_HEIGHT / 2; // ???
+    const h = G_UNIT_OFFSET * G_BATTLE_SCALE; // lineHeight in pixels
     const targetMenu = G_model_createVerticalMenu(
       x,
       y,
@@ -139,13 +188,7 @@ const selectTarget = async (battle: Battle): Promise<Unit | null> => {
           resolve(null);
         }
       },
-      battle.enemies
-        .filter(unit => {
-          return !G_model_unitLives(unit);
-        })
-        .map((_, i) => {
-          return i;
-        }),
+      disabledItems,
       false,
       h
     );

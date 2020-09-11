@@ -3,6 +3,7 @@ global
 G_model_battleGetCurrentRound
 G_model_getCtx
 G_model_getScreenSize
+G_model_setCutsceneVisible
 G_utils_isAlly
 G_view_drawRect
 G_view_drawSprite
@@ -10,6 +11,8 @@ G_view_drawText
 
 G_model_setShowingDialogue
 
+G_KEY_SPACE
+G_KEY_X
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
 G_BATTLE_SCALE
@@ -124,14 +127,14 @@ const G_view_drawInfo = (battle: Battle, allegiance: Allegiance) => {
 };
 
 const G_view_drawTurnOrder = (battle: Battle) => {
-  const boxHeight = 40; // 30x30 squares where the bottom 10px is the name
+  const boxHeight = 40;
   const boxWidth = 30;
   const { turnOrder } = G_model_battleGetCurrentRound(battle);
   const l = turnOrder.length;
   const top = 10;
   const totalWidth = (boxWidth + 5) * l;
   let left =
-    G_model_getScreenSize() - G_model_getScreenSize() / 3 - totalWidth / 2; // start halfway across the screen, down 30 pixels for battleText
+    G_model_getScreenSize() - G_model_getScreenSize() / 3 - totalWidth / 2;
   G_view_drawUiBackground(left - 5, top - 5, totalWidth + 5, boxHeight + 40);
   for (let i = 0; i < l; i++, left += boxWidth + 5) {
     const { name, actor } = turnOrder[i];
@@ -156,21 +159,31 @@ const G_view_drawTurnOrder = (battle: Battle) => {
   }
 };
 
-const G_view_showDialogBox = (text: string) => {
+let dialogCb: any = null;
+const KEYPRESS = 'keypress';
+let G_view_hideDialog = () => {
   const dialogElem = document.getElementById('dialogBox') as HTMLElement;
-  const screenSize = G_model_getScreenSize();
-  const h = 128;
-  dialogElem.innerHTML = text;
-  dialogElem.style['font-size'] = '24px';
-  // dialog;
-  dialogElem.style.border = '2px solid white';
-  dialogElem.style.height = `${h}px`;
-  dialogElem.style.width = `${screenSize - 54}px`;
-  dialogElem.style.top = `${screenSize - h}px`;
-  G_model_setShowingDialogue();
+  window.removeEventListener(KEYPRESS, dialogCb);
+  dialogElem.style.opacity = '0';
+  dialogElem.style.width = '0';
+  G_model_setCutsceneVisible(false);
 };
 
-const G_view_hideDialogBox = () => {
-  document.getElementById('dialogBox')?.setAttribute('style', 'display: none');
-  G_model_setShowingDialogue();
+const G_view_renderDialogBox = (text: string, cb: () => void) => {
+  const dialogElem = document.getElementById('dialogBox') as HTMLElement;
+  window.removeEventListener(KEYPRESS, dialogCb);
+  dialogElem.innerHTML = `<div style="width:476px">${text}</div>`;
+  dialogElem.style.opacity = '1';
+  dialogElem.style.width = '512px';
+  dialogCb = (ev: any) => {
+    const key = ev.key.toUpperCase();
+    if (key === G_KEY_SPACE || key === G_KEY_X) {
+      window.removeEventListener(KEYPRESS, dialogCb);
+      cb();
+    }
+  };
+  setTimeout(() => {
+    window.addEventListener(KEYPRESS, dialogCb);
+  }, 25);
+  G_model_setCutsceneVisible(true);
 };

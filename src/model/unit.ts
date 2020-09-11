@@ -43,17 +43,19 @@ interface Unit {
 }
 
 const G_model_createUnit = (
+  name: string,
+  actor: Actor,
   charDef: CharacterDef,
   allegiance: Allegiance,
   i: number
 ): Unit => {
-  const { stats, sprI, name } = charDef;
+  const { stats } = charDef;
   if (!stats) {
-    throw new Error('CharacterDef has no stats');
+    throw new Error(`CharacterDef '${name}' has no stats!`);
   }
   const newUnit = {
     name,
-    actor: G_model_createActor(sprI),
+    actor,
     bS: { ...stats.bS },
     cS: { ...stats.bS },
     i,

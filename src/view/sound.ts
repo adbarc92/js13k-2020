@@ -39,8 +39,8 @@ const G_model_loadSounds = () => {
   ]);
 
   loadSound(soundMap, 'menuConfirm', [
-    ,
-    ,
+    0.4,
+    0,
     1469,
     ,
     ,
@@ -61,7 +61,7 @@ const G_model_loadSounds = () => {
   ]);
 
   loadSound(soundMap, 'menuCancel', [
-    ,
+    0.4,
     ,
     1056,
     0.03,
@@ -234,6 +234,51 @@ const G_model_loadSounds = () => {
     ,
     0.7,
   ]); // Explosion 9)
+
+  loadSound(soundMap, 'item', [
+    ,
+    ,
+    1320,
+    0.05,
+    ,
+    0.07,
+    1,
+    0.01,
+    ,
+    8.3,
+    531,
+    ,
+    0.02,
+    ,
+    ,
+    ,
+    ,
+    0.49,
+    0.04,
+    0.08,
+  ]);
+
+  loadSound(soundMap, 'cutscene', [
+    ,
+    0,
+    286,
+    0.01,
+    ,
+    0.07,
+    ,
+    1.24,
+    -0.2,
+    ,
+    -278,
+    0.13,
+    ,
+    ,
+    ,
+    ,
+    ,
+    0.26,
+    0.03,
+  ]);
 
   model_sounds = soundMap;
 };

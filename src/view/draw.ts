@@ -26,6 +26,7 @@ G_ALLEGIANCE_ENEMY
 G_BATTLE_SCALE
 G_FACING_LEFT
 G_FACING_RIGHT
+G_MAP_TILE_NOTHING
 BATTLE_MENU
 
 */
@@ -148,16 +149,39 @@ const G_view_drawSprite = (
 };
 
 const G_view_drawRoom = (room: Room, x: number, y: number, scale?: number) => {
-  scale = scale || 1;
+  const scaleV = scale || 1;
   room.tiles.forEach(tile => {
     const { id, x: tx, y: ty, size } = tile;
-    if (id < 15) {
-      const tileSprite = `terrain_${id}`;
-      G_view_drawSprite(
-        tileSprite,
-        (x + tx * size) * (scale as number),
-        (y + ty * size) * (scale as number),
-        scale
+    const px = (x + tx * size) * scaleV;
+    const py = (y + ty * size) * scaleV;
+    const bgSprite = room.bgSprite;
+    G_view_drawSprite(bgSprite, px, py, scale);
+
+    if (id == G_MAP_TILE_NOTHING) {
+      return;
+    }
+
+    const tileSprite = `terrain_${id}`;
+    G_view_drawSprite(tileSprite, px, py, scale);
+  });
+
+  room.characters.forEach(ch => {
+    const actor = ch.actor;
+    G_view_drawActor(actor, scale);
+    const { x, y } = actor;
+    const px = x * scaleV;
+    const py = y * scaleV;
+
+    const actionText = ch.aText;
+    if (actionText) {
+      G_view_drawText(
+        actionText,
+        px + (16 * scaleV) / 2,
+        py - (16 * scaleV) / 2,
+        {
+          size: 16,
+          align: 'center',
+        }
       );
     }
   });
