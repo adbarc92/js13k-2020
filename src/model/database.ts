@@ -1,12 +1,11 @@
 // Should contain all content
-
-//
-
 /*
 global
 G_model_createStats
 G_model_createCharacterFromTemplate
 G_AI_STRIKER
+G_playCutsceneOldMan
+G_playCutsceneRunnerWithoutLegs
 */
 
 type AI = 0 | 1 | 2 | 3;
@@ -51,7 +50,7 @@ interface CharacterDef {
   stats?: StatsDef;
   spr?: string; // defaults to 'actors'
   label?: string; // platforming: text that appears when moving atop this character
-  action?: () => {}; // platforming: function to run when when a player presses 'x' above this character
+  action?: () => any; // platforming: function to run when when a player presses 'x' above this character
   enc?: EncounterDef; // platforming: when colliding with this character start this encounter
 }
 
@@ -126,8 +125,8 @@ const G_CHARACTER_SLAYER: CharacterDef = {
 
 const G_CHARACTER_OLD_MAN: CharacterDef = {
   name: 'Old Man',
-  label: 'Speak with "Old Man"',
   sprI: 15,
+  action: G_playCutsceneOldMan,
 };
 
 const G_CHARACTER_POT: CharacterDef = {
@@ -137,13 +136,14 @@ const G_CHARACTER_POT: CharacterDef = {
   sprI: 4,
 };
 
-const G_CHARACTER_STATUE_THINKER: CharacterDef = {
-  name: 'Thinker Without Mind',
-  spr: 'terrain',
-  sprI: 8,
-};
 const G_CHARACTER_STATUE_RUNNER: CharacterDef = {
   name: 'Runner Without Legs',
+  spr: 'terrain',
+  sprI: 8,
+  action: G_playCutsceneRunnerWithoutLegs,
+};
+const G_CHARACTER_STATUE_THINKER: CharacterDef = {
+  name: 'Thinker Without Mind',
   spr: 'terrain',
   sprI: 8,
 };

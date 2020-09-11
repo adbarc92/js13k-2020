@@ -20,6 +20,7 @@ G_model_getCurrentWorld
 G_model_partyGetProtag
 G_model_worldGetCurrentRoom
 G_model_worldSetCurrentRoomToAdjacentRoom
+G_model_setInteractCb
 G_utils_floorNearestMultiple
 G_utils_createRect
 G_utils_getCollisionsWithRect
@@ -233,6 +234,7 @@ const G_controller_updatePlayer = (party: Party, room: Room, world: World) => {
     const text = ch.label || ch.name;
     if (hasCollision && text) {
       G_model_characterSetActionText(text, ch);
+      G_model_setInteractCb(ch.action as () => any);
     }
   }
 };

@@ -13,22 +13,14 @@ G_model_battleGetCurrentRound
 G_model_menuSetNextCursorIndex
 G_model_menuSelectCurrentItem
 G_model_menuSelectNothing
+G_model_isCutsceneVisible
+G_model_getInteractCb
 G_view_drawBattle
 G_controller_battleSimulateNextRound
 G_controller_battleActionCharge
 G_controller_battleActionHeal
 G_view_hideDialogBox
 */
-
-let model_dialogVisible = false;
-
-const G_model_getShowingDialogue = () => {
-  return model_dialogVisible;
-};
-
-const G_model_setShowingDialogue = (v: boolean) => {
-  model_dialogVisible = v;
-};
 
 type KeysStatus = {
   [key: string]: boolean;
@@ -43,21 +35,21 @@ const G_KEY_DOWN = 'ArrowDown';
 const G_KEY_SPACE = ' ';
 const G_KEY_ENTER = 'Enter';
 const G_KEY_ESCAPE = 'Escape';
+const G_KEY_X = 'X';
 
 const G_model_setKeyDown = (key: string) => {
+  if (key.length === 1) {
+    key = key.toUpperCase();
+  }
   if (!model_keys[key]) {
     model_keys[key] = true;
-
-    // console.log('KEY', ev.key);
-
     if (key === 'q') {
       (window as any).running = false;
     }
 
-    // if (ev.key === ' ') {
-    //   G_view_hideDialogBox();
-    // }
-
+    if (G_model_isCutsceneVisible()) {
+      return;
+    }
     const battle = G_model_getCurrentBattle();
     if (G_model_getBattleInputEnabled() && battle) {
       const menu = battle.actionMenuStack[0];
@@ -72,14 +64,27 @@ const G_model_setKeyDown = (key: string) => {
           G_model_menuSelectNothing(menu);
         }
       }
+    } else {
+      if (key === G_KEY_X) {
+        const cb = G_model_getInteractCb();
+        if (cb) {
+          cb();
+        }
+      }
     }
   }
 };
 
 const G_model_setKeyUp = (key: string) => {
+  if (key.length === 1) {
+    key = key.toUpperCase();
+  }
   model_keys[key] = false;
 };
 
 const G_model_isKeyDown = (key: string) => {
+  if (key.length === 1) {
+    key = key.toUpperCase();
+  }
   return model_keys[key];
 };

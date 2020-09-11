@@ -13,6 +13,7 @@ interface World {
   rooms: Room[];
   party: Party;
   roomI: number;
+  state: {};
 }
 
 let model_world: World | null = null;
@@ -48,6 +49,7 @@ const G_model_createWorld = (): World => {
     rooms: [],
     party,
     roomI: 5,
+    state: {}, // trigger state
   };
   for (let i = 0; i < 16; i++) {
     world.rooms.push(
@@ -62,6 +64,9 @@ const G_model_createWorld = (): World => {
   return world;
 };
 
+const G_model_setCurrentWorld = (world: World) => {
+  model_world = world;
+};
 const G_model_getCurrentWorld = (): World => {
   return model_world as World;
 };
@@ -108,4 +113,21 @@ const G_model_worldSetCurrentRoomToAdjacentRoom = (
 
 const G_model_worldGetCurrentRoom = (world: World): Room => {
   return world.rooms[world.roomI];
+};
+
+const G_model_worldSetState = (key: string, value: any) => {
+  const world = G_model_getCurrentWorld();
+  world.state[key] = value;
+};
+const G_model_worldGetState = (key: string): any => {
+  const world = G_model_getCurrentWorld();
+  return world.state[key];
+};
+const G_model_worldOnce = (key: string): boolean => {
+  const s = G_model_worldGetState(key);
+  if (s === undefined) {
+    G_model_worldSetState(key, true);
+    return true;
+  }
+  return false;
 };

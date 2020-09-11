@@ -24,6 +24,7 @@ G_model_createWorld
 G_model_partyGetProtag
 G_model_partyAddCharacter
 G_model_worldGetCurrentRoom
+G_model_setCurrentWorld
 G_view_clearScreen
 G_view_drawActor
 G_view_drawBattle
@@ -49,6 +50,7 @@ const G_SCALE = 2;
 
 const runMainLoop = () => {
   const world = G_model_createWorld();
+  G_model_setCurrentWorld(world);
   (window as any).world = world;
   console.log('WORLD', world);
   const party = world.party;
