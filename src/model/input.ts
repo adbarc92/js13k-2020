@@ -15,6 +15,8 @@ G_model_menuSelectCurrentItem
 G_model_menuSelectNothing
 G_model_isCutsceneVisible
 G_model_getInteractCb
+G_model_getCurrentWorld
+G_model_partyGetProtag
 G_view_drawBattle
 G_controller_battleSimulateNextRound
 G_controller_battleActionCharge
@@ -75,9 +77,25 @@ const G_model_setKeyDown = (key: string) => {
   }
 };
 
+let downTimeout = -1;
 const G_model_setKeyUp = (key: string) => {
   if (key.length === 1) {
     key = key.toUpperCase();
+  }
+
+  // HACK: debounces the down arrow so the protag can fall through platforms by tapping
+  // the DOWN arrow key.  Without this, the key must be pressed for at least 150ms or
+  // the protag is just pushed back up atop the platform
+  if (key === G_KEY_DOWN) {
+    const world = G_model_getCurrentWorld();
+    const protag = G_model_partyGetProtag(world.party);
+    const protagActor = protag.actor;
+    if (protagActor.disablePlatformCollision) {
+      clearTimeout(downTimeout);
+      downTimeout = setTimeout(() => {
+        protagActor.disablePlatformCollision = false;
+      }, 150);
+    }
   }
   model_keys[key] = false;
 };

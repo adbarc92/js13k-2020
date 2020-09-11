@@ -32,6 +32,7 @@ interface Actor {
   facing: Facing;
   anim: AnimState;
   isGround: boolean; // actor is currently on the ground
+  disablePlatformCollision: boolean;
   x: number;
   y: number;
   vx: number;
@@ -49,6 +50,7 @@ const G_model_createActor = (spriteIndex: number): Actor => {
     facing: G_FACING_LEFT,
     anim: G_ANIM_DEFAULT,
     isGround: false,
+    disablePlatformCollision: false,
     x: 0,
     y: 0,
     vx: 0,

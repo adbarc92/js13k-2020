@@ -1,11 +1,17 @@
 // Should contain all content
 /*
 global
+G_controller_playLinearCutscene
 G_model_createStats
 G_model_createCharacterFromTemplate
+G_model_getCurrentWorld
+G_model_partyGetProtag
+G_model_actorSetFacing
+G_model_worldOnce
+G_view_hideDialog
 G_AI_STRIKER
-G_playCutsceneOldMan
-G_playCutsceneRunnerWithoutLegs
+G_FACING_LEFT
+G_FACING_RIGHT
 */
 
 type AI = 0 | 1 | 2 | 3;
@@ -50,7 +56,7 @@ interface CharacterDef {
   stats?: StatsDef;
   spr?: string; // defaults to 'actors'
   label?: string; // platforming: text that appears when moving atop this character
-  action?: () => any; // platforming: function to run when when a player presses 'x' above this character
+  action?: (ch?: Character) => any; // platforming: function to run when when a player presses 'x' above this character
   enc?: EncounterDef; // platforming: when colliding with this character start this encounter
 }
 
@@ -126,21 +132,52 @@ const G_CHARACTER_SLAYER: CharacterDef = {
 const G_CHARACTER_OLD_MAN: CharacterDef = {
   name: 'Old Man',
   sprI: 15,
-  action: G_playCutsceneOldMan,
-};
+  action: async (oldMan: Character) => {
+    const world = G_model_getCurrentWorld();
+    const protag = G_model_partyGetProtag(world.party);
+    const protagActor = protag.actor;
+    const oldManActor = oldMan.actor;
+    if (protagActor.x < oldManActor.x) {
+      G_model_actorSetFacing(oldManActor, G_FACING_LEFT);
+    } else {
+      G_model_actorSetFacing(oldManActor, G_FACING_RIGHT);
+    }
 
-const G_CHARACTER_POT: CharacterDef = {
-  name: 'Pot',
-  label: 'Check Pot',
-  spr: 'terrain',
-  sprI: 4,
+    const lines = `
+Hello there.
+I see you've arrived with your wits about you.
+That's very good.  You'll need them.
+If you examine the statues in this cave, you'll notice that they're all...
+...missing something.
+If you seek refuge from this place, it may be prudent to find what is not found.
+  `.split('\n');
+
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
 };
 
 const G_CHARACTER_STATUE_RUNNER: CharacterDef = {
   name: 'Runner Without Legs',
   spr: 'terrain',
   sprI: 8,
-  action: G_playCutsceneRunnerWithoutLegs,
+  action: async () => {
+    let lines = [''];
+    if (G_model_worldOnce('examined_runner_without_legs')) {
+      lines = `
+There's a plaque beneath this statue.
+It says, "The Runner."
+This statue appears to be missing a pair of legs.
+  `.split('\n');
+    } else {
+      lines = `
+This statue appears to be missing a pair of legs.
+  `.split('\n');
+    }
+
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
 };
 const G_CHARACTER_STATUE_THINKER: CharacterDef = {
   name: 'Thinker Without Mind',
@@ -157,4 +194,58 @@ const G_SIGN_POT_ROOM: CharacterDef = {
   name: 'Sign',
   spr: 'terrain',
   sprI: 5,
+  action: async () => {
+    const lines = `
+This sign says: "There are pots in this room."
+  `.split('\n');
+
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
+};
+
+const G_CHARACTER_POT: CharacterDef = {
+  name: 'Pot',
+  spr: 'terrain',
+  sprI: 4,
+  action: async () => {
+    const lines = `
+You check the pot...
+There's nothing inside.
+  `.split('\n');
+
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
+};
+
+const G_CHARACTER_POT_FAKE: CharacterDef = {
+  name: 'Pot!',
+  spr: 'terrain',
+  sprI: 4,
+  action: async () => {
+    const lines = `
+There's something strange about this pot...
+You check the pot...
+There's nothing inside.
+  `.split('\n');
+
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
+};
+
+const G_CHARACTER_POT_REAL: CharacterDef = {
+  name: 'Pot',
+  spr: 'terrain',
+  sprI: 4,
+  action: async () => {
+    const lines = `
+You check the pot...
+There's a VOICE inside!
+  `.split('\n');
+
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
 };

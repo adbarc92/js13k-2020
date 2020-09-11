@@ -4,7 +4,7 @@
   "description": "A game",
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf main.js main.js.map && tsc --sourceMap false && node scripts/build src",
+    "build": "rm -rf main.js main.js.map && yarn encode-map && tsc --sourceMap false && node scripts/build src",
     "watch": "tsc --watch",
     "encode-map": "node scripts/encode-map.js"
   },

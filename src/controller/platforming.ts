@@ -28,6 +28,7 @@ G_utils_rectToCollisionPoints
 G_KEY_LEFT
 G_KEY_RIGHT
 G_KEY_SPACE
+G_KEY_DOWN
 G_FACING_LEFT
 G_FACING_RIGHT
 G_ANIM_JUMPING
@@ -117,7 +118,10 @@ const handleActorTileCollisions = (actor: Actor, room: Room) => {
       } else if (actor.y + actor.h / 2 < tile.py) {
         G_utils_getCollisionsWithRect(actorCollisionPoints, tileRect).forEach(
           side => {
-            if (side === G_COLLISION_BOTTOM) {
+            if (
+              side === G_COLLISION_BOTTOM &&
+              !actor.disablePlatformCollision
+            ) {
               hasCollisionPlatform = true;
               hasCollision = true;
               collisionSideMap[side] = tile;
@@ -175,6 +179,7 @@ const G_controller_updatePlayer = (party: Party, room: Room, world: World) => {
   const actor = protag.actor;
   const { ax, ay, isGround } = actor;
   G_model_actorSetAnimState(actor, G_ANIM_DEFAULT);
+  G_model_setInteractCb(null);
 
   let nextAx = ax;
   let nextAy = ay;
@@ -192,13 +197,15 @@ const G_controller_updatePlayer = (party: Party, room: Room, world: World) => {
     G_model_actorSetFacing(actor, G_FACING_RIGHT);
     G_model_actorSetAnimState(actor, G_ANIM_WALKING);
   }
-
   if (G_model_isKeyDown(G_KEY_SPACE)) {
     if (actor.isGround) {
       nextAy = -PLAYER_JUMP_SPEED;
       actor.vy = 0;
       actor.isGround = false;
     }
+  }
+  if (G_model_isKeyDown(G_KEY_DOWN)) {
+    actor.disablePlatformCollision = true;
   }
 
   if (!actor.isGround) {
@@ -234,7 +241,11 @@ const G_controller_updatePlayer = (party: Party, room: Room, world: World) => {
     const text = ch.label || ch.name;
     if (hasCollision && text) {
       G_model_characterSetActionText(text, ch);
-      G_model_setInteractCb(ch.action as () => any);
+      G_model_setInteractCb(() => {
+        if (ch.action) {
+          ch.action(ch);
+        }
+      });
     }
   }
 };

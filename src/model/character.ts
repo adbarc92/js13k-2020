@@ -9,7 +9,7 @@ interface Character {
   name: string;
   actor: Actor;
   label: string;
-  action?: () => void;
+  action?: (self?: Character) => any;
   unit?: Unit; // should be optional
   aText: string; //action text
 }
