@@ -30,17 +30,8 @@ const colors = {
   15: [0, 0, 0], // nothing
 };
 
-// const mapArray = fs
-//   .readFileSync(__dirname + '/../scratch/map_tiles.csv')
-//   .toString()
-//   .replace(/\r*\n/g, ',')
-//   .split(',')
-//   .filter(v => !!v);
 const mapArray = map.layers[0].data;
 const actorsArray = map.layers[1].objects;
-
-// #define TO1D(x,y) y*GAME_XMAPSIZE + x
-// #define TO4D(x,y) x/GAME_XMAPSIZE,y/GAME_YMAPSIZE,x%GAME_XMAPSIZE,y%GAME_YMAPSIZE
 
 fs.writeFileSync(
   __dirname + '/../src/lib/actors.js',
