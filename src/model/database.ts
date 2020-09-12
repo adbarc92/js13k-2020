@@ -262,7 +262,7 @@ const G_SIGN_POINTY_FALL_SUCCESS: CharacterDef = {
   sprI: 5,
   action: () =>
     G_controller_playSignCutscene(
-      '(There is a picture of an arrow pointing upwards followed by a "?")'
+      '(There is a picture of an arrow pointing upwards followed by a `?`)'
     ),
 };
 const G_SIGN_SHRINE_OF_LEGS: CharacterDef = {
@@ -402,4 +402,11 @@ const G_CHARACTER_ITEM_BOMB: CharacterDef = {
   spr: SPRITESHEET_TERRAIN,
   sprI: 11,
   action: (ch: Character) => G_controller_acquireItem(ch, G_ITEM_BOMB),
+};
+
+const G_CHARACTER_ITEM_STATUE_LEGS: CharacterDef = {
+  name: 'Item',
+  spr: SPRITESHEET_TERRAIN,
+  sprI: 11,
+  action: (ch: Character) => G_controller_acquireItem(ch, G_ITEM_STATUE_LEGS),
 };
