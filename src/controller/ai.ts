@@ -54,21 +54,6 @@ G_AI_BOSS
 //   G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
 // };
 
-// Standard: charge up and then strike
-
-// const G_model_aiChargeStrike = (
-//   actingUnit: Unit,
-//   enemies: Unit[],
-//   round: Round
-// ) => {
-//   if (actingUnit.cS.cCnt < actingUnit.cS.iCnt) {
-//     G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
-//   } else {
-//     const target = G_utils_getRandArrElem(enemies);
-//     G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
-//   }
-// };
-
 // const G_model_aiBoss = (actingUnit: Unit, battle: Battle, round: Round) => {
 //   // If Interrupt Count < 2, replenish
 //   if (actingUnit.cS.iCnt < 2) {
@@ -118,7 +103,7 @@ const G_model_doAI = (battle: Battle, round: Round, actingUnit: Unit) => {
     case G_AI_BREAKER:
       // console.log('will break on:', aiSeed);
       const action =
-        (roundIndex + 1) % aiSeed === 0 ? G_ACTION_INTERRUPT : G_ACTION_STRIKE;
+        roundIndex % (aiSeed + 2) === 0 ? G_ACTION_INTERRUPT : G_ACTION_STRIKE;
       G_controller_roundApplyAction(action, round, target);
   }
 };

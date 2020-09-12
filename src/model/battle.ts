@@ -64,6 +64,11 @@ const G_ALLEGIANCE_ENEMY = 1;
 
 type BattlePosition = [number, number];
 
+type Advantage = 0 | 1 | 2;
+const G_ADVANTAGE_NONE: Advantage = 0;
+const G_ADVANTAGE_ALLIES: Advantage = 1;
+const G_ADVANTAGE_ENEMIES: Advantage = 2;
+
 const INIT_OFFSET = 80; // temp
 const G_UNIT_OFFSET = 28; // temp
 const generateBattleCoords = (x: number) => {
@@ -108,8 +113,11 @@ const makeEnemies = (monsters: CharacterDef[]) => {
 
 const G_model_createBattle = (
   party: Party,
-  encounter: EncounterDef
+  encounter: EncounterDef,
+  advantage?: Advantage
 ): Battle => {
+  advantage = advantage || G_ADVANTAGE_NONE;
+
   const screenSize = G_model_getScreenSize();
   const menuWidth = 100;
   const lineHeight = 20;
@@ -140,6 +148,8 @@ const G_model_createBattle = (
     text: '',
     aiSeed: G_utils_getRandNum(3) + 1,
   };
+
+  G_model_battleAdvantage(battle, advantage);
 
   const firstRound = G_model_createRound(allies.concat(enemies));
   G_model_battleAddRound(battle, firstRound);
@@ -319,11 +329,13 @@ const G_model_actionToString = (i: number): string => {
 //   return greatestSpeed;
 // };
 
-const G_model_battleSumLostHealth = (battle: Battle) => {
-  const { allies } = battle;
-  let sum = 0;
-  for (let i = 0; i < allies.length; i++) {
-    sum += allies[i].bS.hp - allies[i].cS.hp;
+const G_model_battleAdvantage = (battle: Battle, advantage: Advantage) => {
+  if (advantage === G_ADVANTAGE_NONE) {
+    return;
   }
-  console.log('Lost HP:', sum);
+  const units =
+    advantage === G_ADVANTAGE_ALLIES ? battle.allies : battle.enemies;
+  for (let i = 0; i < units.length; i++) {
+    units[i].cS.spd += 5;
+  }
 };

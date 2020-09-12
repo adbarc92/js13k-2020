@@ -75,7 +75,6 @@ const G_controller_doBattle = async (battle: Battle) => {
   while (!G_model_battleIsComplete(battle)) {
     await G_controller_battleSimulateNextRound(battle); // do the fight!
   }
-  G_model_battleSumLostHealth(battle); // debugging
   console.log('Battle complete!');
   setTimeout(() => {
     const battle2 = G_model_createBattle(battle.party, G_ENCOUNTER_0);
