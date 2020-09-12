@@ -126,13 +126,13 @@ const G_model_modifySpeed = (unit: Unit, action: RoundAction) => {
   const { cS } = unit;
   switch (action) {
     case G_ACTION_STRIKE:
-      cS.spd += 2;
+      cS.spd += 0;
       break;
     case G_ACTION_CHARGE:
-      cS.spd += 2;
+      cS.spd -= 2;
       break;
     case G_ACTION_INTERRUPT:
-      cS.spd += 0;
+      cS.spd -= 1;
       break;
     case G_ACTION_DEFEND:
       cS.spd += 3;
@@ -144,7 +144,7 @@ const G_model_modifySpeed = (unit: Unit, action: RoundAction) => {
       cS.spd -= 2;
       break;
     case G_ACTION_FLEE:
-      cS.spd -= 3;
+      cS.spd -= 2;
       break;
   }
 };

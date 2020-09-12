@@ -118,3 +118,37 @@ const G_utils_waitMs = async (ms: number) => {
 const G_utils_alternate = (nFrames: number, ms: number) => {
   return Math.floor((G_model_getElapsedMs() % ((nFrames + 1) * ms)) / ms);
 };
+
+// function G_utils_normalize(
+//   x: number, // x: speed difference, value to normalize
+//   a: number, // a: minimum value of range, spd: -8
+//   b: number, // b: max difference in speed spd: 8
+//   c: number, // c: minimum value for new range, -boxHeight
+//   d: number // d: maximum value for new range, boxHeight
+// ): number {
+//   return c + ((x - a) * (d - c)) / (b - a);
+// }
+
+// function G_utils_normalizeClamp(
+//   x: number,
+//   a: number,
+//   b: number,
+//   c: number,
+//   d: number
+// ): number {
+//   let r = G_utils_normalize(x, a, b, c, d);
+//   if (c < d) {
+//     if (r > d) {
+//       r = d;
+//     } else if (r < c) {
+//       r = c;
+//     }
+//   } else {
+//     if (r < d) {
+//       r = d;
+//     } else if (r > c) {
+//       r = c;
+//     }
+//   }
+//   return r;
+// }
