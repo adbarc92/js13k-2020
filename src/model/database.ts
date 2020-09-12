@@ -163,15 +163,16 @@ const G_CHARACTER_STATUE_RUNNER: CharacterDef = {
   sprI: 8,
   action: async () => {
     let lines = [''];
-    if (G_model_worldOnce('examined_runner_without_legs')) {
+    const defaultText = 'This statue appears to be missing a pair of legs.';
+    if (G_model_worldOnce('examined_runner')) {
       lines = `
 There's a plaque beneath this statue.
 It says, "The Runner."
-This statue appears to be missing a pair of legs.
+${defaultText}
   `.split('\n');
     } else {
       lines = `
-This statue appears to be missing a pair of legs.
+${defaultText}
   `.split('\n');
     }
 
@@ -183,11 +184,47 @@ const G_CHARACTER_STATUE_THINKER: CharacterDef = {
   name: 'Thinker Without Mind',
   spr: 'terrain',
   sprI: 8,
+  action: async () => {
+    let lines = [''];
+    const defaultText = 'This statue appears to be missing a brain.';
+    if (G_model_worldOnce('examined_thinker')) {
+      lines = `
+There's a plaque beneath this statue.
+It says, "The Thinker."
+${defaultText}
+  `.split('\n');
+    } else {
+      lines = `
+${defaultText}
+  `.split('\n');
+    }
+
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
 };
 const G_CHARACTER_STATUE_SPEAKER: CharacterDef = {
   name: 'Speaker Without Voice',
   spr: 'terrain',
   sprI: 8,
+  action: async () => {
+    let lines = [''];
+    const defaultText = 'This statue appears to be missing a voice.';
+    if (G_model_worldOnce('examined_speaker')) {
+      lines = `
+There's a plaque beneath this statue.
+It says, "The Speaker."
+${defaultText}
+  `.split('\n');
+    } else {
+      lines = `
+${defaultText}
+  `.split('\n');
+    }
+
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
 };
 
 const G_SIGN_POT_ROOM: CharacterDef = {
