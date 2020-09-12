@@ -1,6 +1,7 @@
 // Should contain all content
 /*
 global
+G_controller_facePlayer
 G_controller_playLinearCutscene
 G_model_createStats
 G_model_createCharacterFromTemplate
@@ -133,16 +134,7 @@ const G_CHARACTER_OLD_MAN: CharacterDef = {
   name: 'Old Man',
   sprI: 15,
   action: async (oldMan: Character) => {
-    const world = G_model_getCurrentWorld();
-    const protag = G_model_partyGetProtag(world.party);
-    const protagActor = protag.actor;
-    const oldManActor = oldMan.actor;
-    if (protagActor.x < oldManActor.x) {
-      G_model_actorSetFacing(oldManActor, G_FACING_LEFT);
-    } else {
-      G_model_actorSetFacing(oldManActor, G_FACING_RIGHT);
-    }
-
+    G_controller_facePlayer(oldMan);
     const lines = `
 Hello there.
 I see you've arrived with your wits about you.
@@ -281,6 +273,89 @@ const G_CHARACTER_POT_REAL: CharacterDef = {
 You check the pot...
 There's a VOICE inside!
   `.split('\n');
+
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
+};
+
+const G_CHARACTER_PATE: CharacterDef = {
+  name: 'Pate',
+  sprI: 3,
+  action: async (pate: Character) => {
+    G_controller_facePlayer(pate);
+    let lines = [''];
+    if (G_model_worldOnce('talked_to_pate')) {
+      lines = `
+    Hello friend!
+    I seem to have misplaced some treasure.
+    If you'd kindly bring it to me,
+    I'd be happy to accompany you out of here.
+    `.split('\n');
+    } else {
+      lines = `
+      Have you found it yet?
+      No? Come back when you have!
+      `.split('\n');
+    }
+
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
+};
+
+const G_CHARACTER_ROAMER: CharacterDef = {
+  name: 'Foul Beast',
+  sprI: 5,
+  action: async () => {
+    const lines = `
+    This is a feral beast.
+    `.split('\n');
+
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
+};
+
+const G_CHARACTER_SPIKES: CharacterDef = {
+  name: 'Deadly Spikes',
+  spr: 'terrain',
+  sprI: 6,
+  action: async () => {
+    const lines = `
+    Wicked looking spikes...
+    Ouch!
+    Even a touch pricks your finger.
+    `.split('\n');
+
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
+};
+
+const G_CHARACTER_ITEM_PATE: CharacterDef = {
+  name: 'A gleaming item...',
+  spr: 'terrain',
+  sprI: 4,
+  action: async () => {
+    const lines = `
+    A gleaming marble radiating shifting hues...
+    `.split('\n');
+
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
+};
+
+const G_CHARACTER_ITEM: CharacterDef = {
+  name: 'Feather',
+  spr: 'terrain',
+  sprI: 4,
+  action: async () => {
+    const lines = `
+    A white and black feather.
+    How could it have gotten here?
+    `.split('\n');
 
     await G_controller_playLinearCutscene(lines);
     G_view_hideDialog();
