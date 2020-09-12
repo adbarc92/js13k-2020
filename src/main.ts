@@ -74,9 +74,9 @@ const runMainLoop = () => {
   G_model_partyAddCharacter(party, kana);
 
   // uncomment to create and render a battle
-  const battle = G_model_createBattle(party, G_ENCOUNTER_6);
-  G_model_setCurrentBattle(battle);
-  G_controller_doBattle(battle);
+  // const battle = G_model_createBattle(party, G_ENCOUNTER_6);
+  // G_model_setCurrentBattle(battle);
+  // G_controller_doBattle(battle);
 
   const startTime = performance.now();
   let prevNow = startTime;

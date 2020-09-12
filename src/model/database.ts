@@ -1,10 +1,16 @@
 // Should contain all content
 /*
 global
+G_controller_battleEnd
+G_controller_doBattle
 G_controller_facePlayer
 G_controller_playLinearCutscene
-G_model_createStats
+G_model_actorGetPosition
+G_model_actorSetPosition
+G_model_actorSetVelocity
+G_model_createBattle
 G_model_createCharacterFromTemplate
+G_model_createStats
 G_model_getCurrentWorld
 G_model_partyGetProtag
 G_model_actorSetFacing
@@ -117,11 +123,12 @@ const G_ENCOUNTER_3: EncounterDef = { enemies: [ape, ape, fairy] };
 const G_ENCOUNTER_4: EncounterDef = { enemies: [ape, ape, golem, golem] };
 const G_ENCOUNTER_5: EncounterDef = { enemies: [breaker, breaker, breaker] };
 const G_ENCOUNTER_6: EncounterDef = { enemies: [breaker, ape, fairy] };
+const G_ENCOUNTER_7: EncounterDef = { enemies: [fairy] };
 
 const G_CHARACTER_PROTAG: CharacterDef = {
   name: '',
   stats: {
-    bS: G_model_createStats(90, 24, 16, 5, 20),
+    bS: G_model_createStats(90, 25, 16, 5, 20),
     ai: G_AI_PLAYER,
   },
   sprI: 0,
@@ -382,9 +389,12 @@ No? Come back when you have!
   },
 };
 
-const G_CHARACTER_ROAMER_ENCOUNTER0: CharacterDef = {
+const G_CHARACTER_ROAMER_ENCOUNTER_0: CharacterDef = {
   name: '',
   sprI: 5,
+  col: async () => {
+    await G_controller_startBattle(G_ENCOUNTER_7);
+  },
 };
 
 const G_CHARACTER_SPIKES: CharacterDef = {
