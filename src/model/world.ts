@@ -22,8 +22,8 @@ interface World {
 
 let model_world: World | null = null;
 
-const START_ROOM_X = 3;
-const START_ROOM_Y = 3;
+const START_ROOM_X = 1;
+const START_ROOM_Y = 1;
 
 const BG_SPRITE_CAVE_WALL = 'terrain_9';
 const BG_SPRITE_MANMADE_WALL = 'terrain_10';

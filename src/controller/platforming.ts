@@ -25,6 +25,7 @@ G_utils_floorNearestMultiple
 G_utils_createRect
 G_utils_getCollisionsWithRect
 G_utils_rectToCollisionPoints
+G_view_playSound
 G_KEY_LEFT
 G_KEY_RIGHT
 G_KEY_SPACE
@@ -147,14 +148,11 @@ const handleActorTileCollisions = (actor: Actor, room: Room) => {
         actor.y += correctionRate;
         actor.vy = 0;
       }
-    } else if (tileLeft) {
-      if (!hasCollisionPlatform) {
-        actor.x += correctionRate;
-      }
+    }
+    if (tileLeft) {
+      actor.x += correctionRate;
     } else if (tileRight) {
-      if (!hasCollisionPlatform) {
-        actor.x -= correctionRate;
-      }
+      actor.x -= correctionRate;
     }
   } while (hasCollision && ctr < 10);
 
@@ -202,6 +200,7 @@ const G_controller_updatePlayer = (party: Party, room: Room, world: World) => {
   }
   if (G_model_isKeyDown(G_KEY_SPACE)) {
     if (actor.isGround) {
+      G_view_playSound('jump');
       nextAy = -PLAYER_JUMP_SPEED;
       actor.vy = 0;
       actor.isGround = false;
