@@ -107,6 +107,13 @@ const G_model_roomGetSizePx = (room: Room): [number, number] => {
   return [room.w * 16, room.h * 16];
 };
 
+const G_model_roomRemoveCharacter = (room: Room, ch: Character) => {
+  const ind = room.characters.indexOf(ch);
+  if (ind > -1) {
+    room.characters.splice(ind);
+  }
+};
+
 const G_model_roomGetCollidableTiles = (room: Room): Tile[] => {
   return room.tiles.filter(tile => {
     return [0, 1, 2, 7].includes(tile.id);

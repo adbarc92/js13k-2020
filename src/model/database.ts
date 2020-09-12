@@ -8,7 +8,11 @@ G_controller_playLinearCutscene
 G_model_actorGetPosition
 G_model_actorSetPosition
 G_model_actorSetVelocity
+G_controller_doBattle
 G_model_createBattle
+G_controller_playSignCutscene
+G_controller_acquireItem
+G_model_createStats
 G_model_createCharacterFromTemplate
 G_model_createStats
 G_model_getCurrentWorld
@@ -36,8 +40,6 @@ const G_ROAMER_AI_STILL: ROAMER_AI = 0;
 const G_ROAMER_AI_LEFT_RIGHT: ROAMER_AI = 1;
 
 const SPRITESHEET_TERRAIN = 'terrain';
-const SIGN = (text: string) => `This sign says: "${text}"`;
-const ACQUIRE_ITEM = (text: string) => `You acquired: ${text}`;
 
 interface ItemDef {
   name: string;
@@ -76,7 +78,7 @@ interface CharacterDef {
 }
 const G_ITEM_BOMB: ItemDef = {
   name: 'Bomb',
-  dsc: 'Destroys all enemies.',
+  dsc: 'It destroys all enemies!',
   onUse: () => {},
 };
 
@@ -256,67 +258,38 @@ const G_SIGN_POT_ROOM: CharacterDef = {
   name: 'Sign',
   spr: SPRITESHEET_TERRAIN,
   sprI: 5,
-  action: async () => {
-    const lines = [SIGN('Probably nothing is in these pots.')];
-
-    await G_controller_playLinearCutscene(lines);
-    G_view_hideDialog();
-  },
+  action: () =>
+    G_controller_playSignCutscene('Probably nothing is in these pots.'),
 };
-
 const G_SIGN_SPIKES_ARE_DANGEROUS: CharacterDef = {
   name: 'Sign',
   spr: SPRITESHEET_TERRAIN,
   sprI: 5,
-  action: async () => {
-    const lines = [SIGN('SPIKES are dangerous.')];
-    await G_controller_playLinearCutscene(lines);
-    G_view_hideDialog();
-  },
+  action: () => G_controller_playSignCutscene('SPIKES are dangerous.'),
 };
-
 const G_SIGN_POINTLESS_FALL: CharacterDef = {
   name: 'Sign',
   spr: SPRITESHEET_TERRAIN,
   sprI: 5,
-  action: async () => {
-    const lines = [SIGN('This fall is pointless.')];
-    await G_controller_playLinearCutscene(lines);
-    G_view_hideDialog();
-  },
+  action: () => G_controller_playSignCutscene('This fall is pointless.'),
 };
-
 const G_SIGN_POINTY_FALL: CharacterDef = {
   name: 'Sign',
   spr: SPRITESHEET_TERRAIN,
   sprI: 5,
-  action: async () => {
-    const lines = [SIGN('This fall is pointy.')];
-    await G_controller_playLinearCutscene(lines);
-    G_view_hideDialog();
-  },
+  action: () => G_controller_playSignCutscene('This fall is pointy.'),
 };
-
 const G_SIGN_POINTY_FALL_SUCCESS: CharacterDef = {
   name: 'Sign',
   spr: SPRITESHEET_TERRAIN,
   sprI: 5,
-  action: async () => {
-    const lines = [SIGN('This cliff is tall.')];
-    await G_controller_playLinearCutscene(lines);
-    G_view_hideDialog();
-  },
+  action: () => G_controller_playSignCutscene('This cliff is tall.'),
 };
-
 const G_SIGN_SHRINE_OF_LEGS: CharacterDef = {
   name: 'Sign',
   spr: SPRITESHEET_TERRAIN,
   sprI: 5,
-  action: async () => {
-    const lines = [SIGN('The SHRINE of LEGS.')];
-    await G_controller_playLinearCutscene(lines);
-    G_view_hideDialog();
-  },
+  action: () => G_controller_playSignCutscene('The SHRINE of LEGS.'),
 };
 
 const G_CHARACTER_POT: CharacterDef = {
@@ -333,7 +306,6 @@ There's nothing inside.
     G_view_hideDialog();
   },
 };
-
 const G_CHARACTER_POT_FAKE: CharacterDef = {
   name: 'Pot!',
   spr: SPRITESHEET_TERRAIN,
@@ -349,7 +321,6 @@ There's nothing inside.
     G_view_hideDialog();
   },
 };
-
 const G_CHARACTER_POT_REAL: CharacterDef = {
   name: 'Pot',
   spr: SPRITESHEET_TERRAIN,
@@ -450,9 +421,5 @@ const G_CHARACTER_ITEM_BOMB: CharacterDef = {
   name: 'Item',
   spr: SPRITESHEET_TERRAIN,
   sprI: 11,
-  action: async () => {
-    const lines = [ACQUIRE_ITEM('Bomb')];
-    await G_controller_playLinearCutscene(lines);
-    G_view_hideDialog();
-  },
+  action: (ch: Character) => G_controller_acquireItem(ch, G_ITEM_BOMB),
 };
