@@ -205,7 +205,7 @@ const controller_roundRemoveDeadUnits = (round: Round): boolean => {
   const { turnOrder } = round;
   let unitSlain = false;
   for (let i = 0; i < turnOrder.length; i++) {
-    if (G_model_unitLives(turnOrder[i])) {
+    if (!G_model_unitLives(turnOrder[i])) {
       turnOrder.splice(i, 1);
       unitSlain = true;
     }
@@ -236,7 +236,7 @@ const G_controller_battleActionStrike = (
   const { def } = cS;
   const { dmg } = attacker.bS;
   const { cCnt } = attacker.cS;
-  const damage = cCnt > 0 ? dmg * cCnt : dmg;
+  const damage = cCnt > 0 ? dmg * (cCnt + 1) : dmg;
 
   const dmgDone = -Math.floor(Math.max(damage - def, 1));
   attacker.cS.cCnt = 0;
@@ -256,16 +256,9 @@ const G_controller_battleActionCharge = (unit: Unit) => {
 };
 
 const G_controller_battleActionInterrupt = (attacker: Unit, victim: Unit) => {
-  // Interrupt starts at a 75% rate, and is modified by the differential between attacker's MAG and victim's MAG
-  const mod =
-    attacker.bS.mag - victim.bS.mag > 0 ? attacker.bS.mag - victim.bS.mag : 0;
-  if (mod + 75 > G_utils_getRandNum(100)) {
-    victim.cS.spd = 0;
-    victim.cS.cCnt = 0;
-    G_model_battleSetText('Interrupted!');
-  } else {
-    G_model_battleSetText('Interrupt failed...');
-  }
+  attacker.cS.iCnt--;
+  victim.cS.spd = 0;
+  victim.cS.cCnt = 0;
 };
 
 const G_controller_battleActionHeal = (unit: Unit) => {

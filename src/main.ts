@@ -62,18 +62,15 @@ const runMainLoop = () => {
     G_CHARACTER_DEFENDER,
     'Seph'
   );
-  const kana = G_model_createCharacterFromTemplate(
-    G_CHARACTER_SPEEDSTER,
-    'Kana'
-  );
+  const kana = G_model_createCharacterFromTemplate(G_CHARACTER_SLAYER, 'Kana');
   G_model_partyAddCharacter(party, jerry);
   G_model_partyAddCharacter(party, seph);
   G_model_partyAddCharacter(party, kana);
 
   // uncomment to create and render a battle
-  // const battle = G_model_createBattle(party, G_ENCOUNTER_0);
-  // G_model_setCurrentBattle(battle);
-  // G_controller_doBattle(battle);
+  const battle = G_model_createBattle(party, G_ENCOUNTER_0);
+  G_model_setCurrentBattle(battle);
+  G_controller_doBattle(battle);
 
   const startTime = performance.now();
   let prevNow = startTime;

@@ -2,6 +2,7 @@
 global
 G_controller_battleActionCharge
 G_controller_roundApplyAction
+G_model_actorSetFacing
 G_model_createVerticalMenu
 G_model_createCharacterFromTemplate
 G_model_getScreenSize
@@ -15,10 +16,10 @@ G_utils_areAllUnitsDead
 G_utils_isAlly
 G_utils_getRandArrElem
 
-G_ACTION_CHARGE
 G_BATTLE_SCALE
 G_CURSOR_WIDTH
 G_CURSOR_HEIGHT
+G_FACING_LEFT
 */
 
 interface Round {
@@ -34,6 +35,7 @@ interface Battle {
   roundIndex: 0;
   actionMenuStack: Menu[];
   text: string;
+  // aiSeed;
 }
 
 type RoundAction = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -51,7 +53,7 @@ const G_BATTLE_MENU_LABELS = [
   'Break',
   'Defend',
   'Heal',
-  'Use',
+  'Item',
   'Flee',
 ];
 
@@ -96,6 +98,7 @@ const makeEnemies = (monsters: CharacterDef[]) => {
     const unit = ch.unit as Unit;
     unit.i = i;
     unit.allegiance = G_ALLEGIANCE_ENEMY;
+    G_model_actorSetFacing(unit.actor, G_FACING_LEFT);
     G_model_unitResetPosition(unit);
     monsterParty.push(unit);
   }

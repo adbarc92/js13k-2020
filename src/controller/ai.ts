@@ -3,8 +3,14 @@ global
 G_controller_roundApplyAction
 G_model_battleGetCurrentRound
 G_utils_getRandArrElem
+G_utils_getRandNum
 G_ACTION_CHARGE
 G_ACTION_STRIKE
+
+G_AI_CHARGER
+G_AI_STRIKER
+G_AI_BREAKER
+G_AI_BOSS
 */
 
 // Attack weakest target
@@ -93,19 +99,23 @@ const G_model_getChargeStatus = (actingUnit: Unit, battle: Battle) => {
 };
 
 const G_model_doAI = (battle: Battle, round: Round, actingUnit: Unit) => {
+  const target = G_utils_getRandArrElem(battle.allies);
   switch (actingUnit.ai) {
-    case 1: // Charger
+    case G_AI_CHARGER: // Charger
       if (actingUnit.cS.cCnt < actingUnit.cS.iCnt) {
         G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
       } else {
-        const target = G_utils_getRandArrElem(battle.allies);
         G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
       }
       break;
-    case 2: // Striker
+    case G_AI_STRIKER: // Striker
       // AI (the dumb version): select a random target and STRIKE
-      const target = G_utils_getRandArrElem(battle.allies);
+
       G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
       break;
+    case G_AI_BREAKER:
+      const action =
+        G_utils_getRandNum(2) < 2 ? G_ACTION_INTERRUPT : G_ACTION_STRIKE;
+      G_controller_roundApplyAction(action, round, target);
   }
 };

@@ -15,11 +15,12 @@ G_FACING_LEFT
 G_FACING_RIGHT
 */
 
-type AI = 0 | 1 | 2 | 3;
+type AI = 0 | 1 | 2 | 3 | 4;
 const G_AI_PLAYER: AI = 0;
 const G_AI_CHARGER: AI = 1;
 const G_AI_STRIKER: AI = 2;
-const G_AI_BOSS: AI = 3;
+const G_AI_BREAKER: AI = 3;
+const G_AI_BOSS: AI = 4;
 
 type ROAMER_AI = 0 | 1;
 const G_ROAMER_AI_STILL: ROAMER_AI = 0;
@@ -71,7 +72,7 @@ interface RoamerDef {
 const golem: CharacterDef = {
   name: 'Golem',
   stats: {
-    bS: G_model_createStats(1, 20, 20, 10, 5),
+    bS: G_model_createStats(30, 20, 30, 10, 5),
     ai: G_AI_STRIKER,
   },
   sprI: 5,
@@ -89,21 +90,31 @@ const fairy: CharacterDef = {
 const ape: CharacterDef = {
   name: 'Ape',
   stats: {
-    bS: G_model_createStats(20, 8, 5, 10, 15),
+    bS: G_model_createStats(20, 30, 5, 10, 15),
     ai: G_AI_STRIKER,
   },
-  sprI: 4,
+  sprI: 6,
+};
+
+const breaker: CharacterDef = {
+  name: 'Breaker',
+  stats: {
+    bS: G_model_createStats(20, 30, 5, 10, 18),
+    ai: G_AI_STRIKER,
+  },
+  sprI: 6,
 };
 
 const G_ENCOUNTER_0: EncounterDef = { enemies: [golem, golem, golem] };
 const G_ENCOUNTER_1: EncounterDef = { enemies: [fairy, golem, fairy] };
 const G_ENCOUNTER_2: EncounterDef = { enemies: [fairy, golem, fairy] };
 const G_ENCOUNTER_3: EncounterDef = { enemies: [ape, ape, fairy] };
+const G_ENCOUNTER_4: EncounterDef = { enemies: [ape, ape, golem, golem] };
 
 const G_CHARACTER_PROTAG: CharacterDef = {
   name: '',
   stats: {
-    bS: G_model_createStats(90, 100, 20, 5, 10),
+    bS: G_model_createStats(90, 100, 10, 5, 20),
     ai: G_AI_PLAYER,
   },
   sprI: 0,
@@ -111,7 +122,7 @@ const G_CHARACTER_PROTAG: CharacterDef = {
 const G_CHARACTER_STRIKER: CharacterDef = {
   name: '',
   stats: {
-    bS: G_model_createStats(85, 30, 16, 6, 12),
+    bS: G_model_createStats(85, 25, 16, 6, 12),
     ai: G_AI_PLAYER,
   },
   sprI: 0,
@@ -119,27 +130,28 @@ const G_CHARACTER_STRIKER: CharacterDef = {
 const G_CHARACTER_DEFENDER: CharacterDef = {
   name: '',
   stats: {
-    bS: G_model_createStats(60, 19, 25, 4, 6),
+    bS: G_model_createStats(80, 19, 18, 4, 6),
     ai: G_AI_PLAYER,
   },
   sprI: 0,
 };
-const G_CHARACTER_SPEEDSTER: CharacterDef = {
-  name: '',
-  stats: {
-    bS: G_model_createStats(80, 10, 12, 7, 15),
-    ai: G_AI_PLAYER,
-  },
-  sprI: 0,
-};
+
 const G_CHARACTER_SLAYER: CharacterDef = {
   name: '',
   stats: {
-    bS: G_model_createStats(75, 23, 7, 7, 10),
+    bS: G_model_createStats(75, 23, 12, 7, 10),
     ai: G_AI_PLAYER,
   },
   sprI: 0,
 };
+// const G_CHARACTER_SPEEDSTER: CharacterDef = {
+//   name: '',
+//   stats: {
+//     bS: G_model_createStats(80, 10, 12, 7, 15),
+//     ai: G_AI_PLAYER,
+//   },
+//   sprI: 0,
+// };
 
 const G_CHARACTER_OLD_MAN: CharacterDef = {
   name: 'Old Man',
