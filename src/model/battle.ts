@@ -2,6 +2,7 @@
 global
 G_controller_battleActionCharge
 G_controller_roundApplyAction
+G_model_actorSetFacing
 G_model_createVerticalMenu
 G_model_createCharacterFromTemplate
 G_model_getScreenSize
@@ -14,11 +15,12 @@ G_view_playSound
 G_utils_areAllUnitsDead
 G_utils_isAlly
 G_utils_getRandArrElem
+G_utils_getRandNum
 
-G_ACTION_CHARGE
 G_BATTLE_SCALE
 G_CURSOR_WIDTH
 G_CURSOR_HEIGHT
+G_FACING_LEFT
 */
 
 interface Round {
@@ -34,6 +36,7 @@ interface Battle {
   roundIndex: 0;
   actionMenuStack: Menu[];
   text: string;
+  aiSeed: number;
 }
 
 type RoundAction = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -51,7 +54,7 @@ const G_BATTLE_MENU_LABELS = [
   'Break',
   'Defend',
   'Heal',
-  'Use',
+  'Item',
   'Flee',
 ];
 
@@ -60,6 +63,11 @@ const G_ALLEGIANCE_ALLY = 0;
 const G_ALLEGIANCE_ENEMY = 1;
 
 type BattlePosition = [number, number];
+
+type Advantage = 0 | 1 | 2;
+const G_ADVANTAGE_NONE: Advantage = 0;
+const G_ADVANTAGE_ALLIES: Advantage = 1;
+const G_ADVANTAGE_ENEMIES: Advantage = 2;
 
 const INIT_OFFSET = 80; // temp
 const G_UNIT_OFFSET = 28; // temp
@@ -96,6 +104,7 @@ const makeEnemies = (monsters: CharacterDef[]) => {
     const unit = ch.unit as Unit;
     unit.i = i;
     unit.allegiance = G_ALLEGIANCE_ENEMY;
+    G_model_actorSetFacing(unit.actor, G_FACING_LEFT);
     G_model_unitResetPosition(unit);
     monsterParty.push(unit);
   }
@@ -104,8 +113,11 @@ const makeEnemies = (monsters: CharacterDef[]) => {
 
 const G_model_createBattle = (
   party: Party,
-  encounter: EncounterDef
+  encounter: EncounterDef,
+  advantage?: Advantage
 ): Battle => {
+  advantage = advantage || G_ADVANTAGE_NONE;
+
   const screenSize = G_model_getScreenSize();
   const menuWidth = 100;
   const lineHeight = 20;
@@ -134,7 +146,10 @@ const G_model_createBattle = (
     roundIndex: 0,
     actionMenuStack,
     text: '',
+    aiSeed: G_utils_getRandNum(3) + 1,
   };
+
+  G_model_battleAdvantage(battle, advantage);
 
   const firstRound = G_model_createRound(allies.concat(enemies));
   G_model_battleAddRound(battle, firstRound);
@@ -313,3 +328,14 @@ const G_model_actionToString = (i: number): string => {
 //   }
 //   return greatestSpeed;
 // };
+
+const G_model_battleAdvantage = (battle: Battle, advantage: Advantage) => {
+  if (advantage === G_ADVANTAGE_NONE) {
+    return;
+  }
+  const units =
+    advantage === G_ADVANTAGE_ALLIES ? battle.allies : battle.enemies;
+  for (let i = 0; i < units.length; i++) {
+    units[i].cS.spd += 5;
+  }
+};
