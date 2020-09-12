@@ -40,6 +40,12 @@ G_CHARACTER_STRIKER
 G_kana
 G_seph
 G_ENCOUNTER_0
+G_ENCOUNTER_1
+G_ENCOUNTER_2
+G_ENCOUNTER_3
+G_ENCOUNTER_4
+G_ENCOUNTER_5
+G_ENCOUNTER_6
 */
 
 // const SCALE = 2;
@@ -62,18 +68,15 @@ const runMainLoop = () => {
     G_CHARACTER_DEFENDER,
     'Seph'
   );
-  const kana = G_model_createCharacterFromTemplate(
-    G_CHARACTER_SPEEDSTER,
-    'Kana'
-  );
+  const kana = G_model_createCharacterFromTemplate(G_CHARACTER_SLAYER, 'Kana');
   G_model_partyAddCharacter(party, jerry);
   G_model_partyAddCharacter(party, seph);
   G_model_partyAddCharacter(party, kana);
 
   // uncomment to create and render a battle
-  // const battle = G_model_createBattle(party, G_ENCOUNTER_0);
-  // G_model_setCurrentBattle(battle);
-  // G_controller_doBattle(battle);
+  const battle = G_model_createBattle(party, G_ENCOUNTER_6);
+  G_model_setCurrentBattle(battle);
+  G_controller_doBattle(battle);
 
   const startTime = performance.now();
   let prevNow = startTime;
@@ -110,11 +113,6 @@ const main = async () => {
   G_model_loadSounds();
   G_initActors();
   runMainLoop();
-  // if (!G_model_getCurrentBattle()) {
-  //   G_view_showDialogBox(
-  //     "Ho ho, friend. Look yonder. There's a tonne of treasure in that pit over there. I certainly won't kick you into the pit. Trust me. I'm Patches the Spider."
-  //   );
-  // }
 };
 
 window.addEventListener('load', main);

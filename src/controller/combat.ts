@@ -61,6 +61,8 @@ G_FACING_UP
 G_FACING_UP_LEFT
 G_FACING_UP_RIGHT
 
+G_model_battleSumLostHealth
+
 G_ENCOUNTER_0
 */
 
@@ -88,7 +90,7 @@ const G_controller_battleSimulateNextRound = async (battle: Battle) => {
 
   // this part is hard-coded.  We'd probably want to generalize printing a unit with a function
   while (!G_model_roundIsOver(round)) {
-    console.log('Current Round Index:', round.currentIndex);
+    // console.log('Current Round Index:', round.currentIndex);
     await controller_battleSimulateTurn(battle, round);
     G_model_roundIncrementIndex(round);
   }
@@ -205,7 +207,7 @@ const controller_roundRemoveDeadUnits = (round: Round): boolean => {
   const { turnOrder } = round;
   let unitSlain = false;
   for (let i = 0; i < turnOrder.length; i++) {
-    if (G_model_unitLives(turnOrder[i])) {
+    if (!G_model_unitLives(turnOrder[i])) {
       turnOrder.splice(i, 1);
       unitSlain = true;
     }
@@ -220,7 +222,7 @@ const controller_roundSort = (round: Round) => {
 };
 
 const controller_roundInit = (round: Round) => {
-  console.log('Start new round:', round);
+  // console.log('Start new round:', round);
   controller_roundSort(round);
 };
 
@@ -236,7 +238,7 @@ const G_controller_battleActionStrike = (
   const { def } = cS;
   const { dmg } = attacker.bS;
   const { cCnt } = attacker.cS;
-  const damage = cCnt > 0 ? dmg * cCnt : dmg;
+  const damage = cCnt > 0 ? dmg * (cCnt + 1) : dmg;
 
   const dmgDone = -Math.floor(Math.max(damage - def, 1));
   attacker.cS.cCnt = 0;
@@ -256,16 +258,9 @@ const G_controller_battleActionCharge = (unit: Unit) => {
 };
 
 const G_controller_battleActionInterrupt = (attacker: Unit, victim: Unit) => {
-  // Interrupt starts at a 75% rate, and is modified by the differential between attacker's MAG and victim's MAG
-  const mod =
-    attacker.bS.mag - victim.bS.mag > 0 ? attacker.bS.mag - victim.bS.mag : 0;
-  if (mod + 75 > G_utils_getRandNum(100)) {
-    victim.cS.spd = 0;
-    victim.cS.cCnt = 0;
-    G_model_battleSetText('Interrupted!');
-  } else {
-    G_model_battleSetText('Interrupt failed...');
-  }
+  attacker.cS.iCnt--;
+  victim.cS.spd = 0;
+  victim.cS.cCnt = 0;
 };
 
 const G_controller_battleActionHeal = (unit: Unit) => {

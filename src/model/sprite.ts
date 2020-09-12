@@ -219,7 +219,6 @@ const G_model_loadImagesAndSprites = async () => {
     )
   );
   loadSpritesFromImage(spriteMap, bottomRightSpriteSheet, 'monsters', 16, 16);
-  console.log('Sprites:', spriteMap); // for debugging
   model_sprites = spriteMap;
 };
 
