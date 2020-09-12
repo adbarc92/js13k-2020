@@ -6,6 +6,7 @@ G_utils_getRandArrElem
 G_utils_getRandNum
 G_ACTION_CHARGE
 G_ACTION_STRIKE
+G_ACTION_INTERRUPT
 
 G_AI_CHARGER
 G_AI_STRIKER
@@ -100,6 +101,7 @@ const G_model_getChargeStatus = (actingUnit: Unit, battle: Battle) => {
 
 const G_model_doAI = (battle: Battle, round: Round, actingUnit: Unit) => {
   const target = G_utils_getRandArrElem(battle.allies);
+  const { roundIndex, aiSeed } = battle;
   switch (actingUnit.ai) {
     case G_AI_CHARGER: // Charger
       if (actingUnit.cS.cCnt < actingUnit.cS.iCnt) {
@@ -115,7 +117,7 @@ const G_model_doAI = (battle: Battle, round: Round, actingUnit: Unit) => {
       break;
     case G_AI_BREAKER:
       const action =
-        G_utils_getRandNum(2) < 2 ? G_ACTION_INTERRUPT : G_ACTION_STRIKE;
+        roundIndex % aiSeed === 0 ? G_ACTION_INTERRUPT : G_ACTION_STRIKE;
       G_controller_roundApplyAction(action, round, target);
   }
 };

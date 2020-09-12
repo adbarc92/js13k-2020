@@ -99,10 +99,10 @@ const ape: CharacterDef = {
 const breaker: CharacterDef = {
   name: 'Breaker',
   stats: {
-    bS: G_model_createStats(20, 30, 5, 10, 18),
+    bS: G_model_createStats(50, 30, 15, 10, 18),
     ai: G_AI_STRIKER,
   },
-  sprI: 6,
+  sprI: 7,
 };
 
 const G_ENCOUNTER_0: EncounterDef = { enemies: [golem, golem, golem] };
@@ -110,11 +110,12 @@ const G_ENCOUNTER_1: EncounterDef = { enemies: [fairy, golem, fairy] };
 const G_ENCOUNTER_2: EncounterDef = { enemies: [fairy, golem, fairy] };
 const G_ENCOUNTER_3: EncounterDef = { enemies: [ape, ape, fairy] };
 const G_ENCOUNTER_4: EncounterDef = { enemies: [ape, ape, golem, golem] };
+const G_ENCOUNTER_5: EncounterDef = { enemies: [breaker, breaker, breaker] };
 
 const G_CHARACTER_PROTAG: CharacterDef = {
   name: '',
   stats: {
-    bS: G_model_createStats(90, 100, 10, 5, 20),
+    bS: G_model_createStats(90, 24, 16, 5, 20),
     ai: G_AI_PLAYER,
   },
   sprI: 0,
@@ -122,7 +123,7 @@ const G_CHARACTER_PROTAG: CharacterDef = {
 const G_CHARACTER_STRIKER: CharacterDef = {
   name: '',
   stats: {
-    bS: G_model_createStats(85, 25, 16, 6, 12),
+    bS: G_model_createStats(85, 25, 13, 6, 12),
     ai: G_AI_PLAYER,
   },
   sprI: 0,

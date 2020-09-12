@@ -15,6 +15,7 @@ G_view_playSound
 G_utils_areAllUnitsDead
 G_utils_isAlly
 G_utils_getRandArrElem
+G_utils_getRandNum
 
 G_BATTLE_SCALE
 G_CURSOR_WIDTH
@@ -35,7 +36,7 @@ interface Battle {
   roundIndex: 0;
   actionMenuStack: Menu[];
   text: string;
-  // aiSeed;
+  aiSeed: number;
 }
 
 type RoundAction = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -137,6 +138,7 @@ const G_model_createBattle = (
     roundIndex: 0,
     actionMenuStack,
     text: '',
+    aiSeed: G_utils_getRandNum(3) + 1,
   };
 
   const firstRound = G_model_createRound(allies.concat(enemies));
@@ -316,3 +318,12 @@ const G_model_actionToString = (i: number): string => {
 //   }
 //   return greatestSpeed;
 // };
+
+const G_model_sumLostHealth = (battle: Battle) => {
+  const { allies } = battle;
+  let sum = 0;
+  for (let i = 0; i < allies.length; i++) {
+    sum += allies[i].bS.hp - allies[i].cS.hp;
+  }
+  console.log('Lost HP:', sum);
+};
