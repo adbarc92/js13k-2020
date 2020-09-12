@@ -61,6 +61,7 @@ G_BATTLE_MENU_LABELS
 G_FACING_UP
 G_FACING_UP_LEFT
 G_FACING_UP_RIGHT
+G_COMPLETION_INCONCLUSIVE
 
 G_model_battleSumLostHealth
 
@@ -116,6 +117,9 @@ const controller_battleSimulateTurn = async (
     return;
   }
   if (G_utils_areAllUnitsDead(battle.enemies)) {
+    return;
+  }
+  if (battle.completionState === G_COMPLETION_INCONCLUSIVE) {
     return;
   }
   // Reset stats if necessary, here
@@ -282,4 +286,9 @@ const G_controller_battleActionHeal = (unit: Unit) => {
 const G_controller_battleActionDefend = (unit: Unit) => {
   const { cS } = unit;
   cS.def *= 1.5;
+};
+
+const G_controller_battleActionFlee = (unit: Unit) => {
+  const battle = G_model_getCurrentBattle();
+  battle.completionState = G_COMPLETION_INCONCLUSIVE;
 };

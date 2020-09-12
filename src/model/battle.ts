@@ -21,12 +21,18 @@ G_BATTLE_SCALE
 G_CURSOR_WIDTH
 G_CURSOR_HEIGHT
 G_FACING_LEFT
+G_FACING_RIGHT
 */
 
 interface Round {
   turnOrder: Unit[];
   currentIndex: number;
 }
+
+type CompletionState = 0 | 1 | 2;
+const G_COMPLETION_VICTORY: CompletionState = 0;
+const G_COMPLETION_FAILURE: CompletionState = 1;
+const G_COMPLETION_INCONCLUSIVE: CompletionState = 2;
 
 interface Battle {
   party: Party;
@@ -37,6 +43,7 @@ interface Battle {
   actionMenuStack: Menu[];
   text: string;
   aiSeed: number;
+  completionState: CompletionState;
 }
 
 type RoundAction = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -92,6 +99,7 @@ const makeAllies = (characters: Character[]) => {
     unit.i = i;
     unit.allegiance = G_ALLEGIANCE_ALLY;
     G_model_unitResetPosition(unit);
+    G_model_actorSetFacing(unit.actor, G_FACING_RIGHT);
     battleParty.push(unit);
   }
   return battleParty;
@@ -236,7 +244,7 @@ const handleActionMenuSelected = async (i: RoundAction) => {
       G_controller_roundApplyAction(G_ACTION_HEAL, round, null);
       break;
     case G_ACTION_INTERRUPT:
-      const target2: Unit | null = await selectTarget(battle); // QUESTION: cannot reassign within scope?!
+      const target2: Unit | null = await selectTarget(battle);
       // handles the case where ESC (or back or something) is pressed while targeting
       if (!target2) {
         return;
@@ -306,7 +314,8 @@ const G_model_roundIsOver = (round: Round): boolean => {
 const G_model_battleIsComplete = (battle: Battle) => {
   return (
     G_utils_areAllUnitsDead(battle.enemies) ||
-    G_utils_areAllUnitsDead(battle.allies)
+    G_utils_areAllUnitsDead(battle.allies) ||
+    battle.completionState === G_COMPLETION_INCONCLUSIVE
   );
 };
 

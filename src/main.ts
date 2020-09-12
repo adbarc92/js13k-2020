@@ -64,13 +64,14 @@ const runMainLoop = () => {
     G_CHARACTER_STRIKER,
     'Jeremiah'
   );
-  const seph = G_model_createCharacterFromTemplate(
-    G_CHARACTER_DEFENDER,
-    'Seph'
-  );
+  // const seph = G_model_createCharacterFromTemplate(
+  //   G_CHARACTER_DEFENDER,
+  //   'Seph'
+  // );
   const kana = G_model_createCharacterFromTemplate(G_CHARACTER_SLAYER, 'Kana');
+
   G_model_partyAddCharacter(party, jerry);
-  G_model_partyAddCharacter(party, seph);
+  // G_model_partyAddCharacter(party, seph);
   G_model_partyAddCharacter(party, kana);
 
   // uncomment to create and render a battle

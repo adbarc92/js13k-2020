@@ -12,12 +12,14 @@ G_controller_doBattle
 G_model_createBattle
 G_controller_playSignCutscene
 G_controller_acquireItem
+G_controller_startBattle
+G_model_actorSetFacing
 G_model_createStats
 G_model_createCharacterFromTemplate
 G_model_createStats
 G_model_getCurrentWorld
 G_model_partyGetProtag
-G_model_actorSetFacing
+G_model_partyAddCharacter
 G_model_worldOnce
 G_model_worldResetProtagToStartingPosition
 G_view_hideDialog
@@ -76,11 +78,52 @@ interface CharacterDef {
   action?: (ch?: Character) => any; // platforming: function to run when when a player presses 'x' above this character
   col?: (ch?: Character) => any; // platforming: function to run when the protag collides with this character
 }
+
+// Items
+
 const G_ITEM_BOMB: ItemDef = {
   name: 'Bomb',
   dsc: 'It destroys all enemies!',
   onUse: () => {},
 };
+
+// Characters
+
+const G_CHARACTER_PROTAG: CharacterDef = {
+  name: '',
+  stats: {
+    bS: G_model_createStats(90, 25, 16, 5, 20),
+    ai: G_AI_PLAYER,
+  },
+  sprI: 0,
+};
+const G_CHARACTER_STRIKER: CharacterDef = {
+  name: '',
+  stats: {
+    bS: G_model_createStats(85, 25, 13, 6, 15),
+    ai: G_AI_PLAYER,
+  },
+  sprI: 0,
+};
+const G_CHARACTER_DEFENDER: CharacterDef = {
+  name: '',
+  stats: {
+    bS: G_model_createStats(80, 19, 18, 4, 6),
+    ai: G_AI_PLAYER,
+  },
+  sprI: 0,
+};
+
+const G_CHARACTER_SLAYER: CharacterDef = {
+  name: '',
+  stats: {
+    bS: G_model_createStats(75, 23, 12, 7, 10),
+    ai: G_AI_PLAYER,
+  },
+  sprI: 0,
+};
+
+// Monsters
 
 const golem: CharacterDef = {
   name: 'Golem',
@@ -126,48 +169,6 @@ const G_ENCOUNTER_4: EncounterDef = { enemies: [ape, ape, golem, golem] };
 const G_ENCOUNTER_5: EncounterDef = { enemies: [breaker, breaker, breaker] };
 const G_ENCOUNTER_6: EncounterDef = { enemies: [breaker, ape, fairy] };
 const G_ENCOUNTER_7: EncounterDef = { enemies: [fairy] };
-
-const G_CHARACTER_PROTAG: CharacterDef = {
-  name: '',
-  stats: {
-    bS: G_model_createStats(90, 25, 16, 5, 20),
-    ai: G_AI_PLAYER,
-  },
-  sprI: 0,
-};
-const G_CHARACTER_STRIKER: CharacterDef = {
-  name: '',
-  stats: {
-    bS: G_model_createStats(85, 25, 13, 6, 15),
-    ai: G_AI_PLAYER,
-  },
-  sprI: 0,
-};
-const G_CHARACTER_DEFENDER: CharacterDef = {
-  name: '',
-  stats: {
-    bS: G_model_createStats(80, 19, 18, 4, 6),
-    ai: G_AI_PLAYER,
-  },
-  sprI: 0,
-};
-
-const G_CHARACTER_SLAYER: CharacterDef = {
-  name: '',
-  stats: {
-    bS: G_model_createStats(75, 23, 12, 7, 10),
-    ai: G_AI_PLAYER,
-  },
-  sprI: 0,
-};
-// const G_CHARACTER_SPEEDSTER: CharacterDef = {
-//   name: '',
-//   stats: {
-//     bS: G_model_createStats(80, 10, 12, 7, 15),
-//     ai: G_AI_PLAYER,
-//   },
-//   sprI: 0,
-// };
 
 const G_CHARACTER_OLD_MAN: CharacterDef = {
   name: 'Old Man',
@@ -291,6 +292,12 @@ const G_SIGN_SHRINE_OF_LEGS: CharacterDef = {
   sprI: 5,
   action: () => G_controller_playSignCutscene('The SHRINE of LEGS.'),
 };
+const G_SIGN_MONSTER_ROOM: CharacterDef = {
+  name: 'Sign',
+  spr: SPRITESHEET_TERRAIN,
+  sprI: 5,
+  action: () => G_controller_playSignCutscene('Choose wisely'),
+};
 
 const G_CHARACTER_POT: CharacterDef = {
   name: 'Pot',
@@ -360,11 +367,67 @@ No? Come back when you have!
   },
 };
 
-const G_CHARACTER_ROAMER_ENCOUNTER_0: CharacterDef = {
+const G_ROAMER_ENCOUNTER_0: CharacterDef = {
   name: '',
   sprI: 5,
-  col: async () => {
-    await G_controller_startBattle(G_ENCOUNTER_7);
+  col: async (ch: Character) => {
+    await G_controller_startBattle(ch, G_ENCOUNTER_7, [G_ITEM_BOMB]);
+  },
+};
+
+const G_ROAMER_ENCOUNTER_1: CharacterDef = {
+  name: '',
+  sprI: 5,
+  col: async (ch: Character) => {
+    await G_controller_startBattle(ch, G_ENCOUNTER_7, [G_ITEM_BOMB]);
+  },
+};
+
+const G_ROAMER_ENCOUNTER_2: CharacterDef = {
+  name: '',
+  sprI: 5,
+  col: async (ch: Character) => {
+    await G_controller_startBattle(ch, G_ENCOUNTER_4, [G_ITEM_BOMB]);
+  },
+};
+
+const G_ROAMER_ENCOUNTER_3: CharacterDef = {
+  name: '',
+  sprI: 5,
+  col: async (ch: Character) => {
+    await G_controller_startBattle(ch, G_ENCOUNTER_2, [G_ITEM_BOMB]);
+  },
+};
+
+const G_ROAMER_ENCOUNTER_4: CharacterDef = {
+  name: '',
+  sprI: 5,
+  col: async (ch: Character) => {
+    await G_controller_startBattle(ch, G_ENCOUNTER_3, [G_ITEM_BOMB]);
+  },
+};
+
+const G_ROAMER_ENCOUNTER_5: CharacterDef = {
+  name: '',
+  sprI: 5,
+  col: async (ch: Character) => {
+    await G_controller_startBattle(ch, G_ENCOUNTER_5, [G_ITEM_BOMB]);
+  },
+};
+
+const G_ROAMER_ENCOUNTER_6: CharacterDef = {
+  name: '',
+  sprI: 5,
+  col: async (ch: Character) => {
+    await G_controller_startBattle(ch, G_ENCOUNTER_6, [G_ITEM_BOMB]);
+  },
+};
+
+const G_ROAMER_ENCOUNTER_7: CharacterDef = {
+  name: '',
+  sprI: 5,
+  col: async (ch: Character) => {
+    await G_controller_startBattle(ch, G_ENCOUNTER_3, [G_ITEM_BOMB]);
   },
 };
 
@@ -391,7 +454,7 @@ const G_CHARACTER_FAKE_WALL: CharacterDef = {
 const G_CHARACTER_ITEM_PATE: CharacterDef = {
   name: 'A gleaming item...',
   spr: SPRITESHEET_TERRAIN,
-  sprI: 4,
+  sprI: 11,
   action: async () => {
     const lines = `
 A gleaming marble radiating shifting hues...
@@ -421,5 +484,34 @@ const G_CHARACTER_ITEM_BOMB: CharacterDef = {
   name: 'Item',
   spr: SPRITESHEET_TERRAIN,
   sprI: 11,
-  action: (ch: Character) => G_controller_acquireItem(ch, G_ITEM_BOMB),
+  action: (ch: Character) => G_controller_acquireItem(G_ITEM_BOMB, ch),
+};
+
+const G_CHARACTER_ORANGE: CharacterDef = {
+  name: 'Orange',
+  sprI: 0,
+  stats: {
+    bS: G_model_createStats(75, 23, 12, 7, 10),
+    ai: G_AI_STRIKER,
+  },
+  action: async (ch: Character) => {
+    G_controller_facePlayer(ch);
+    const lines = `
+I am the strongest man!
+Fight me and I will join you!
+    `.split('\n');
+    const lines2 = `
+    Onward, then!
+    `.split('\n');
+
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+    const G_ENCOUNTER_8: EncounterDef = { enemies: [G_CHARACTER_ORANGE] };
+    await G_controller_startBattle(ch, G_ENCOUNTER_8);
+    const world = G_model_getCurrentWorld();
+    const party = world.party;
+    G_model_partyAddCharacter(party, ch);
+    await G_controller_playLinearCutscene(lines2);
+    G_view_hideDialog();
+  },
 };

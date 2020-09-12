@@ -22,6 +22,7 @@ G_model_roomRemoveCharacter
 G_model_partyAddItem
 G_FACING_LEFT
 G_FACING_RIGHT
+G_COMPLETION_VICTORY
 */
 
 const SIGN = (text: string) => [`This sign says: "${text}"`];
@@ -76,8 +77,9 @@ const G_controller_facePlayer = (character: Character) => {
 };
 
 const G_controller_startBattle = async (
+  roamer: Character,
   encounter: EncounterDef,
-  items?: Item[]
+  items?: ItemDef[]
 ) => {
   const world = G_model_getCurrentWorld();
   world.pause = true;
@@ -86,14 +88,23 @@ const G_controller_startBattle = async (
   const [x, y] = G_model_actorGetPosition(protag.actor);
   const battle = G_model_createBattle(party, encounter);
   await G_controller_doBattle(battle);
-  G_model_actorSetPosition(protag.actor, x - 5, y);
+  const room = G_model_worldGetCurrentRoom(world);
+  G_model_roomRemoveCharacter(room, roamer);
+  G_model_actorSetPosition(protag.actor, x, y);
   G_model_actorSetVelocity(protag.actor, 0, 0);
+  if (battle.completionState === G_COMPLETION_VICTORY) {
+    if (items) {
+      for (let i in items) {
+        await G_controller_acquireItem(items[i]);
+      }
+    }
+  } // death condition is here
   world.pause = false;
 };
 
 const G_controller_acquireItem = async (
-  character: Character,
-  itemTemplate: ItemDef
+  itemTemplate: ItemDef,
+  character?: Character
 ) => {
   const world = G_model_getCurrentWorld();
   const { name, dsc } = itemTemplate;
@@ -105,7 +116,9 @@ const G_controller_acquireItem = async (
   G_view_hideDialog();
 
   const room = G_model_worldGetCurrentRoom(world);
-  G_model_roomRemoveCharacter(room, character);
+  if (character) {
+    G_model_roomRemoveCharacter(room, character);
+  }
 
   G_model_partyAddItem(world.party, itemTemplate);
 };

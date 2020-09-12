@@ -117,11 +117,6 @@ const G_utils_waitMs = async (ms: number) => {
 // ex: G_utils_alternate(1, 100) alternates between 0 and 1 where each number lasts for 100 ms
 // ex: G_utils_alternate(5, 250) alternates between 0, 1, 2, 3, 4, 5, where each number lasts for 250 ms
 const G_utils_alternate = (nFrames: number, ms: number) => {
-  // HACK to make animations stop when the world is paused PLEASE REMOVE THIS
-  const world = G_model_getCurrentWorld();
-  if (world.pause) {
-    return 0;
-  }
   return Math.floor((G_model_getElapsedMs() % ((nFrames + 1) * ms)) / ms);
 };
 

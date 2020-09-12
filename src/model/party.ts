@@ -3,6 +3,7 @@ global
 G_model_createUnit
 G_model_createCharacterFromTemplate
 G_CHARACTER_PROTAG
+G_AI_PLAYER
 */
 
 interface Item {
@@ -32,8 +33,9 @@ const G_model_createParty = (): Party => {
 const G_model_partyGetProtag = (party: Party): Character => {
   return party.characters[0];
 };
-const G_model_partyAddCharacter = (party: Party, unit: Character) => {
-  party.characters.push(unit);
+const G_model_partyAddCharacter = (party: Party, character: Character) => {
+  (character.unit as Unit).ai = G_AI_PLAYER;
+  party.characters.push(character);
 };
 const G_model_partyAddItem = (party: Party, itemTemplate: ItemDef) => {
   const item = {

@@ -110,7 +110,7 @@ const G_model_roomGetSizePx = (room: Room): [number, number] => {
 const G_model_roomRemoveCharacter = (room: Room, ch: Character) => {
   const ind = room.characters.indexOf(ch);
   if (ind > -1) {
-    room.characters.splice(ind);
+    room.characters.splice(ind, 1);
   }
 };
 
