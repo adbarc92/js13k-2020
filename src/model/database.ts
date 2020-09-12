@@ -9,7 +9,10 @@ G_model_getCurrentWorld
 G_model_partyGetProtag
 G_model_actorSetFacing
 G_model_worldOnce
+G_model_worldResetProtagToStartingPosition
 G_view_hideDialog
+G_view_playSound
+G_utils_waitMs
 G_AI_STRIKER
 G_FACING_LEFT
 G_FACING_RIGHT
@@ -25,10 +28,14 @@ type ROAMER_AI = 0 | 1;
 const G_ROAMER_AI_STILL: ROAMER_AI = 0;
 const G_ROAMER_AI_LEFT_RIGHT: ROAMER_AI = 1;
 
+const SPRITESHEET_TERRAIN = 'terrain';
+const SIGN = (text: string) => `This sign says: "${text}"`;
+const ACQUIRE_ITEM = (text: string) => `You acquired: ${text}`;
+
 interface ItemDef {
   name: string;
-  description: string;
-  effect: () => void;
+  dsc: string;
+  onUse: () => void;
 }
 
 const G_model_createStats = (
@@ -58,15 +65,13 @@ interface CharacterDef {
   spr?: string; // defaults to 'actors'
   label?: string; // platforming: text that appears when moving atop this character
   action?: (ch?: Character) => any; // platforming: function to run when when a player presses 'x' above this character
-  enc?: EncounterDef; // platforming: when colliding with this character start this encounter
+  col?: (ch?: Character) => any; // platforming: function to run when the protag collides with this character
 }
-
-interface RoamerDef {
-  ch?: CharacterDef;
-  encounter?: EncounterDef;
-  sprI: number;
-  roamAI: ROAMER_AI;
-}
+const G_ITEM_BOMB: ItemDef = {
+  name: 'Bomb',
+  dsc: 'Destroys all enemies.',
+  onUse: () => {},
+};
 
 const golem: CharacterDef = {
   name: 'Golem',
@@ -151,7 +156,7 @@ If you seek refuge from this place, it may be prudent to find what is not found.
 
 const G_CHARACTER_STATUE_RUNNER: CharacterDef = {
   name: 'Runner Without Legs',
-  spr: 'terrain',
+  spr: SPRITESHEET_TERRAIN,
   sprI: 8,
   action: async () => {
     let lines = [''];
@@ -163,9 +168,7 @@ It says, "The Runner."
 ${defaultText}
   `.split('\n');
     } else {
-      lines = `
-${defaultText}
-  `.split('\n');
+      lines = `${defaultText}`.split('\n');
     }
 
     await G_controller_playLinearCutscene(lines);
@@ -174,7 +177,7 @@ ${defaultText}
 };
 const G_CHARACTER_STATUE_THINKER: CharacterDef = {
   name: 'Thinker Without Mind',
-  spr: 'terrain',
+  spr: SPRITESHEET_TERRAIN,
   sprI: 8,
   action: async () => {
     let lines = [''];
@@ -187,8 +190,8 @@ ${defaultText}
   `.split('\n');
     } else {
       lines = `
-${defaultText}
-  `.split('\n');
+      ${defaultText}
+      `.split('\n');
     }
 
     await G_controller_playLinearCutscene(lines);
@@ -197,7 +200,7 @@ ${defaultText}
 };
 const G_CHARACTER_STATUE_SPEAKER: CharacterDef = {
   name: 'Speaker Without Voice',
-  spr: 'terrain',
+  spr: SPRITESHEET_TERRAIN,
   sprI: 8,
   action: async () => {
     let lines = [''];
@@ -209,9 +212,7 @@ It says, "The Speaker."
 ${defaultText}
   `.split('\n');
     } else {
-      lines = `
-${defaultText}
-  `.split('\n');
+      lines = `${defaultText}`.split('\n');
     }
 
     await G_controller_playLinearCutscene(lines);
@@ -221,13 +222,55 @@ ${defaultText}
 
 const G_SIGN_POT_ROOM: CharacterDef = {
   name: 'Sign',
-  spr: 'terrain',
+  spr: SPRITESHEET_TERRAIN,
   sprI: 5,
   action: async () => {
-    const lines = `
-This sign says: "There are pots in this room."
-  `.split('\n');
+    const lines = [SIGN('Probably nothing is in these pots.')];
 
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
+};
+
+const G_SIGN_SPIKES_ARE_DANGEROUS: CharacterDef = {
+  name: 'Sign',
+  spr: SPRITESHEET_TERRAIN,
+  sprI: 5,
+  action: async () => {
+    const lines = [SIGN('SPIKES are dangerous.')];
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
+};
+
+const G_SIGN_POINTLESS_FALL: CharacterDef = {
+  name: 'Sign',
+  spr: SPRITESHEET_TERRAIN,
+  sprI: 5,
+  action: async () => {
+    const lines = [SIGN('This fall is pointless.')];
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
+};
+
+const G_SIGN_POINTY_FALL: CharacterDef = {
+  name: 'Sign',
+  spr: SPRITESHEET_TERRAIN,
+  sprI: 5,
+  action: async () => {
+    const lines = [SIGN('This fall is pointy.')];
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
+};
+
+const G_SIGN_POINTY_FALL_SUCCESS: CharacterDef = {
+  name: 'Sign',
+  spr: SPRITESHEET_TERRAIN,
+  sprI: 5,
+  action: async () => {
+    const lines = [SIGN('This cliff is tall.')];
     await G_controller_playLinearCutscene(lines);
     G_view_hideDialog();
   },
@@ -235,7 +278,7 @@ This sign says: "There are pots in this room."
 
 const G_CHARACTER_POT: CharacterDef = {
   name: 'Pot',
-  spr: 'terrain',
+  spr: SPRITESHEET_TERRAIN,
   sprI: 4,
   action: async () => {
     const lines = `
@@ -250,7 +293,7 @@ There's nothing inside.
 
 const G_CHARACTER_POT_FAKE: CharacterDef = {
   name: 'Pot!',
-  spr: 'terrain',
+  spr: SPRITESHEET_TERRAIN,
   sprI: 4,
   action: async () => {
     const lines = `
@@ -266,7 +309,7 @@ There's nothing inside.
 
 const G_CHARACTER_POT_REAL: CharacterDef = {
   name: 'Pot',
-  spr: 'terrain',
+  spr: SPRITESHEET_TERRAIN,
   sprI: 4,
   action: async () => {
     const lines = `
@@ -287,15 +330,14 @@ const G_CHARACTER_PATE: CharacterDef = {
     let lines = [''];
     if (G_model_worldOnce('talked_to_pate')) {
       lines = `
-    Hello friend!
-    I seem to have misplaced some treasure.
-    If you'd kindly bring it to me,
-    I'd be happy to accompany you out of here.
+Hello friend!
+I seem to have misplaced some treasure.
+If you'd kindly bring it to me.  I'd be happy to accompany you out of here.
     `.split('\n');
     } else {
       lines = `
-      Have you found it yet?
-      No? Come back when you have!
+Have you found my treasure yet?
+No? Come back when you have!
       `.split('\n');
     }
 
@@ -304,42 +346,32 @@ const G_CHARACTER_PATE: CharacterDef = {
   },
 };
 
-const G_CHARACTER_ROAMER: CharacterDef = {
-  name: 'Foul Beast',
+const G_CHARACTER_ROAMER_ENCOUNTER0: CharacterDef = {
+  name: '',
   sprI: 5,
-  action: async () => {
-    const lines = `
-    This is a feral beast.
-    `.split('\n');
-
-    await G_controller_playLinearCutscene(lines);
-    G_view_hideDialog();
-  },
 };
 
 const G_CHARACTER_SPIKES: CharacterDef = {
-  name: 'Deadly Spikes',
-  spr: 'terrain',
+  name: '',
+  spr: SPRITESHEET_TERRAIN,
   sprI: 6,
-  action: async () => {
-    const lines = `
-    Wicked looking spikes...
-    Ouch!
-    Even a touch pricks your finger.
-    `.split('\n');
-
-    await G_controller_playLinearCutscene(lines);
-    G_view_hideDialog();
+  col: async () => {
+    const world = G_model_getCurrentWorld();
+    world.pause = true;
+    G_view_playSound('spikes');
+    await G_utils_waitMs(1000);
+    world.pause = false;
+    G_model_worldResetProtagToStartingPosition(G_model_getCurrentWorld());
   },
 };
 
 const G_CHARACTER_ITEM_PATE: CharacterDef = {
   name: 'A gleaming item...',
-  spr: 'terrain',
+  spr: SPRITESHEET_TERRAIN,
   sprI: 4,
   action: async () => {
     const lines = `
-    A gleaming marble radiating shifting hues...
+A gleaming marble radiating shifting hues...
     `.split('\n');
 
     await G_controller_playLinearCutscene(lines);
@@ -347,16 +379,27 @@ const G_CHARACTER_ITEM_PATE: CharacterDef = {
   },
 };
 
-const G_CHARACTER_ITEM: CharacterDef = {
+const G_CHARACTER_ITEM_FEATHER: CharacterDef = {
   name: 'Feather',
-  spr: 'terrain',
+  spr: SPRITESHEET_TERRAIN,
   sprI: 4,
   action: async () => {
     const lines = `
-    A white and black feather.
-    How could it have gotten here?
+A white and black feather.
+How could it have gotten here?
     `.split('\n');
 
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
+};
+
+const G_CHARACTER_ITEM_BOMB: CharacterDef = {
+  name: 'Item',
+  spr: SPRITESHEET_TERRAIN,
+  sprI: 4,
+  action: async () => {
+    const lines = [ACQUIRE_ITEM('Bomb')];
     await G_controller_playLinearCutscene(lines);
     G_view_hideDialog();
   },

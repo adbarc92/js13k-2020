@@ -7,16 +7,23 @@ G_model_createRoomFromSprite
 G_model_partyGetProtag
 G_model_createRoom
 G_model_roomGetSizePx
+G_utils_to1d
 */
 
 interface World {
   rooms: Room[];
   party: Party;
   roomI: number;
-  state: {};
+  lastX: number;
+  lastY: number;
+  pause: boolean;
+  state: Object;
 }
 
 let model_world: World | null = null;
+
+const START_ROOM_X = 3;
+const START_ROOM_Y = 3;
 
 const BG_SPRITE_CAVE_WALL = 'terrain_9';
 const BG_SPRITE_MANMADE_WALL = 'terrain_10';
@@ -24,7 +31,7 @@ const BG_SPRITE_MANMADE_WALL = 'terrain_10';
 const mapIndexToBgSprite = {
   0: BG_SPRITE_CAVE_WALL,
   1: BG_SPRITE_CAVE_WALL,
-  2: BG_SPRITE_CAVE_WALL,
+  2: BG_SPRITE_MANMADE_WALL,
   3: BG_SPRITE_CAVE_WALL,
   4: BG_SPRITE_MANMADE_WALL,
   5: BG_SPRITE_CAVE_WALL,
@@ -48,7 +55,10 @@ const G_model_createWorld = (): World => {
   const world: World = {
     rooms: [],
     party,
-    roomI: 5,
+    lastX: 128,
+    lastY: 180,
+    roomI: G_utils_to1d(START_ROOM_X, START_ROOM_Y, 4),
+    pause: false,
     state: {}, // trigger state
   };
   for (let i = 0; i < 16; i++) {
@@ -109,10 +119,19 @@ const G_model_worldSetCurrentRoomToAdjacentRoom = (
     newY = roomHeight - 16;
   }
   G_model_actorSetPosition(actor, newX, newY);
+  world.lastX = newX;
+  world.lastY = newY;
 };
 
 const G_model_worldGetCurrentRoom = (world: World): Room => {
   return world.rooms[world.roomI];
+};
+
+const G_model_worldResetProtagToStartingPosition = (world: World) => {
+  const party = world.party;
+  const protag = G_model_partyGetProtag(party);
+
+  G_model_actorSetPosition(protag.actor, world.lastX, world.lastY);
 };
 
 const G_model_worldSetState = (key: string, value: any) => {

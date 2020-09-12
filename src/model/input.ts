@@ -45,7 +45,7 @@ const G_model_setKeyDown = (key: string) => {
   }
   if (!model_keys[key]) {
     model_keys[key] = true;
-    if (key === 'q') {
+    if (key === 'Q') {
       (window as any).running = false;
     }
 
@@ -67,7 +67,7 @@ const G_model_setKeyDown = (key: string) => {
         }
       }
     } else {
-      if (key === G_KEY_X) {
+      if (key === G_KEY_X || key === G_KEY_ENTER) {
         const cb = G_model_getInteractCb();
         if (cb) {
           cb();

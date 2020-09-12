@@ -10,6 +10,7 @@ interface Character {
   actor: Actor;
   label: string;
   action?: (self?: Character) => any;
+  col?: (self?: Character) => any;
   unit?: Unit; // should be optional
   aText: string; //action text
 }
@@ -26,7 +27,7 @@ const G_model_createCharacterFromTemplate = (
   characterDef: CharacterDef,
   chName?: string
 ): Character => {
-  const { sprI, spr, stats, label, action, name } = characterDef;
+  const { sprI, spr, stats, label, action, col, name } = characterDef;
   const actor = G_model_createActor(sprI);
   if (spr) {
     actor.sprite = spr;
@@ -36,6 +37,7 @@ const G_model_createCharacterFromTemplate = (
     actor,
     label: label || '',
     action,
+    col,
     aText: '',
     unit: stats
       ? G_model_createUnit(name, actor, characterDef, G_ALLEGIANCE_ALLY, 0)

@@ -280,6 +280,28 @@ const G_model_loadSounds = () => {
     0.03,
   ]);
 
+  loadSound(soundMap, 'spikes', [
+    ,
+    ,
+    986,
+    0.02,
+    ,
+    0.05,
+    ,
+    0.05,
+    15,
+    46,
+    ,
+    ,
+    ,
+    ,
+    -0.8,
+    0.3,
+    ,
+    ,
+    0.02,
+  ]);
+
   model_sounds = soundMap;
 };
 

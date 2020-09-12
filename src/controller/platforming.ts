@@ -165,6 +165,9 @@ const handleActorTileCollisions = (actor: Actor, room: Room) => {
 };
 
 const G_controller_updateCurrentRoom = (world: World) => {
+  if (world.pause) {
+    return;
+  }
   const room = G_model_worldGetCurrentRoom(world);
   const { characters } = room;
   characters.forEach(ch => {
@@ -239,13 +242,18 @@ const G_controller_updatePlayer = (party: Party, room: Room, world: World) => {
       }
     );
     const text = ch.label || ch.name;
-    if (hasCollision && text) {
-      G_model_characterSetActionText(text, ch);
+    if (hasCollision) {
+      if (text) {
+        G_model_characterSetActionText(text, ch);
+      }
       G_model_setInteractCb(() => {
         if (ch.action) {
           ch.action(ch);
         }
       });
+      if (ch.col) {
+        ch.col(ch);
+      }
     }
   }
 };
