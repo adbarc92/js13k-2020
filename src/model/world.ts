@@ -30,7 +30,7 @@ const BG_SPRITE_MANMADE_WALL = 'terrain_10';
 
 const mapIndexToBgSprite = {
   0: BG_SPRITE_CAVE_WALL,
-  1: BG_SPRITE_CAVE_WALL,
+  1: BG_SPRITE_MANMADE_WALL,
   2: BG_SPRITE_MANMADE_WALL,
   3: BG_SPRITE_CAVE_WALL,
   4: BG_SPRITE_MANMADE_WALL,
@@ -92,8 +92,8 @@ const G_model_worldSetCurrentRoomToAdjacentRoom = (
 ) => {
   const worldY = Math.floor(world.roomI / 4);
   const worldX = world.roomI % 4;
-  const nextWorldX = worldX + offsetX;
-  const nextWorldY = worldY + offsetY;
+  const nextWorldX = (worldX + offsetX + 4) % 4;
+  const nextWorldY = (worldY + offsetY + 4) % 4;
   G_model_worldSetCurrentRoom(nextWorldX, nextWorldY, world);
   const room = G_model_worldGetCurrentRoom(world);
   const party = world.party;

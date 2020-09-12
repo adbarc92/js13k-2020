@@ -31,6 +31,7 @@ G_model_statsModifyHp
 G_model_setBattlePostActionCb
 G_model_setCurrentBattle
 G_model_roundIsOver
+G_model_unitGainBreakCharge
 G_model_unitLives
 G_model_unitMoveForward
 G_model_unitResetDef
@@ -103,7 +104,6 @@ const controller_battleSimulateTurn = async (
 ): Promise<void> => {
   const actingUnit = G_model_roundGetActingUnit(round) as Unit;
   if (!G_model_unitLives(actingUnit)) {
-    round.nextTurnOrder.push(actingUnit);
     return;
   }
   // Reset stats if necessary, here
@@ -187,7 +187,6 @@ const G_controller_roundApplyAction = async (
     default:
       console.error('No action:', action, 'exists.');
   }
-  round.nextTurnOrder.push(actingUnit);
 
   await G_utils_waitMs(2000);
   G_model_unitResetPosition(actingUnit);
@@ -197,6 +196,21 @@ const G_controller_roundApplyAction = async (
 
   await G_utils_waitMs(500);
   G_model_getBattlePostActionCb()(); // resolve is called here
+  if (controller_roundRemoveDeadUnits(round)) {
+    G_model_unitGainBreakCharge(actingUnit);
+  }
+};
+
+const controller_roundRemoveDeadUnits = (round: Round): boolean => {
+  const { turnOrder } = round;
+  let unitSlain = false;
+  for (let i = 0; i < turnOrder.length; i++) {
+    if (G_model_unitLives(turnOrder[i])) {
+      turnOrder.splice(i, 1);
+      unitSlain = true;
+    }
+  }
+  return unitSlain;
 };
 
 const controller_roundSort = (round: Round) => {
@@ -211,7 +225,7 @@ const controller_roundInit = (round: Round) => {
 };
 
 const controller_roundEnd = (round: Round): Round => {
-  return G_model_createRound(round.nextTurnOrder); // Change
+  return G_model_createRound(round.turnOrder); // Change
 };
 
 const G_controller_battleActionStrike = (

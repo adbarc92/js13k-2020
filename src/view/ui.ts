@@ -25,6 +25,8 @@ G_ENEMY_COLOR
 
 const G_CURSOR_WIDTH = 16;
 const G_CURSOR_HEIGHT = 16;
+const G_TURN_ORDER_BOX_HEIGHT = 40;
+const G_TURN_ORDER_BOX_WIDTH = 30;
 
 const G_view_drawUiBackground = (
   x: number,
@@ -126,9 +128,49 @@ const G_view_drawInfo = (battle: Battle, allegiance: Allegiance) => {
   }
 };
 
+// const G_view_drawSpeedBar = (
+//   x: number,
+//   y: number,
+//   unit: Unit,
+//   battle: Battle
+// ) => {
+//   const { spd } = unit.cS;
+//   const enemyTopSpeed = G_model_battleGetHighestSpeed(
+//     battle,
+//     ((unit.allegiance + 1) % 2) as Allegiance
+//   );
+//   const spdDif = spd - enemyTopSpeed;
+//   const pxHeight = G_utils_normalizeClamp(
+//     spdDif,
+//     -8,
+//     8,
+//     -G_TURN_ORDER_BOX_HEIGHT,
+//     G_TURN_ORDER_BOX_HEIGHT
+//   );
+//   if (pxHeight < 0) {
+//     G_view_drawUiBackground(
+//       x,
+//       y,
+//       G_TURN_ORDER_BOX_WIDTH,
+//       -pxHeight,
+//       G_NEGATIVE_SPEED_COLOR,
+//       G_NEGATIVE_SPEED_COLOR
+//     );
+//   } else {
+//     G_view_drawUiBackground(
+//       x,
+//       y + G_TURN_ORDER_BOX_HEIGHT - pxHeight,
+//       G_TURN_ORDER_BOX_WIDTH,
+//       pxHeight,
+//       G_POSITIVE_SPEED_COLOR,
+//       G_POSITIVE_SPEED_COLOR
+//     );
+//   }
+// };
+
 const G_view_drawTurnOrder = (battle: Battle) => {
-  const boxHeight = 40;
-  const boxWidth = 30;
+  const boxHeight = G_TURN_ORDER_BOX_HEIGHT;
+  const boxWidth = G_TURN_ORDER_BOX_WIDTH;
   const { turnOrder } = G_model_battleGetCurrentRound(battle);
   const l = turnOrder.length;
   const top = 10;

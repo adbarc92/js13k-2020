@@ -91,8 +91,19 @@ const fairy: CharacterDef = {
   sprI: 4,
 };
 
-const G_ENCOUNTER_0: EncounterDef = { enemies: [golem, golem, golem, golem] };
+const ape: CharacterDef = {
+  name: 'Ape',
+  stats: {
+    bS: G_model_createStats(20, 8, 5, 10, 15),
+    ai: G_AI_STRIKER,
+  },
+  sprI: 4,
+};
+
+const G_ENCOUNTER_0: EncounterDef = { enemies: [golem, golem, golem] };
 const G_ENCOUNTER_1: EncounterDef = { enemies: [fairy, golem, fairy] };
+const G_ENCOUNTER_2: EncounterDef = { enemies: [fairy, golem, fairy] };
+const G_ENCOUNTER_3: EncounterDef = { enemies: [ape, ape, fairy] };
 
 const G_CHARACTER_PROTAG: CharacterDef = {
   name: '',
@@ -276,6 +287,17 @@ const G_SIGN_POINTY_FALL_SUCCESS: CharacterDef = {
   },
 };
 
+const G_SIGN_SHRINE_OF_LEGS: CharacterDef = {
+  name: 'Sign',
+  spr: SPRITESHEET_TERRAIN,
+  sprI: 5,
+  action: async () => {
+    const lines = [SIGN('The SHRINE of LEGS.')];
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
+};
+
 const G_CHARACTER_POT: CharacterDef = {
   name: 'Pot',
   spr: SPRITESHEET_TERRAIN,
@@ -365,6 +387,12 @@ const G_CHARACTER_SPIKES: CharacterDef = {
   },
 };
 
+const G_CHARACTER_FAKE_WALL: CharacterDef = {
+  name: '',
+  spr: SPRITESHEET_TERRAIN,
+  sprI: 1,
+};
+
 const G_CHARACTER_ITEM_PATE: CharacterDef = {
   name: 'A gleaming item...',
   spr: SPRITESHEET_TERRAIN,
@@ -397,7 +425,7 @@ How could it have gotten here?
 const G_CHARACTER_ITEM_BOMB: CharacterDef = {
   name: 'Item',
   spr: SPRITESHEET_TERRAIN,
-  sprI: 4,
+  sprI: 11,
   action: async () => {
     const lines = [ACQUIRE_ITEM('Bomb')];
     await G_controller_playLinearCutscene(lines);

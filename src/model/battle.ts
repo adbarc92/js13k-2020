@@ -23,7 +23,6 @@ G_CURSOR_HEIGHT
 
 interface Round {
   turnOrder: Unit[];
-  nextTurnOrder: Unit[];
   currentIndex: number;
 }
 
@@ -269,7 +268,6 @@ const G_model_battleGetCurrentRound = (battle: Battle): Round => {
 const G_model_createRound = (turnOrder: Unit[]): Round => {
   return {
     turnOrder,
-    nextTurnOrder: [],
     currentIndex: 0,
   };
 };
@@ -300,3 +298,18 @@ const G_model_battleIsComplete = (battle: Battle) => {
 const G_model_actionToString = (i: number): string => {
   return G_BATTLE_MENU_LABELS[i];
 };
+
+// const G_model_battleGetHighestSpeed = (
+//   battle: Battle,
+//   allegiance: Allegiance
+// ) => {
+//   const { allies, enemies } = battle;
+//   const units = allegiance === G_ALLEGIANCE_ALLY ? allies : enemies;
+//   let greatestSpeed = 0;
+//   for (let i = 0; i < units.length; i++) {
+//     if (units[i].cS.spd > greatestSpeed) {
+//       greatestSpeed = units[i].cS.spd;
+//     }
+//   }
+//   return greatestSpeed;
+// };
