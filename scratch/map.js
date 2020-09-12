@@ -1148,7 +1148,7 @@
          "y":0
         }],
  "nextlayerid":4,
- "nextobjectid":123,
+ "nextobjectid":125,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.4.2",

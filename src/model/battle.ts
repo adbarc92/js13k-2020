@@ -251,7 +251,7 @@ const handleActionMenuSelected = async (i: RoundAction) => {
 // This global variable holds the current battle.  It should only be accessed through
 // the following getters and setters
 let model_currentBattle: Battle | null = null;
-const G_model_setCurrentBattle = (battle: Battle) => {
+const G_model_setCurrentBattle = (battle: Battle | null) => {
   model_currentBattle = battle;
 };
 const G_model_getCurrentBattle = (): Battle => {

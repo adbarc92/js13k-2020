@@ -42,6 +42,7 @@ G_view_drawBattleText
 G_view_playSound
 G_utils_getRandArrElem
 G_utils_getRandNum
+G_utils_areAllUnitsDead
 G_utils_isAlly
 G_utils_waitMs
 
@@ -69,18 +70,24 @@ G_ENCOUNTER_0
 const G_BATTLE_SCALE = 2;
 
 const G_controller_doBattle = async (battle: Battle) => {
-  G_model_setCurrentBattle(battle);
-  G_model_setBattleInputEnabled(false);
+  return new Promise(async resolve => {
+    G_model_setCurrentBattle(battle);
+    G_model_setBattleInputEnabled(false);
 
-  while (!G_model_battleIsComplete(battle)) {
-    await G_controller_battleSimulateNextRound(battle); // do the fight!
-  }
-  console.log('Battle complete!');
-  setTimeout(() => {
-    const battle2 = G_model_createBattle(battle.party, G_ENCOUNTER_0);
-    G_model_setCurrentBattle(battle2);
-    G_controller_doBattle(battle2);
-  }, 2000); // For debugging
+    while (!G_model_battleIsComplete(battle)) {
+      await G_controller_battleSimulateNextRound(battle); // do the fight!
+    }
+
+    G_model_setCurrentBattle(null);
+    resolve();
+  });
+
+  // console.log('Battle complete!');
+  // setTimeout(() => {
+  //   const battle2 = G_model_createBattle(battle.party, G_ENCOUNTER_0);
+  //   G_model_setCurrentBattle(battle2);
+  //   G_controller_doBattle(battle2);
+  // }, 2000); // For debugging
 };
 
 // simulates a single round of combat
@@ -106,6 +113,9 @@ const controller_battleSimulateTurn = async (
 ): Promise<void> => {
   const actingUnit = G_model_roundGetActingUnit(round) as Unit;
   if (!G_model_unitLives(actingUnit)) {
+    return;
+  }
+  if (G_utils_areAllUnitsDead(battle.enemies)) {
     return;
   }
   // Reset stats if necessary, here
