@@ -114,6 +114,10 @@ const G_model_unitGainCharge = (unit: Unit) => {
   unit.cS.cCnt++;
 };
 
+const G_model_unitGainBreakCharge = (unit: Unit) => {
+  unit.cS.iCnt++;
+};
+
 const G_model_unitResetDef = (unit: Unit) => {
   unit.cS.def = unit.bS.def;
 };

@@ -86,8 +86,19 @@ const fairy: CharacterDef = {
   sprI: 4,
 };
 
-const G_ENCOUNTER_0: EncounterDef = { enemies: [golem, golem, golem, golem] };
+const ape: CharacterDef = {
+  name: 'Ape',
+  stats: {
+    bS: G_model_createStats(20, 8, 5, 10, 15),
+    ai: G_AI_STRIKER,
+  },
+  sprI: 4,
+};
+
+const G_ENCOUNTER_0: EncounterDef = { enemies: [golem, golem, golem] };
 const G_ENCOUNTER_1: EncounterDef = { enemies: [fairy, golem, fairy] };
+const G_ENCOUNTER_2: EncounterDef = { enemies: [fairy, golem, fairy] };
+const G_ENCOUNTER_3: EncounterDef = { enemies: [ape, ape, fairy] };
 
 const G_CHARACTER_PROTAG: CharacterDef = {
   name: '',

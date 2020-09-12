@@ -23,7 +23,6 @@ G_CURSOR_HEIGHT
 
 interface Round {
   turnOrder: Unit[];
-  nextTurnOrder: Unit[];
   currentIndex: number;
 }
 
@@ -269,7 +268,6 @@ const G_model_battleGetCurrentRound = (battle: Battle): Round => {
 const G_model_createRound = (turnOrder: Unit[]): Round => {
   return {
     turnOrder,
-    nextTurnOrder: [],
     currentIndex: 0,
   };
 };
