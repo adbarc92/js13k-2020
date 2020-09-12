@@ -319,7 +319,7 @@ const G_model_actionToString = (i: number): string => {
 //   return greatestSpeed;
 // };
 
-const G_model_sumLostHealth = (battle: Battle) => {
+const G_model_battleSumLostHealth = (battle: Battle) => {
   const { allies } = battle;
   let sum = 0;
   for (let i = 0; i < allies.length; i++) {

@@ -100,7 +100,7 @@ const breaker: CharacterDef = {
   name: 'Breaker',
   stats: {
     bS: G_model_createStats(50, 30, 15, 10, 18),
-    ai: G_AI_STRIKER,
+    ai: G_AI_BREAKER,
   },
   sprI: 7,
 };

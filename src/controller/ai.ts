@@ -116,8 +116,9 @@ const G_model_doAI = (battle: Battle, round: Round, actingUnit: Unit) => {
       G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
       break;
     case G_AI_BREAKER:
+      // console.log('will break on:', aiSeed);
       const action =
-        roundIndex % aiSeed === 0 ? G_ACTION_INTERRUPT : G_ACTION_STRIKE;
+        (roundIndex + 1) % aiSeed === 0 ? G_ACTION_INTERRUPT : G_ACTION_STRIKE;
       G_controller_roundApplyAction(action, round, target);
   }
 };

@@ -61,6 +61,8 @@ G_FACING_UP
 G_FACING_UP_LEFT
 G_FACING_UP_RIGHT
 
+G_model_battleSumLostHealth
+
 G_ENCOUNTER_0
 */
 
@@ -73,6 +75,7 @@ const G_controller_doBattle = async (battle: Battle) => {
   while (!G_model_battleIsComplete(battle)) {
     await G_controller_battleSimulateNextRound(battle); // do the fight!
   }
+  G_model_battleSumLostHealth(battle); // debugging
   console.log('Battle complete!');
   setTimeout(() => {
     const battle2 = G_model_createBattle(battle.party, G_ENCOUNTER_0);
@@ -88,7 +91,7 @@ const G_controller_battleSimulateNextRound = async (battle: Battle) => {
 
   // this part is hard-coded.  We'd probably want to generalize printing a unit with a function
   while (!G_model_roundIsOver(round)) {
-    console.log('Current Round Index:', round.currentIndex);
+    // console.log('Current Round Index:', round.currentIndex);
     await controller_battleSimulateTurn(battle, round);
     G_model_roundIncrementIndex(round);
   }
@@ -220,7 +223,7 @@ const controller_roundSort = (round: Round) => {
 };
 
 const controller_roundInit = (round: Round) => {
-  console.log('Start new round:', round);
+  // console.log('Start new round:', round);
   controller_roundSort(round);
 };
 

@@ -237,7 +237,6 @@ const G_view_drawBattle = (battle: Battle) => {
     G_view_drawMenu(actionMenu);
   }
   if (battle.text) {
-    console.log('Battle Text:', battle.text);
     G_view_drawBattleText(battle.text);
   }
   G_view_drawTurnOrder(battle);
