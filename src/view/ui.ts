@@ -229,3 +229,22 @@ const G_view_renderDialogBox = (text: string, cb: () => void) => {
   }, 25);
   G_model_setCutsceneVisible(true);
 };
+
+const G_view_renderItemsBox = (items: Item[], visible: boolean) => {
+  const itemBox = document.getElementById('itemBox') as HTMLElement;
+  itemBox.innerHTML = `<span class="item">${
+    items.length ? 'Items:' : ''
+  }</span>`;
+  for (let i = 0; i < items.length; i++) {
+    const span = document.createElement('span');
+    span.innerHTML = items[i].name + (i < items.length - 1 ? ',' : '');
+    span.className = 'item';
+    itemBox.appendChild(span);
+  }
+
+  if (!visible) {
+    itemBox.style.display = 'none';
+  } else {
+    itemBox.style.display = 'flex';
+  }
+};

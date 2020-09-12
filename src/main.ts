@@ -73,10 +73,27 @@ const runMainLoop = () => {
   G_model_partyAddCharacter(party, seph);
   G_model_partyAddCharacter(party, kana);
 
+  G_model_partyAddItem(party, {
+    name: 'Bomb',
+    dsc: '',
+    onUse: () => {},
+  });
+  G_model_partyAddItem(party, {
+    name: 'Bomb',
+    dsc: '',
+    onUse: () => {},
+  });
+
+  G_model_partyAddItem(party, {
+    name: "Statue's Voice",
+    dsc: '',
+    onUse: () => {},
+  });
+
   // uncomment to create and render a battle
-  const battle = G_model_createBattle(party, G_ENCOUNTER_6);
-  G_model_setCurrentBattle(battle);
-  G_controller_doBattle(battle);
+  // const battle = G_model_createBattle(party, G_ENCOUNTER_6);
+  // G_model_setCurrentBattle(battle);
+  // G_controller_doBattle(battle);
 
   const startTime = performance.now();
   let prevNow = startTime;
