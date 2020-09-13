@@ -49,10 +49,10 @@ const G_model_createUnit = (
   allegiance: Allegiance,
   i: number
 ): Unit => {
-  const { stats } = charDef;
-  if (!stats) {
-    throw new Error(`CharacterDef '${name}' has no stats!`);
-  }
+  const stats = charDef.stats as StatsDef;
+  // if (!stats) {
+  //   throw new Error(`CharacterDef '${name}' has no stats!`);
+  // }
   const newUnit = {
     name,
     actor,

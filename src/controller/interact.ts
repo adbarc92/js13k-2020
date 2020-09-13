@@ -32,9 +32,9 @@ G_ITEM_STATUE_MIND
 G_ENCOUNTER_FINAL
 */
 
-const SIGN = (text: string) => [`This sign says: "${text}"`];
+const SIGN = (text: string) => [`SIGN: "${text}"`];
 const ACQUIRE_ITEM = (text: string, text2: string) => [
-  `You acquired: ${text}`,
+  `You got: ${text}`,
   text2,
 ];
 
@@ -89,7 +89,7 @@ const G_controller_playStatueCutscene = async (
   plaqueText: string
 ) => {
   let lines = [''];
-  const defaultText = 'This statue appears to be missing a something...';
+  const defaultText = 'This statue is missing a something...';
 
   const world = G_model_getCurrentWorld();
   const party = world.party;
@@ -103,7 +103,7 @@ const G_controller_playStatueCutscene = async (
       `
 You place the '${item.name}' inside the statue.
 ...
-Something awakens inside it.
+It awakens.
 `.split('\n')
     );
     G_model_partyRemoveItem(party, item);
@@ -115,25 +115,23 @@ Something awakens inside it.
     G_model_worldSetState(stateKey, true);
   } else {
     lines = `
-There's a plaque beneath this statue.
-It says, "${plaqueText}"
+A plaque says: "${plaqueText}"
 ${defaultText}
 `.split('\n');
   }
 
   await G_controller_playLinearCutscene(lines);
   G_view_hideDialog();
+  const fixed = '_fixed';
   if (
-    G_model_worldGetState(`${G_ITEM_STATUE_LEGS}_fixed`) &&
-    G_model_worldGetState(`${G_ITEM_STATUE_VOICE}_fixed`) &&
-    G_model_worldGetState(`${G_ITEM_STATUE_MIND}_fixed`)
+    G_model_worldGetState(`${G_ITEM_STATUE_LEGS}${fixed}`) &&
+    G_model_worldGetState(`${G_ITEM_STATUE_VOICE}${fixed}`) &&
+    G_model_worldGetState(`${G_ITEM_STATUE_MIND}${fixed}`)
   ) {
     const lines = `
 'Mwahaha'
-'You've done exactly as I've asked.'
-'Now that I've become unbound, I will return to my rightful place and rule over this world!'`.split(
-      '\n'
-    );
+'You've done it!'
+'Now I shall rule over this world!'`.split('\n');
     await G_controller_playLinearCutscene(lines);
     G_view_hideDialog();
     const battle = G_model_createBattle(party, G_ENCOUNTER_FINAL);
@@ -162,7 +160,6 @@ const G_controller_startBattle = async (
   const [x, y] = G_model_actorGetPosition(protag.actor);
   const battle = G_model_createBattle(party, encounter);
   await G_controller_doBattle(battle);
-  console.log('Battle over', battle, battle.completionState);
   const room = G_model_worldGetCurrentRoom(world);
   G_model_roomRemoveCharacter(room, roamer);
   G_model_actorSetPosition(protag.actor, x, y);

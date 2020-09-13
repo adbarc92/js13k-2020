@@ -37,7 +37,6 @@ const G_model_createVerticalMenu = (
   lineHeight?: number
 ): Menu => {
   lineHeight = lineHeight || MENU_DEFAULT_LINE_HEIGHT;
-  console.log('CREATE VERTICAL MENU', disabledItems);
   return {
     x,
     y,

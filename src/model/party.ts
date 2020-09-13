@@ -40,9 +40,9 @@ const G_model_partyAddCharacter = (party: Party, character: Character) => {
 };
 const G_model_partyRemoveCharacter = (party: Party, ch: Character) => {
   const index = party.characters.indexOf(ch);
-  if (index === 0) {
-    throw new Error('cannot remove protag.');
-  }
+  // if (index === 0) {
+  //   throw new Error('');
+  // }
   if (index !== -1) party.characters.splice(index, 1);
 };
 

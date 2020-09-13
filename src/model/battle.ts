@@ -96,15 +96,17 @@ const makeAllies = (characters: Character[]) => {
   const battleParty: Unit[] = [];
   for (let i = 0; i < characters.length; i++) {
     const { unit, name } = characters[i];
-    if (!unit) {
-      throw new Error('Character has no unit when making battle party');
+    // if (!unit) {
+    //   throw new Error('Character has no unit when making battle party');
+    // }
+    if (unit) {
+      unit.name = name;
+      unit.i = i;
+      unit.allegiance = G_ALLEGIANCE_ALLY;
+      G_model_unitResetPosition(unit);
+      G_model_actorSetFacing(unit.actor, G_FACING_RIGHT);
+      battleParty.push(unit);
     }
-    unit.name = name;
-    unit.i = i;
-    unit.allegiance = G_ALLEGIANCE_ALLY;
-    G_model_unitResetPosition(unit);
-    G_model_actorSetFacing(unit.actor, G_FACING_RIGHT);
-    battleParty.push(unit);
   }
   G_model_ResurrectDeadUnits(battleParty);
   return battleParty;

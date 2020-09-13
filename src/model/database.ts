@@ -108,16 +108,16 @@ const G_ITEM_STATUE_LEGS: ItemDef = {
 };
 const G_ITEM_STATUE_VOICE: ItemDef = {
   name: "Statue's Voice",
-  dsc: 'The sound a mouth makes.  Not the game show.',
+  dsc: 'For yelling.',
 };
 const G_ITEM_STATUE_MIND: ItemDef = {
   name: "Statue's MIND",
-  dsc: 'Arguably necessary to have.',
+  dsc: 'Arguably necessary',
 };
 
 const G_ITEM_MARBLE: ItemDef = {
   name: 'Radiant Stone',
-  dsc: 'A gleaming marble radiating shifting hues',
+  dsc: 'Gleaming marble.',
   onUse: () => {},
 };
 
@@ -165,7 +165,7 @@ const golem: CharacterDef = {
     bS: G_model_createStats(35, 22, 40, 0, 5),
     ai: G_AI_STRIKER,
   },
-  sprI: 5,
+  sprI: 8,
 };
 
 const fairy: CharacterDef = {
@@ -225,12 +225,12 @@ const G_CHARACTER_OLD_MAN: CharacterDef = {
     G_controller_facePlayer(oldMan);
     const lines = `
 'Hello there.'
-'I see you've arrived with your wits about you.'
+'You've arrived with your wits about.'
 'That's very good.  You'll need them.'
-'If you examine the statues in this cave, you'll notice that they're all...'
+'These status are all...'
 '...missing something.'
 :)
-'It may be prudent for you to find what is not found and restore them.'
+'Perhaps you should find what is not found...'
   `.split('\n');
 
     await G_controller_playLinearCutscene(lines);
@@ -292,10 +292,7 @@ const G_SIGN_POINTY_FALL_SUCCESS: CharacterDef = {
   name: 'Sign',
   spr: SPRITESHEET_TERRAIN,
   sprI: 5,
-  action: () =>
-    G_controller_playSignCutscene(
-      '(There is a picture of an arrow pointing upwards followed by a `?`)'
-    ),
+  action: () => G_controller_playSignCutscene('How do you get up this cliff?'),
 };
 const G_SIGN_SHRINE_OF_LEGS: CharacterDef = {
   name: 'Sign',
@@ -307,7 +304,7 @@ const G_SIGN_MONSTER_ROOM: CharacterDef = {
   name: 'Sign',
   spr: SPRITESHEET_TERRAIN,
   sprI: 5,
-  action: () => G_controller_playSignCutscene('Seek seek lest'),
+  action: () => G_controller_playSignCutscene('Seek. Seek. Lest.'),
 };
 
 const G_CHARACTER_POT: CharacterDef = {
@@ -355,7 +352,7 @@ const G_CHARACTER_PARTY_POT: CharacterDef = {
 There's something strange about this pot...
 You check the pot...
 There's a man inside.
-'Hello! This pot is lovely, but you look more appealing.'
+'Hello! You look very appealing!'
 'I'm coming with you!'
 The Pot joins your party.
   `.split('\n');
@@ -400,9 +397,9 @@ const G_CHARACTER_JIN: CharacterDef = {
     let lines = [''];
     if (G_model_worldOnce('talked_to_jin')) {
       lines = `
-'Hello friend!
-I seem to have misplaced some treasure.
-If you'd kindly bring it to me.  I'd be happy to accompany you out of here.'
+'Hello friend!'
+'I have misplaced some treasure.'
+'If you'd bring it to me, I'd accompany you.'
     `.split('\n');
     } else {
       lines = `
@@ -417,7 +414,7 @@ If you'd kindly bring it to me.  I'd be happy to accompany you out of here.'
 
     if (G_model_partyGetItem(party, G_ITEM_MARBLE)) {
       const lines2 = `
-'Excellent! I'll take that. Let's be on our way!'
+'I'll take that! Let's be on our way!'
       `.split('\n');
       G_model_partyRemoveItem(party, G_ITEM_MARBLE);
       G_model_partyAddCharacter(party, ch);

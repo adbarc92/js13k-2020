@@ -52,15 +52,15 @@ const G_controller_AIgetChargedEnemy = (
   }
 };
 
-const G_model_showChargeStatus = (battle: Battle, actingUnit: Unit) => {
-  const chargeStatus = actingUnit.cS.cCnt / actingUnit.cS.iCnt;
-  // 0%
-  if (chargeStatus < 0.2) {
-    battle.text = `${actingUnit.name} begins to glow ominously.`;
-  } else {
-    battle.text = `${actingUnit.name} shines threateningly.`;
-  }
-};
+// const G_model_showChargeStatus = (battle: Battle, actingUnit: Unit) => {
+//   const chargeStatus = actingUnit.cS.cCnt / actingUnit.cS.iCnt;
+//   // 0%
+//   if (chargeStatus < 0.2) {
+//     battle.text = `${actingUnit.name} begins to glow ominously.`;
+//   } else {
+//     battle.text = `${actingUnit.name} shines threateningly.`;
+//   }
+// };
 
 const G_model_doAI = (battle: Battle, round: Round, actingUnit: Unit) => {
   const target = G_controller_AIgetWeakestEnemy(battle.allies);
@@ -69,7 +69,7 @@ const G_model_doAI = (battle: Battle, round: Round, actingUnit: Unit) => {
     case G_AI_CHARGER: // Charger
       if (actingUnit.cS.cCnt < actingUnit.cS.iCnt) {
         G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
-        G_model_showChargeStatus(battle, actingUnit);
+        // G_model_showChargeStatus(battle, actingUnit);
       } else {
         G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
       }

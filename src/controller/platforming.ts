@@ -126,7 +126,7 @@ const handleActorTileCollisions = (actor: Actor, room: Room) => {
           side => {
             if (
               side === G_COLLISION_BOTTOM &&
-              !actor.disablePlatformCollision
+              !actor.dpCol
             ) {
               hasCollisionPlatform = true;
               hasCollision = true;
@@ -237,7 +237,7 @@ const G_controller_updatePlayer = (party: Party, room: Room, world: World) => {
     }
   }
   if (G_model_isKeyDown(G_KEY_DOWN)) {
-    actor.disablePlatformCollision = true;
+    actor.dpCol = true;
   }
 
   if (!actor.isGround) {

@@ -94,10 +94,10 @@ const G_model_setKeyUp = (key: string) => {
     const world = G_model_getCurrentWorld();
     const protag = G_model_partyGetProtag(world.party);
     const protagActor = protag.actor;
-    if (protagActor.disablePlatformCollision) {
+    if (protagActor.dpCol) {
       clearTimeout(downTimeout);
       downTimeout = setTimeout(() => {
-        protagActor.disablePlatformCollision = false;
+        protagActor.dpCol = false;
       }, 150);
     }
   }
