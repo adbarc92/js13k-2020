@@ -22,6 +22,8 @@ G_model_partyGetProtag
 G_model_partyAddCharacter
 G_model_worldOnce
 G_model_worldResetProtagToStartingPosition
+G_model_partyGetItem
+G_controller_playStatueCutscene
 G_view_hideDialog
 G_view_playSound
 G_utils_waitMs
@@ -84,6 +86,21 @@ interface CharacterDef {
 const G_ITEM_BOMB: ItemDef = {
   name: 'Bomb',
   dsc: 'It destroys all enemies!',
+  onUse: () => {},
+};
+const G_ITEM_STATUE_LEGS: ItemDef = {
+  name: "Statue's Legs",
+  dsc: 'Good for running.',
+  onUse: () => {},
+};
+const G_ITEM_STATUE_VOICE: ItemDef = {
+  name: "Statue's Voice",
+  dsc: 'The sound a mouth makes.  Not the game show.',
+  onUse: () => {},
+};
+const G_ITEM_STATUE_MIND: ItemDef = {
+  name: "Statue's MIND",
+  dsc: 'Arguably necessary to have.',
   onUse: () => {},
 };
 
@@ -181,7 +198,8 @@ I see you've arrived with your wits about you.
 That's very good.  You'll need them.
 If you examine the statues in this cave, you'll notice that they're all...
 ...missing something.
-If you seek refuge from this place, it may be prudent to find what is not found.
+:)
+It may be prudent for you to find what is not found and restore them.
   `.split('\n');
 
     await G_controller_playLinearCutscene(lines);
@@ -193,65 +211,24 @@ const G_CHARACTER_STATUE_RUNNER: CharacterDef = {
   name: 'Runner Without Legs',
   spr: SPRITESHEET_TERRAIN,
   sprI: 8,
-  action: async () => {
-    let lines = [''];
-    const defaultText = 'This statue appears to be missing a pair of legs.';
-    if (G_model_worldOnce('examined_runner')) {
-      lines = `
-There's a plaque beneath this statue.
-It says, "The Runner."
-${defaultText}
-  `.split('\n');
-    } else {
-      lines = `${defaultText}`.split('\n');
-    }
-
-    await G_controller_playLinearCutscene(lines);
-    G_view_hideDialog();
+  action: async (ch: Character) => {
+    G_controller_playStatueCutscene(ch, G_ITEM_STATUE_LEGS, 'The Runner.');
   },
 };
 const G_CHARACTER_STATUE_THINKER: CharacterDef = {
   name: 'Thinker Without Mind',
   spr: SPRITESHEET_TERRAIN,
   sprI: 8,
-  action: async () => {
-    let lines = [''];
-    const defaultText = 'This statue appears to be missing a brain.';
-    if (G_model_worldOnce('examined_thinker')) {
-      lines = `
-There's a plaque beneath this statue.
-It says, "The Thinker."
-${defaultText}
-  `.split('\n');
-    } else {
-      lines = `
-      ${defaultText}
-      `.split('\n');
-    }
-
-    await G_controller_playLinearCutscene(lines);
-    G_view_hideDialog();
+  action: async (ch: Character) => {
+    G_controller_playStatueCutscene(ch, G_ITEM_STATUE_MIND, 'The Thinker.');
   },
 };
 const G_CHARACTER_STATUE_SPEAKER: CharacterDef = {
   name: 'Speaker Without Voice',
   spr: SPRITESHEET_TERRAIN,
   sprI: 8,
-  action: async () => {
-    let lines = [''];
-    const defaultText = 'This statue appears to be missing a voice.';
-    if (G_model_worldOnce('examined_speaker')) {
-      lines = `
-There's a plaque beneath this statue.
-It says, "The Speaker."
-${defaultText}
-  `.split('\n');
-    } else {
-      lines = `${defaultText}`.split('\n');
-    }
-
-    await G_controller_playLinearCutscene(lines);
-    G_view_hideDialog();
+  action: async (ch: Character) => {
+    G_controller_playStatueCutscene(ch, G_ITEM_STATUE_VOICE, 'The Speaker.');
   },
 };
 
@@ -284,7 +261,10 @@ const G_SIGN_POINTY_FALL_SUCCESS: CharacterDef = {
   name: 'Sign',
   spr: SPRITESHEET_TERRAIN,
   sprI: 5,
-  action: () => G_controller_playSignCutscene('This cliff is tall.'),
+  action: () =>
+    G_controller_playSignCutscene(
+      '(There is a picture of an arrow pointing upwards followed by a `?`)'
+    ),
 };
 const G_SIGN_SHRINE_OF_LEGS: CharacterDef = {
   name: 'Sign',
@@ -332,13 +312,13 @@ const G_CHARACTER_POT_REAL: CharacterDef = {
   name: 'Pot',
   spr: SPRITESHEET_TERRAIN,
   sprI: 4,
-  action: async () => {
+  action: async (ch: Character) => {
     const lines = `
 You check the pot...
-There's a VOICE inside!
   `.split('\n');
-
     await G_controller_playLinearCutscene(lines);
+    await G_controller_acquireItem(G_ITEM_STATUE_VOICE, ch);
+    await G_controller_playLinearCutscene(['How did that get in there?']);
     G_view_hideDialog();
   },
 };
@@ -514,4 +494,11 @@ Fight me and I will join you!
     await G_controller_playLinearCutscene(lines2);
     G_view_hideDialog();
   },
+};
+
+const G_CHARACTER_ITEM_STATUE_LEGS: CharacterDef = {
+  name: 'Item',
+  spr: SPRITESHEET_TERRAIN,
+  sprI: 11,
+  action: (ch: Character) => G_controller_acquireItem(G_ITEM_STATUE_LEGS, ch),
 };

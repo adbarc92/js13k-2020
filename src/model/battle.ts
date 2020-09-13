@@ -155,6 +155,7 @@ const G_model_createBattle = (
     actionMenuStack,
     text: '',
     aiSeed: G_utils_getRandNum(3) + 1,
+    completionState: G_COMPLETION_VICTORY,
   };
 
   G_model_battleAdvantage(battle, advantage);

@@ -5,6 +5,10 @@
       body {
         background: black;
         margin: 0;
+        font-family: monospace;
+      }
+      .item {
+        padding: 5px;
       }
     </style>
   </head>
@@ -33,8 +37,7 @@
           style="
             transition: opacity 0.15s linear, width 0.15s ease-out;
             font-size: 1.5rem;
-            font-family: monospace;
-            height: 108px;
+            height: 124px;
             padding: 16px;
             width: 0px;
             opacity: 0;
@@ -43,6 +46,14 @@
             color: white;
             border: 2px solid white;
             overflow: hidden;
+            z-index: 1;
+          "
+        ></div>
+        <div
+          id="itemBox"
+          style="
+            color: white;
+            height: 0px;
           "
         ></div>
       </div>
