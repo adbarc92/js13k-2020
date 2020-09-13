@@ -124,10 +124,7 @@ const handleActorTileCollisions = (actor: Actor, room: Room) => {
       ) {
         G_utils_getCollisionsWithRect(actorCollisionPoints, tileRect).forEach(
           side => {
-            if (
-              side === G_COLLISION_BOTTOM &&
-              !actor.dpCol
-            ) {
+            if (side === G_COLLISION_BOTTOM && !actor.dpCol) {
               hasCollisionPlatform = true;
               hasCollision = true;
               collisionSideMap[side] = tile;

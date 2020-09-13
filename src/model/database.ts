@@ -111,7 +111,7 @@ const G_ITEM_STATUE_VOICE: ItemDef = {
   dsc: 'For yelling.',
 };
 const G_ITEM_STATUE_MIND: ItemDef = {
-  name: "Statue's MIND",
+  name: "Statue's Mind",
   dsc: 'Arguably necessary',
 };
 
@@ -226,7 +226,7 @@ const G_CHARACTER_OLD_MAN: CharacterDef = {
     const lines = `
 'Hello there.'
 'You've arrived with your wits about.'
-'That's very good.  You'll need them.'
+'That's very good. You'll need them.'
 'These status are all...'
 '...missing something.'
 :)
@@ -349,7 +349,6 @@ const G_CHARACTER_PARTY_POT: CharacterDef = {
   },
   action: async (ch: Character) => {
     const lines = `
-There's something strange about this pot...
 You check the pot...
 There's a man inside.
 'Hello! You look very appealing!'
@@ -380,7 +379,6 @@ You check the pot...
   `.split('\n');
     await G_controller_playLinearCutscene(lines);
     await G_controller_acquireItem(G_ITEM_STATUE_VOICE, ch);
-    await G_controller_playLinearCutscene(['How did that get in there?']);
     G_view_hideDialog();
   },
 };
@@ -399,7 +397,7 @@ const G_CHARACTER_JIN: CharacterDef = {
       lines = `
 'Hello friend!'
 'I have misplaced some treasure.'
-'If you'd bring it to me, I'd accompany you.'
+'If you bring it to me, I'd accompany you.'
     `.split('\n');
     } else {
       lines = `

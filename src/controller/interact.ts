@@ -124,9 +124,9 @@ ${defaultText}
   G_view_hideDialog();
   const fixed = '_fixed';
   if (
-    G_model_worldGetState(`${G_ITEM_STATUE_LEGS}${fixed}`) &&
-    G_model_worldGetState(`${G_ITEM_STATUE_VOICE}${fixed}`) &&
-    G_model_worldGetState(`${G_ITEM_STATUE_MIND}${fixed}`)
+    G_model_worldGetState(`${G_ITEM_STATUE_LEGS.name}${fixed}`) &&
+    G_model_worldGetState(`${G_ITEM_STATUE_VOICE.name}${fixed}`) &&
+    G_model_worldGetState(`${G_ITEM_STATUE_MIND.name}${fixed}`)
   ) {
     const lines = `
 'Mwahaha'
@@ -136,6 +136,7 @@ ${defaultText}
     G_view_hideDialog();
     const battle = G_model_createBattle(party, G_ENCOUNTER_FINAL);
     await G_controller_doBattle(battle);
+    console.log('COMPLETED THAT FUCKING BATTLE', battle.completionState);
     if (battle.completionState === G_COMPLETION_VICTORY) {
       await G_controller_playLinearCutscene(['Y THO']);
       G_view_hideDialog();
