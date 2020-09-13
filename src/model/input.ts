@@ -59,7 +59,11 @@ const G_model_setKeyDown = (key: string) => {
         G_model_menuSetNextCursorIndex(menu, 1);
       } else if (key === G_KEY_UP) {
         G_model_menuSetNextCursorIndex(menu, -1);
-      } else if (key === G_KEY_ENTER) {
+      } else if (
+        key === G_KEY_ENTER ||
+        key === G_KEY_X ||
+        key === G_KEY_SPACE
+      ) {
         G_model_menuSelectCurrentItem(menu);
       } else if (key === G_KEY_ESCAPE) {
         if (battle.actionMenuStack.length > 1) {

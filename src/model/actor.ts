@@ -4,6 +4,7 @@ An Actor is an entity on the screen which is affected by gravity.
 /*
 global
 G_model_getElapsedMs
+G_model_getCurrentWorld
 G_utils_alternate
 G_utils_floorNearestMultiple
 G_utils_createRect
@@ -26,6 +27,10 @@ const G_ANIM_JUMPING: AnimState = 2;
 const G_ANIM_ATTACKING: AnimState = 3;
 const G_ANIM_STUNNED: AnimState = 4;
 
+type PlatformAI = 0 | 1;
+const G_PLATFORM_AI_NONE = 0;
+const G_PLATFORM_AI_LEFT_RIGHT = 1;
+
 interface Actor {
   sprite: string;
   spriteIndex: number;
@@ -33,6 +38,7 @@ interface Actor {
   anim: AnimState;
   isGround: boolean; // actor is currently on the ground
   disablePlatformCollision: boolean;
+  plAi: PlatformAI;
   x: number;
   y: number;
   vx: number;
@@ -51,6 +57,7 @@ const G_model_createActor = (spriteIndex: number): Actor => {
     anim: G_ANIM_DEFAULT,
     isGround: false,
     disablePlatformCollision: false,
+    plAi: G_PLATFORM_AI_NONE,
     x: 0,
     y: 0,
     vx: 0,
@@ -90,28 +97,31 @@ const G_model_actorIsMoving = (actor: Actor): boolean => {
 };
 
 const G_model_actorGetCurrentSpriteAndOffset = (
-  actor: Actor
+  actor: Actor,
+  isPaused?: boolean
 ): [string, number, number] => {
   let { facing, sprite, spriteIndex, anim } = actor;
   let spriteIndexOffset = anim;
   let hasMultiSprite = spriteIndex < 3;
   let yOff = 0;
-  if (anim === G_ANIM_WALKING) {
-    // alternate between two frames (anim = 1 and anim = 0) every 100 ms
-    spriteIndexOffset = (spriteIndexOffset -
-      G_utils_alternate(1, 100)) as AnimState;
-  } else if (anim === G_ANIM_ATTACKING) {
-    if (hasMultiSprite) {
-      spriteIndexOffset = (2 - G_utils_alternate(1, 250)) as AnimState;
-    } else {
-      spriteIndexOffset = 0;
-      yOff = 2 * G_utils_alternate(1, 100);
-    }
-  } else if (anim === G_ANIM_STUNNED) {
-    if (hasMultiSprite) {
-      spriteIndexOffset = 2;
-    } else {
-      spriteIndexOffset = 0;
+  if (!isPaused) {
+    if (anim === G_ANIM_WALKING) {
+      // alternate between two frames (anim = 1 and anim = 0) every 100 ms
+      spriteIndexOffset = (spriteIndexOffset -
+        G_utils_alternate(1, 100)) as AnimState;
+    } else if (anim === G_ANIM_ATTACKING) {
+      if (hasMultiSprite) {
+        spriteIndexOffset = (2 - G_utils_alternate(1, 250)) as AnimState;
+      } else {
+        spriteIndexOffset = 0;
+        yOff = 2 * G_utils_alternate(1, 100);
+      }
+    } else if (anim === G_ANIM_STUNNED) {
+      if (hasMultiSprite) {
+        spriteIndexOffset = 2;
+      } else {
+        spriteIndexOffset = 0;
+      }
     }
   }
   let mod = '';

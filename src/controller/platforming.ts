@@ -39,15 +39,17 @@ G_COLLISION_TOP
 G_COLLISION_BOTTOM
 G_COLLISION_LEFT
 G_COLLISION_RIGHT
+G_PLATFORM_AI_LEFT_RIGHT
 */
 
 const PLAYER_SPEED = 1.2; // the acceleration rate that the player moves left/right
-const PLAYER_JUMP_SPEED = 5.1; // the higher this value, the higher+faster the player jumps
+const ROAMER_SPEED = 0.5;
+const PLAYER_JUMP_SPEED = 5.6; // the higher this value, the higher+faster the player jumps
 const AIR_CONTROL_DIVISOR = 30; // the higher this value, the less air control the player has.
 const MAX_SPEED_X = 1.2; // the maximum x speed that an actor can move
-const MAX_SPEED_Y = 3.2; // the maximum y speed that an actor can move
+const MAX_SPEED_Y = 3.6; // the maximum y speed that an actor can move
 const DECELERATION_RATE = 1.2; // the rate that actors decelerate (reduce velocity) per frame
-const GRAVITY_RATE = 0.2; // the rate that the y velocity is modified each frame (the higher, the faster the player moves down)
+const GRAVITY_RATE = 0.185; // the rate that the y velocity is modified each frame (the higher, the faster the player moves down)
 
 // given an actor and a 'vx' or 'vy' reduce the velocity value one step closer to 0
 const decelerateVelocity = (actor: Actor, vel: 'vx' | 'vy') => {
@@ -69,7 +71,7 @@ const applyGravity = (actor: Actor) => {
   if (actor.isGround) {
     actor.ay += 0.0001 * fm;
   } else {
-    actor.ay += GRAVITY_RATE * fm;
+    actor.ay += GRAVITY_RATE;
   }
 };
 
@@ -116,7 +118,10 @@ const handleActorTileCollisions = (actor: Actor, room: Room) => {
             collisionSideMap[side] = tile;
           }
         );
-      } else if (actor.y + actor.h / 2 < tile.py) {
+      } else if (
+        actor.y + actor.h / 2 < tile.py ||
+        actor.plAi === G_PLATFORM_AI_LEFT_RIGHT
+      ) {
         G_utils_getCollisionsWithRect(actorCollisionPoints, tileRect).forEach(
           side => {
             if (
@@ -124,6 +129,22 @@ const handleActorTileCollisions = (actor: Actor, room: Room) => {
               !actor.disablePlatformCollision
             ) {
               hasCollisionPlatform = true;
+              hasCollision = true;
+              collisionSideMap[side] = tile;
+            }
+
+            //HACK: yip yip yip yip yip yip yip yip yip yip yip yip yip yip
+            if (
+              side === G_COLLISION_LEFT &&
+              actor.plAi === G_PLATFORM_AI_LEFT_RIGHT
+            ) {
+              hasCollision = true;
+              collisionSideMap[side] = tile;
+            }
+            if (
+              side === G_COLLISION_RIGHT &&
+              actor.plAi === G_PLATFORM_AI_LEFT_RIGHT
+            ) {
               hasCollision = true;
               collisionSideMap[side] = tile;
             }
@@ -151,8 +172,17 @@ const handleActorTileCollisions = (actor: Actor, room: Room) => {
     }
     if (tileLeft) {
       actor.x += correctionRate;
+
+      // HACK swap facing if collision with wall PLEASE FIX THIS LATER
+      if (actor.plAi === G_PLATFORM_AI_LEFT_RIGHT) {
+        G_model_actorSetFacing(actor, G_FACING_RIGHT);
+      }
     } else if (tileRight) {
       actor.x -= correctionRate;
+      // HACK swap facing if collision with wall PLEASE FIX THIS LATER
+      if (actor.plAi === G_PLATFORM_AI_LEFT_RIGHT) {
+        G_model_actorSetFacing(actor, G_FACING_LEFT);
+      }
     }
   } while (hasCollision && ctr < 10);
 
@@ -261,6 +291,22 @@ const G_controller_updateActor = (
   actor: Actor,
   room: Room
 ): [number, number] => {
+  if (actor.plAi === G_PLATFORM_AI_LEFT_RIGHT) {
+    const { ax } = actor;
+    let nextAx = ax;
+    G_model_actorSetAnimState(actor, G_ANIM_DEFAULT);
+
+    const facing = actor.facing;
+    if (facing === G_FACING_LEFT) {
+      G_model_actorSetAnimState(actor, G_ANIM_WALKING);
+      nextAx = -ROAMER_SPEED;
+    } else {
+      G_model_actorSetAnimState(actor, G_ANIM_WALKING);
+      nextAx = ROAMER_SPEED;
+    }
+    G_model_actorSetAcceleration(actor, nextAx, 0);
+  }
+
   applyGravity(actor);
 
   let boundsOffsetX = 0;

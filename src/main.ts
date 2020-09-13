@@ -74,6 +74,10 @@ const runMainLoop = () => {
   // G_model_partyAddCharacter(party, seph);
   G_model_partyAddCharacter(party, kana);
 
+  G_model_partyAddItem(party, {
+    ...G_ITEM_BOMB,
+  });
+
   // uncomment to create and render a battle
   // const battle = G_model_createBattle(party, G_ENCOUNTER_6);
   // G_model_setCurrentBattle(battle);
@@ -82,7 +86,7 @@ const runMainLoop = () => {
   const startTime = performance.now();
   let prevNow = startTime;
   const loop = (now: number) => {
-    const sixtyFpsMs = 16.666;
+    const sixtyFpsMs = 18;
     const dt = now - prevNow;
     const fm = dt / sixtyFpsMs;
     G_model_setFrameMultiplier(fm > 2 ? 2 : fm);
@@ -100,11 +104,11 @@ const runMainLoop = () => {
       const actor = protag.actor;
       G_controller_updateCurrentRoom(world);
       G_view_drawRoom(room, 0, 0, G_SCALE);
-      G_view_drawActor(actor, G_SCALE);
+      G_view_drawActor(actor, world.pause, G_SCALE);
     }
 
     if ((window as any).running) requestAnimationFrame(loop);
-    // if ((window as any).running) setTimeout(loop, 22); // for debugging
+    // if ((window as any).running) setTimeout(() => loop(performance.now()), 33); // for debugging
   };
   loop(startTime);
 };
