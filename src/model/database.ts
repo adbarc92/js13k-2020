@@ -295,7 +295,7 @@ const G_SIGN_MONSTER_ROOM: CharacterDef = {
   name: 'Sign',
   spr: SPRITESHEET_TERRAIN,
   sprI: 5,
-  action: () => G_controller_playSignCutscene('Choose wisely'),
+  action: () => G_controller_playSignCutscene('Seek seek lest'),
 };
 
 const G_CHARACTER_POT: CharacterDef = {
@@ -356,8 +356,8 @@ You check the pot...
   },
 };
 
-const G_CHARACTER_PATE: CharacterDef = {
-  name: 'Pate',
+const G_CHARACTER_JIN: CharacterDef = {
+  name: 'Jin',
   sprI: 3,
   stats: {
     bS: G_model_createStats(75, 23, 12, 7, 10),
@@ -366,7 +366,7 @@ const G_CHARACTER_PATE: CharacterDef = {
   action: async (ch: Character) => {
     G_controller_facePlayer(ch);
     let lines = [''];
-    if (G_model_worldOnce('talked_to_pate')) {
+    if (G_model_worldOnce('talked_to_jin')) {
       lines = `
 Hello friend!
 I seem to have misplaced some treasure.
@@ -483,21 +483,6 @@ const G_CHARACTER_ITEM_MARBLE: CharacterDef = {
   spr: SPRITESHEET_TERRAIN,
   sprI: 11,
   action: (ch: Character) => G_controller_acquireItem(G_ITEM_MARBLE, ch),
-};
-
-const G_CHARACTER_ITEM_FEATHER: CharacterDef = {
-  name: 'Feather',
-  spr: SPRITESHEET_TERRAIN,
-  sprI: 4,
-  action: async () => {
-    const lines = `
-A white and black feather.
-How could it have gotten here?
-    `.split('\n');
-
-    await G_controller_playLinearCutscene(lines);
-    G_view_hideDialog();
-  },
 };
 
 const G_CHARACTER_ITEM_BOMB: CharacterDef = {
