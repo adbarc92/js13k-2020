@@ -52,7 +52,10 @@ const build = async () => {
   await execAsync(`rm -rf ${DIRNAME}/../${outputDirName}/*.map`);
 
   console.log('Write tmp files...');
-  fs.writeFileSync(`${DIRNAME}/../.build/main.tmp.js`, mainFile);
+  fs.writeFileSync(
+    `${DIRNAME}/../.build/main.tmp.js`,
+    mainFile.replace(/const /g, 'let ')
+  );
   fs.writeFileSync(`${DIRNAME}/../.build/index.tmp.html`, htmlFile);
 
   const terserArgs = [
