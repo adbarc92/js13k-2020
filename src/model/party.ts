@@ -10,7 +10,7 @@ G_AI_PLAYER
 interface Item {
   name: string;
   dsc: string;
-  onUse: () => void;
+  onUse?: (item: Item) => void;
 }
 
 interface Party {

@@ -31,8 +31,11 @@ G_view_drawBattle
 G_view_drawRoom
 G_view_drawUiBackground
 G_model_getScreenSize
+G_view_drawRect
 
 G_view_showDialogBox
+G_controller_playLinearCutscene
+G_view_hideDialog
 
 G_jerry
 G_CHARACTER_DEFENDER
@@ -48,6 +51,7 @@ G_ENCOUNTER_3
 G_ENCOUNTER_4
 G_ENCOUNTER_5
 G_ENCOUNTER_6
+G_BLACK
 */
 
 // const SCALE = 2;
@@ -80,7 +84,7 @@ const runMainLoop = async () => {
   const startTime = performance.now();
   let prevNow = startTime;
   const loop = (now: number) => {
-    const sixtyFpsMs = 16.666;
+    const sixtyFpsMs = 18;
     const dt = now - prevNow;
     const fm = dt / sixtyFpsMs;
     G_model_setFrameMultiplier(fm > 2 ? 2 : fm);
@@ -98,11 +102,11 @@ const runMainLoop = async () => {
       const actor = protag.actor;
       G_controller_updateCurrentRoom(world);
       G_view_drawRoom(room, 0, 0, G_SCALE);
-      G_view_drawActor(actor, G_SCALE);
+      G_view_drawActor(actor, world.pause, G_SCALE);
     }
 
     if ((window as any).running) requestAnimationFrame(loop);
-    // if ((window as any).running) setTimeout(loop, 22); // for debugging
+    // if ((window as any).running) setTimeout(() => loop(performance.now()), 33); // for debugging
   };
   loop(startTime);
 };

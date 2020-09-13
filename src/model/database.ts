@@ -5,14 +5,15 @@ G_controller_battleEnd
 G_controller_doBattle
 G_controller_facePlayer
 G_controller_playLinearCutscene
-G_model_actorGetPosition
-G_model_actorSetPosition
-G_model_actorSetVelocity
 G_controller_doBattle
-G_model_createBattle
 G_controller_playSignCutscene
 G_controller_acquireItem
 G_controller_startBattle
+G_controller_playStatueCutscene
+G_model_actorGetPosition
+G_model_actorSetPosition
+G_model_actorSetVelocity
+G_model_createBattle
 G_model_actorSetFacing
 G_model_createStats
 G_model_createCharacterFromTemplate
@@ -24,13 +25,16 @@ G_model_worldOnce
 G_model_partyRemoveItem
 G_model_worldResetProtagToStartingPosition
 G_model_partyGetItem
-G_controller_playStatueCutscene
+G_model_getCurrentBattle
+G_model_partyRemoveItem
 G_view_hideDialog
 G_view_playSound
 G_utils_waitMs
 G_AI_STRIKER
 G_FACING_LEFT
 G_FACING_RIGHT
+G_COMPLETION_VICTORY
+G_PLATFORM_AI_LEFT_RIGHT
 */
 
 type AI = 0 | 1 | 2 | 3 | 4;
@@ -49,7 +53,7 @@ const SPRITESHEET_TERRAIN = 'terrain';
 interface ItemDef {
   name: string;
   dsc: string;
-  onUse: () => void;
+  onUse?: (item: Item) => void;
 }
 
 const G_model_createStats = (
@@ -78,6 +82,7 @@ interface CharacterDef {
   stats?: StatsDef;
   spr?: string; // defaults to 'actors'
   label?: string; // platforming: text that appears when moving atop this character
+  plAi?: PlatformAI;
   action?: (ch?: Character) => any; // platforming: function to run when when a player presses 'x' above this character
   col?: (ch?: Character) => any; // platforming: function to run when the protag collides with this character
 }
@@ -87,22 +92,24 @@ interface CharacterDef {
 const G_ITEM_BOMB: ItemDef = {
   name: 'Bomb',
   dsc: 'It destroys all enemies!',
-  onUse: () => {},
+  onUse: async (item: Item) => {
+    const battle = G_model_getCurrentBattle();
+    G_model_partyRemoveItem(battle.party, item);
+    battle.completionState = G_COMPLETION_VICTORY;
+    G_view_playSound('actionStrike');
+  },
 };
 const G_ITEM_STATUE_LEGS: ItemDef = {
   name: "Statue's Legs",
   dsc: 'Good for running.',
-  onUse: () => {},
 };
 const G_ITEM_STATUE_VOICE: ItemDef = {
   name: "Statue's Voice",
   dsc: 'The sound a mouth makes.  Not the game show.',
-  onUse: () => {},
 };
 const G_ITEM_STATUE_MIND: ItemDef = {
   name: "Statue's MIND",
   dsc: 'Arguably necessary to have.',
-  onUse: () => {},
 };
 
 const G_ITEM_MARBLE: ItemDef = {
@@ -404,58 +411,65 @@ const G_ROAMER_ENCOUNTER_0: CharacterDef = {
 
 const G_ROAMER_ENCOUNTER_1: CharacterDef = {
   name: '',
-  sprI: 5,
+  sprI: 8,
   col: async (ch: Character) => {
     await G_controller_startBattle(ch, G_ENCOUNTER_7, [G_ITEM_BOMB]);
   },
+  plAi: G_PLATFORM_AI_LEFT_RIGHT,
 };
 
 const G_ROAMER_ENCOUNTER_2: CharacterDef = {
   name: '',
-  sprI: 5,
+  sprI: 8,
   col: async (ch: Character) => {
     await G_controller_startBattle(ch, G_ENCOUNTER_4, [G_ITEM_BOMB]);
   },
+  plAi: G_PLATFORM_AI_LEFT_RIGHT,
 };
 
 const G_ROAMER_ENCOUNTER_3: CharacterDef = {
   name: '',
-  sprI: 5,
+  sprI: 8,
   col: async (ch: Character) => {
     await G_controller_startBattle(ch, G_ENCOUNTER_2, [G_ITEM_BOMB]);
   },
+  plAi: G_PLATFORM_AI_LEFT_RIGHT,
 };
 
 const G_ROAMER_ENCOUNTER_4: CharacterDef = {
   name: '',
-  sprI: 5,
+  sprI: 8,
   col: async (ch: Character) => {
     await G_controller_startBattle(ch, G_ENCOUNTER_3, [G_ITEM_BOMB]);
   },
+  plAi: G_PLATFORM_AI_LEFT_RIGHT,
 };
 
 const G_ROAMER_ENCOUNTER_5: CharacterDef = {
   name: '',
-  sprI: 5,
+  sprI: 8,
   col: async (ch: Character) => {
     await G_controller_startBattle(ch, G_ENCOUNTER_5, [G_ITEM_BOMB]);
   },
+  plAi: G_PLATFORM_AI_LEFT_RIGHT,
 };
 
 const G_ROAMER_ENCOUNTER_6: CharacterDef = {
   name: '',
-  sprI: 5,
+  sprI: 8,
   col: async (ch: Character) => {
     await G_controller_startBattle(ch, G_ENCOUNTER_6, [G_ITEM_BOMB]);
   },
+  plAi: G_PLATFORM_AI_LEFT_RIGHT,
 };
 
 const G_ROAMER_ENCOUNTER_7: CharacterDef = {
   name: '',
-  sprI: 5,
+  sprI: 8,
   col: async (ch: Character) => {
     await G_controller_startBattle(ch, G_ENCOUNTER_3, [G_ITEM_BOMB]);
   },
+  plAi: G_PLATFORM_AI_LEFT_RIGHT,
 };
 
 const G_CHARACTER_SPIKES: CharacterDef = {

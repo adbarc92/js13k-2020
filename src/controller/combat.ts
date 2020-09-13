@@ -11,6 +11,7 @@ G_model_battleAddRound
 G_model_battleIncrementIndex
 G_model_battleIsComplete
 G_model_battleSetText
+G_model_battleGetScreenPosition
 G_model_createBattle
 G_model_createCharacterFromTemplate
 G_model_createMenu
@@ -52,8 +53,10 @@ G_ACTION_INTERRUPT
 G_ACTION_RENEW
 G_ACTION_STRIKE
 G_ACTION_FLEE
+G_ACTION_USE
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
+G_ACTION_FLEE
 G_ANIM_ATTACKING
 G_ANIM_DEFAULT
 G_ANIM_STUNNED
@@ -63,6 +66,8 @@ G_FACING_UP
 G_FACING_UP_LEFT
 G_FACING_UP_RIGHT
 G_COMPLETION_INCONCLUSIVE
+G_CURSOR_WIDTH
+G_CURSOR_HEIGHT
 
 G_model_battleSumLostHealth
 
@@ -114,13 +119,7 @@ const controller_battleSimulateTurn = async (
   round: Round
 ): Promise<void> => {
   const actingUnit = G_model_roundGetActingUnit(round) as Unit;
-  if (!G_model_unitLives(actingUnit)) {
-    return;
-  }
-  if (G_utils_areAllUnitsDead(battle.enemies)) {
-    return;
-  }
-  if (battle.completionState === G_COMPLETION_INCONCLUSIVE) {
+  if (!G_model_unitLives(actingUnit) || G_model_battleIsComplete(battle)) {
     return;
   }
   // Reset stats if necessary, here
@@ -137,9 +136,11 @@ const controller_battleSimulateTurn = async (
     const actionMenu = battle.actionMenuStack[0];
     if (G_utils_isAlly(battle, actingUnit)) {
       if (actingUnit.cS.iCnt <= 0) {
-        actionMenu.disabledItems = [2, 4];
+        actionMenu.disabledItems.push(2, 4);
       } else {
-        actionMenu.disabledItems = [];
+        actionMenu.disabledItems = actionMenu.disabledItems.filter(
+          i => i !== 2 && i !== 4
+        );
       }
       actionMenu.i = -1;
       G_model_menuSetNextCursorIndex(actionMenu, 1, true);
@@ -156,7 +157,8 @@ const controller_battleSimulateTurn = async (
 const G_controller_roundApplyAction = async (
   action: RoundAction,
   round: Round,
-  target: Unit | null
+  target: Unit | null,
+  item?: Item
 ) => {
   G_model_setBattleInputEnabled(false);
   const battle = G_model_getCurrentBattle();
@@ -167,7 +169,6 @@ const G_controller_roundApplyAction = async (
   G_model_actorSetAnimState(actingUnit.actor, G_ANIM_ATTACKING);
 
   battle.text = G_model_actionToString(action);
-
   await G_utils_waitMs(1000);
   G_model_modifySpeed(actingUnit, action);
   switch (action) {
@@ -202,17 +203,22 @@ const G_controller_roundApplyAction = async (
       G_controller_battleActionInterrupt(actingUnit, target as Unit);
       break;
     case G_ACTION_FLEE:
-      G_controller_battleActionFlee(actingUnit);
+      G_controller_battleActionFlee();
       break;
     case G_ACTION_RENEW:
       battle.text = 'Powers replenished.';
       G_controller_battleActionRenew(actingUnit);
       break;
+    case G_ACTION_USE:
+      if (item && item.onUse) {
+        item.onUse(item);
+      }
+      break;
     default:
       console.error('No action:', action, 'exists.');
   }
 
-  await G_utils_waitMs(2000);
+  await G_utils_waitMs(1250);
   G_model_unitResetPosition(actingUnit);
   G_model_actorSetAnimState(actingUnit.actor, G_ANIM_DEFAULT);
 
@@ -296,13 +302,50 @@ const G_controller_battleActionDefend = (unit: Unit) => {
   cS.def *= 1.5;
 };
 
-const G_controller_battleActionFlee = (unit: Unit) => {
+const G_controller_battleActionFlee = () => {
   const battle = G_model_getCurrentBattle();
-  const { cS } = unit;
-  cS.spd -= 3;
   battle.completionState = G_COMPLETION_INCONCLUSIVE;
 };
 
 const G_controller_battleActionRenew = (unit: Unit) => {
   unit.cS.iCnt = unit.bS.mag;
+};
+
+const G_controller_battleSelectItem = async (
+  battle: Battle
+): Promise<Item | null> => {
+  return new Promise(resolve => {
+    const indexMap = {};
+    const party = battle.party;
+    let ctr = 0;
+    const itemNames = party.inv
+      .filter((item, i) => {
+        indexMap[ctr] = i;
+        ctr++;
+        return !!item.onUse;
+      })
+      .map(item => item.name);
+
+    const screenSize = G_model_getScreenSize();
+    const menuWidth = 100;
+    const lineHeight = 20;
+    const x = screenSize / 2 - menuWidth / 2;
+    const y = screenSize - screenSize / 2;
+    const itemMenu = G_model_createVerticalMenu(
+      x,
+      y,
+      menuWidth,
+      itemNames,
+      (i: number) => {
+        const itemToUse = party.inv[indexMap[i]];
+        resolve(itemToUse);
+      },
+      [],
+      true,
+      lineHeight
+    );
+    itemMenu.i = -1;
+    G_model_menuSetNextCursorIndex(itemMenu, 1);
+    battle.actionMenuStack.unshift(itemMenu); // transfers input to the newly-created menu
+  });
 };

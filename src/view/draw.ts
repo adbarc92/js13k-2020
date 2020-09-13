@@ -15,6 +15,7 @@ G_model_getCtx
 G_model_getBattleInputEnabled
 G_model_getSprite
 G_model_roundGetActingUnit
+G_model_getCurrentWorld
 G_view_drawBattleText
 G_view_drawInfo
 G_view_drawMenu
@@ -148,7 +149,20 @@ const G_view_drawSprite = (
   );
 };
 
+const G_view_drawActor = (actor: Actor, isPaused: boolean, scale?: number) => {
+  scale = scale || 1;
+  const { x, y } = actor;
+  const px = x * (scale as number);
+  const py = y * (scale as number);
+  const [sprite, xPos, yPos] = G_model_actorGetCurrentSpriteAndOffset(
+    actor,
+    isPaused
+  );
+  G_view_drawSprite(sprite, px + xPos, py + yPos, scale);
+};
+
 const G_view_drawRoom = (room: Room, x: number, y: number, scale?: number) => {
+  const world = G_model_getCurrentWorld();
   const scaleV = scale || 1;
   room.tiles.forEach(tile => {
     const { id, x: tx, y: ty, size } = tile;
@@ -167,7 +181,7 @@ const G_view_drawRoom = (room: Room, x: number, y: number, scale?: number) => {
 
   room.characters.forEach(ch => {
     const actor = ch.actor;
-    G_view_drawActor(actor, scale);
+    G_view_drawActor(actor, world.pause, scale);
     const { x, y } = actor;
     const px = x * scaleV;
     const py = y * scaleV;
@@ -187,15 +201,6 @@ const G_view_drawRoom = (room: Room, x: number, y: number, scale?: number) => {
   });
 };
 
-const G_view_drawActor = (actor: Actor, scale?: number) => {
-  scale = scale || 1;
-  const { x, y } = actor;
-  const px = x * (scale as number);
-  const py = y * (scale as number);
-  const [sprite, xPos, yPos] = G_model_actorGetCurrentSpriteAndOffset(actor);
-  G_view_drawSprite(sprite, px + xPos, py + yPos, scale);
-};
-
 const G_view_drawBattle = (battle: Battle) => {
   G_view_clearScreen();
   const actingUnit = G_model_roundGetActingUnit(
@@ -208,7 +213,7 @@ const G_view_drawBattle = (battle: Battle) => {
   for (let i = 0; i < allies.length; i++) {
     const [x, y] = G_model_actorGetPosition(allies[i].actor);
     G_model_actorSetPosition(allies[i].actor, x, y);
-    G_view_drawActor(allies[i].actor, G_BATTLE_SCALE);
+    G_view_drawActor(allies[i].actor, false, G_BATTLE_SCALE);
     G_view_drawText(`${allies[i].name}`, x * 2 + 16, y * 2 - 5, {
       align: 'center',
     });
@@ -220,7 +225,7 @@ const G_view_drawBattle = (battle: Battle) => {
     // const [x, y] = G_model_battleGetScreenPosition(i, G_ALLEGIANCE_ENEMY);
     const [x, y] = G_model_actorGetPosition(enemies[i].actor);
     // G_model_actorSetPosition(enemies[i].actor, x, y);
-    G_view_drawActor(enemies[i].actor, G_BATTLE_SCALE);
+    G_view_drawActor(enemies[i].actor, false, G_BATTLE_SCALE);
     G_view_drawText(
       `${enemies[i].name}: ${enemies[i].cS.hp.toString()}/${enemies[
         i

@@ -3,6 +3,7 @@ global
 G_model_createActor
 G_model_createUnit
 G_ALLEGIANCE_ALLY
+G_PLATFORM_AI_NONE
 */
 
 interface Character {
@@ -27,8 +28,9 @@ const G_model_createCharacterFromTemplate = (
   characterDef: CharacterDef,
   chName?: string
 ): Character => {
-  const { sprI, spr, stats, label, action, col, name } = characterDef;
+  const { sprI, spr, stats, label, action, col, plAi, name } = characterDef;
   const actor = G_model_createActor(sprI);
+  actor.plAi = plAi || G_PLATFORM_AI_NONE;
   if (spr) {
     actor.sprite = spr;
   }

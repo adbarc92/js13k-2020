@@ -38,12 +38,7 @@ const colorsInverted = {
   0: [156, 100, 52], // platform + wall
   1: [171, 82, 54], // wall
   2: [0, 228, 54], // platform
-  3: [0, 135, 81], // old man
-  4: [29, 43, 83], // pot,
-  5: [95, 87, 79], // sign
-  6: [194, 195, 199], // spikes
   7: [255, 241, 232], // wall block
-  8: [255, 0, 77], // statue
   // ... to be added later
   15: [0, 0, 0], // nothing
 };

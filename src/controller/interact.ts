@@ -25,6 +25,7 @@ G_model_partyRemoveItem
 G_FACING_LEFT
 G_FACING_RIGHT
 G_COMPLETION_VICTORY
+G_COMPLETION_INCONCLUSIVE
 */
 
 const SIGN = (text: string) => [`This sign says: "${text}"`];
@@ -142,7 +143,14 @@ const G_controller_startBattle = async (
         await G_controller_acquireItem(items[i]);
       }
     }
-  } // death condition is here
+  } else if (battle.completionState === G_COMPLETION_INCONCLUSIVE) {
+    for (let i = 0; i < party.characters.length; i++) {
+      (party.characters[i].unit as Unit).cS.spd -= 3;
+    }
+  } else {
+    await G_controller_playLinearCutscene(['Game Over']);
+    window.location.reload();
+  }
   world.pause = false;
 };
 

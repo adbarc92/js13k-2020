@@ -1,6 +1,7 @@
 /*
 global
 G_controller_battleActionCharge
+G_controller_battleSelectItem
 G_controller_roundApplyAction
 G_model_actorSetFacing
 G_model_createVerticalMenu
@@ -16,6 +17,7 @@ G_utils_areAllUnitsDead
 G_utils_isAlly
 G_utils_getRandNum
 G_model_ResurrectDeadUnits
+G_controller_battleSelectItem
 
 G_BATTLE_SCALE
 G_CURSOR_WIDTH
@@ -29,10 +31,11 @@ interface Round {
   currentIndex: number;
 }
 
-type CompletionState = 0 | 1 | 2;
+type CompletionState = 0 | 1 | 2 | 3;
 const G_COMPLETION_VICTORY: CompletionState = 0;
 const G_COMPLETION_FAILURE: CompletionState = 1;
 const G_COMPLETION_INCONCLUSIVE: CompletionState = 2;
+const G_COMPLETION_IN_PROGRESS: CompletionState = 3;
 
 interface Battle {
   party: Party;
@@ -140,7 +143,7 @@ const G_model_createBattle = (
       menuWidth,
       G_BATTLE_MENU_LABELS,
       handleActionMenuSelected,
-      [],
+      party.inv.filter(item => !!item.onUse).length ? [] : [G_ACTION_USE], //  if no items, disable items, if items enable it
       true,
       lineHeight
     ),
@@ -157,7 +160,7 @@ const G_model_createBattle = (
     actionMenuStack,
     text: '',
     aiSeed: G_utils_getRandNum(3) + 1,
-    completionState: G_COMPLETION_VICTORY,
+    completionState: G_COMPLETION_IN_PROGRESS,
   };
 
   G_model_battleAdvantage(battle, advantage);
@@ -228,15 +231,13 @@ const handleActionMenuSelected = async (i: RoundAction) => {
   const round = G_model_battleGetCurrentRound(battle);
 
   switch (i) {
-    case G_ACTION_STRIKE:
-      // here we could 'await' target selection instead of randomly picking one
+    case G_ACTION_STRIKE: {
       let target: Unit | null = await selectTarget(battle);
-      // handles the case where ESC (or back or something) is pressed while targeting
-      if (!target) {
-        return;
+      if (target) {
+        G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
       }
-      G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
       break;
+    }
     case G_ACTION_CHARGE:
       G_controller_roundApplyAction(G_ACTION_CHARGE, round, null);
       break;
@@ -246,17 +247,25 @@ const handleActionMenuSelected = async (i: RoundAction) => {
     case G_ACTION_HEAL:
       G_controller_roundApplyAction(G_ACTION_HEAL, round, null);
       break;
-    case G_ACTION_INTERRUPT:
-      const target2: Unit | null = await selectTarget(battle);
-      // handles the case where ESC (or back or something) is pressed while targeting
-      if (!target2) {
-        return;
+    case G_ACTION_USE: {
+      const item = await G_controller_battleSelectItem(battle);
+      if (item) {
+        G_controller_roundApplyAction(G_ACTION_USE, round, null, item);
       }
-      G_controller_roundApplyAction(G_ACTION_INTERRUPT, round, target2);
+      battle.actionMenuStack.shift();
       break;
-    case G_ACTION_FLEE:
+    }
+    case G_ACTION_INTERRUPT: {
+      const target: Unit | null = await selectTarget(battle);
+      if (!target) {
+        G_controller_roundApplyAction(G_ACTION_INTERRUPT, round, target);
+      }
+      break;
+    }
+    case G_ACTION_FLEE: {
       G_controller_roundApplyAction(G_ACTION_FLEE, round, null);
       break;
+    }
     default:
       console.error('Action', i, 'Is not implemented yet.');
   }
@@ -321,7 +330,7 @@ const G_model_battleIsComplete = (battle: Battle) => {
   return (
     G_utils_areAllUnitsDead(battle.enemies) ||
     G_utils_areAllUnitsDead(battle.allies) ||
-    battle.completionState === G_COMPLETION_INCONCLUSIVE
+    battle.completionState !== G_COMPLETION_IN_PROGRESS
   );
 };
 

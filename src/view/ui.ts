@@ -12,6 +12,7 @@ G_view_drawText
 G_model_setShowingDialogue
 
 G_KEY_SPACE
+G_KEY_ENTER
 G_KEY_X
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
@@ -218,8 +219,8 @@ const G_view_renderDialogBox = (text: string, cb: () => void) => {
   dialogElem.style.opacity = '1';
   dialogElem.style.width = '512px';
   dialogCb = (ev: any) => {
-    const key = ev.key.toUpperCase();
-    if (key === G_KEY_SPACE || key === G_KEY_X) {
+    const key = ev.key.length > 1 ? ev.key : ev.key.toUpperCase();
+    if (key === G_KEY_SPACE || key === G_KEY_X || key === G_KEY_ENTER) {
       window.removeEventListener(KEYPRESS, dialogCb);
       cb();
     }
