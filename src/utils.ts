@@ -92,10 +92,6 @@ const G_utils_getRandNum = (max: number): number => {
   return Math.floor(Math.random() * Math.floor(max));
 };
 
-const G_utils_getRandArrElem = (arr: any[]): any => {
-  return arr[G_utils_getRandNum(arr.length)];
-};
-
 const G_utils_isAlly = (battle: Battle, unit: Unit): boolean => {
   return battle.allies.includes(unit);
 };

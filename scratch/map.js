@@ -1145,7 +1145,7 @@
                  "gid":10,
                  "height":16,
                  "id":129,
-                 "name":"G_CHARACTER_ITEM_PATE",
+                 "name":"G_CHARACTER_ITEM_MARBLE",
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -1484,7 +1484,7 @@
          "y":0
         }],
  "nextlayerid":4,
- "nextobjectid":162,
+ "nextobjectid":163,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.4.2",

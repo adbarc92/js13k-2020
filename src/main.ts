@@ -60,17 +60,14 @@ const runMainLoop = () => {
   (window as any).world = world;
   console.log('WORLD', world);
   const party = world.party;
-  const jerry = G_model_createCharacterFromTemplate(
-    G_CHARACTER_STRIKER,
-    'Jeremiah'
-  );
+  // const vui = G_model_createCharacterFromTemplate(G_CHARACTER_STRIKER, 'Vui');
   // const seph = G_model_createCharacterFromTemplate(
   //   G_CHARACTER_DEFENDER,
   //   'Seph'
   // );
   const kana = G_model_createCharacterFromTemplate(G_CHARACTER_SLAYER, 'Kana');
 
-  G_model_partyAddCharacter(party, jerry);
+  // G_model_partyAddCharacter(party, vui);
   // G_model_partyAddCharacter(party, seph);
   G_model_partyAddCharacter(party, kana);
 

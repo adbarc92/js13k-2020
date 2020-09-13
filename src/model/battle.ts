@@ -14,8 +14,8 @@ G_view_drawBattle
 G_view_playSound
 G_utils_areAllUnitsDead
 G_utils_isAlly
-G_utils_getRandArrElem
 G_utils_getRandNum
+G_model_ResurrectDeadUnits
 
 G_BATTLE_SCALE
 G_CURSOR_WIDTH
@@ -103,6 +103,7 @@ const makeAllies = (characters: Character[]) => {
     G_model_actorSetFacing(unit.actor, G_FACING_RIGHT);
     battleParty.push(unit);
   }
+  G_model_ResurrectDeadUnits(battleParty);
   return battleParty;
 };
 
@@ -252,6 +253,9 @@ const handleActionMenuSelected = async (i: RoundAction) => {
         return;
       }
       G_controller_roundApplyAction(G_ACTION_INTERRUPT, round, target2);
+      break;
+    case G_ACTION_FLEE:
+      G_controller_roundApplyAction(G_ACTION_FLEE, round, null);
       break;
     default:
       console.error('Action', i, 'Is not implemented yet.');
