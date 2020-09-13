@@ -29,8 +29,13 @@ G_view_clearScreen
 G_view_drawActor
 G_view_drawBattle
 G_view_drawRoom
+G_view_drawUiBackground
+G_model_getScreenSize
+G_view_drawRect
 
 G_view_showDialogBox
+G_controller_playLinearCutscene
+G_view_hideDialog
 
 G_jerry
 G_CHARACTER_DEFENDER
@@ -46,6 +51,7 @@ G_ENCOUNTER_3
 G_ENCOUNTER_4
 G_ENCOUNTER_5
 G_ENCOUNTER_6
+G_BLACK
 */
 
 // const SCALE = 2;
@@ -54,34 +60,26 @@ const G_SCALE = 2;
 
 (window as any).running = true;
 
-const runMainLoop = () => {
+const runMainLoop = async () => {
   const world = G_model_createWorld();
   G_model_setCurrentWorld(world);
   (window as any).world = world;
   console.log('WORLD', world);
-  const party = world.party;
-  const jerry = G_model_createCharacterFromTemplate(
-    G_CHARACTER_STRIKER,
-    'Jeremiah'
+
+  G_view_drawRect(
+    0,
+    0,
+    G_model_getScreenSize(),
+    G_model_getScreenSize(),
+    G_BLACK
   );
-  // const seph = G_model_createCharacterFromTemplate(
-  //   G_CHARACTER_DEFENDER,
-  //   'Seph'
-  // );
-  const kana = G_model_createCharacterFromTemplate(G_CHARACTER_SLAYER, 'Kana');
+  const lines = `
+  Press X to continue...
+  `.split('\n');
+  await G_controller_playLinearCutscene(lines);
+  G_view_hideDialog();
 
-  G_model_partyAddCharacter(party, jerry);
-  // G_model_partyAddCharacter(party, seph);
-  G_model_partyAddCharacter(party, kana);
-
-  G_model_partyAddItem(party, {
-    ...G_ITEM_BOMB,
-  });
-
-  // uncomment to create and render a battle
-  // const battle = G_model_createBattle(party, G_ENCOUNTER_6);
-  // G_model_setCurrentBattle(battle);
-  // G_controller_doBattle(battle);
+  const party = world.party;
 
   const startTime = performance.now();
   let prevNow = startTime;
@@ -117,6 +115,7 @@ const main = async () => {
   await G_model_loadImagesAndSprites();
   G_model_loadSounds();
   G_initActors();
+
   runMainLoop();
 };
 

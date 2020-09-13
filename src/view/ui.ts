@@ -96,9 +96,9 @@ const G_view_drawHeaders = (x: number, y: number) => {
   const y2 = y - h;
   G_view_drawUiBackground(x, y2, w, h);
   G_view_drawText('Unit', x + 10, y2 + h / 2);
-  G_view_drawText('HP', x + 80, y2 + h / 2);
-  G_view_drawText('Chg', x + 140, y2 + h / 2);
-  G_view_drawText('Int', x + 170, y2 + h / 2);
+  G_view_drawText('HP', x + 70, y2 + h / 2);
+  G_view_drawText('Chg', x + 117, y2 + h / 2);
+  G_view_drawText('Brk/Hl', x + 150, y2 + h / 2);
 };
 
 const G_view_drawInfo = (battle: Battle, allegiance: Allegiance) => {
@@ -118,9 +118,9 @@ const G_view_drawInfo = (battle: Battle, allegiance: Allegiance) => {
     const { name, bS, cS } = unit;
     if (allegiance === G_ALLEGIANCE_ALLY) {
       G_view_drawText(name.slice(0, 8), x + 10, y + 15 + lineHeight * i);
-      G_view_drawText(`${cS.hp}/${bS.hp}`, x + 80, y + 15 + lineHeight * i);
-      G_view_drawText(`${cS.cCnt}`, x + 145, y + 15 + lineHeight * i);
-      G_view_drawText(`${cS.iCnt}`, x + 175, y + 15 + lineHeight * i);
+      G_view_drawText(`${cS.hp}/${bS.hp}`, x + 70, y + 15 + lineHeight * i);
+      G_view_drawText(`${cS.cCnt}`, x + 125, y + 15 + lineHeight * i);
+      G_view_drawText(`${cS.iCnt}`, x + 168, y + 15 + lineHeight * i);
     } else {
       G_view_drawText(name.slice(0, 8), x + w / 2, y + 15 + lineHeight * i, {
         align: 'center',

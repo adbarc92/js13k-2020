@@ -22,6 +22,7 @@ G_model_getCurrentWorld
 G_model_partyGetProtag
 G_model_partyAddCharacter
 G_model_worldOnce
+G_model_partyRemoveItem
 G_model_worldResetProtagToStartingPosition
 G_model_partyGetItem
 G_model_getCurrentBattle
@@ -33,7 +34,10 @@ G_AI_STRIKER
 G_FACING_LEFT
 G_FACING_RIGHT
 G_COMPLETION_VICTORY
+G_model_worldGetCurrentRoom
 G_PLATFORM_AI_LEFT_RIGHT
+G_model_roomRemoveCharacter
+G_model_statsModifyHp
 */
 
 type AI = 0 | 1 | 2 | 3 | 4;
@@ -111,6 +115,12 @@ const G_ITEM_STATUE_MIND: ItemDef = {
   dsc: 'Arguably necessary to have.',
 };
 
+const G_ITEM_MARBLE: ItemDef = {
+  name: 'Radiant Stone',
+  dsc: 'A gleaming marble radiating shifting hues',
+  onUse: () => {},
+};
+
 // Characters
 
 const G_CHARACTER_PROTAG: CharacterDef = {
@@ -152,7 +162,7 @@ const G_CHARACTER_SLAYER: CharacterDef = {
 const golem: CharacterDef = {
   name: 'Golem',
   stats: {
-    bS: G_model_createStats(30, 20, 30, 1, 5),
+    bS: G_model_createStats(35, 22, 40, 0, 5),
     ai: G_AI_STRIKER,
   },
   sprI: 5,
@@ -161,8 +171,8 @@ const golem: CharacterDef = {
 const fairy: CharacterDef = {
   name: 'Fairy',
   stats: {
-    bS: G_model_createStats(20, 8, 5, 5, 15),
-    ai: G_AI_STRIKER,
+    bS: G_model_createStats(30, 23, 9, 2, 15),
+    ai: G_AI_CHARGER,
   },
   sprI: 4,
 };
@@ -170,7 +180,7 @@ const fairy: CharacterDef = {
 const ape: CharacterDef = {
   name: 'Ape',
   stats: {
-    bS: G_model_createStats(20, 30, 5, 1, 15),
+    bS: G_model_createStats(20, 40, 5, 0, 15),
     ai: G_AI_STRIKER,
   },
   sprI: 6,
@@ -179,20 +189,34 @@ const ape: CharacterDef = {
 const breaker: CharacterDef = {
   name: 'Breaker',
   stats: {
-    bS: G_model_createStats(40, 30, 14, 1, 14),
+    bS: G_model_createStats(35, 30, 14, 1, 14),
     ai: G_AI_BREAKER,
   },
   sprI: 7,
 };
 
+const ancientBeing: CharacterDef = {
+  name: 'Old Guy',
+  stats: {
+    bS: G_model_createStats(200, 30, 40, 10, 17),
+    ai: G_AI_BOSS,
+  },
+  sprI: 15,
+};
+
+const ancientBeing2 = { ...ancientBeing, name: 'Old Guy (clone)' };
+
 const G_ENCOUNTER_0: EncounterDef = { enemies: [golem, golem, golem] };
-const G_ENCOUNTER_1: EncounterDef = { enemies: [fairy, golem, fairy] };
-const G_ENCOUNTER_2: EncounterDef = { enemies: [fairy, golem, fairy] };
+const G_ENCOUNTER_1: EncounterDef = { enemies: [fairy, golem, fairy, ape] };
+const G_ENCOUNTER_2: EncounterDef = { enemies: [fairy, golem, fairy, breaker] };
 const G_ENCOUNTER_3: EncounterDef = { enemies: [ape, ape, fairy] };
-const G_ENCOUNTER_4: EncounterDef = { enemies: [ape, ape, golem, golem] };
-const G_ENCOUNTER_5: EncounterDef = { enemies: [breaker, breaker, breaker] };
+const G_ENCOUNTER_4: EncounterDef = { enemies: [ape, fairy, golem, golem] };
+const G_ENCOUNTER_5: EncounterDef = { enemies: [breaker, ape, golem] };
 const G_ENCOUNTER_6: EncounterDef = { enemies: [breaker, ape, fairy] };
-const G_ENCOUNTER_7: EncounterDef = { enemies: [fairy] };
+const G_ENCOUNTER_7: EncounterDef = { enemies: [fairy, ape, ape, golem] };
+const G_ENCOUNTER_FINAL: EncounterDef = {
+  enemies: [ancientBeing, ancientBeing2],
+};
 
 const G_CHARACTER_OLD_MAN: CharacterDef = {
   name: 'Old Man',
@@ -200,13 +224,13 @@ const G_CHARACTER_OLD_MAN: CharacterDef = {
   action: async (oldMan: Character) => {
     G_controller_facePlayer(oldMan);
     const lines = `
-Hello there.
-I see you've arrived with your wits about you.
-That's very good.  You'll need them.
-If you examine the statues in this cave, you'll notice that they're all...
-...missing something.
+'Hello there.'
+'I see you've arrived with your wits about you.'
+'That's very good.  You'll need them.'
+'If you examine the statues in this cave, you'll notice that they're all...'
+'...missing something.'
 :)
-It may be prudent for you to find what is not found and restore them.
+'It may be prudent for you to find what is not found and restore them.'
   `.split('\n');
 
     await G_controller_playLinearCutscene(lines);
@@ -283,7 +307,7 @@ const G_SIGN_MONSTER_ROOM: CharacterDef = {
   name: 'Sign',
   spr: SPRITESHEET_TERRAIN,
   sprI: 5,
-  action: () => G_controller_playSignCutscene('Choose wisely'),
+  action: () => G_controller_playSignCutscene('Seek seek lest'),
 };
 
 const G_CHARACTER_POT: CharacterDef = {
@@ -300,14 +324,16 @@ There's nothing inside.
     G_view_hideDialog();
   },
 };
+
 const G_CHARACTER_POT_FAKE: CharacterDef = {
   name: 'Pot!',
   spr: SPRITESHEET_TERRAIN,
   sprI: 4,
   action: async () => {
     const lines = `
-There's something strange about this pot...
-You check the pot...
+This pot seems different from the others!
+You check the pot.
+...
 There's nothing inside.
   `.split('\n');
 
@@ -315,10 +341,42 @@ There's nothing inside.
     G_view_hideDialog();
   },
 };
+
+const G_CHARACTER_PARTY_POT: CharacterDef = {
+  name: 'Pot',
+  spr: SPRITESHEET_TERRAIN,
+  sprI: 4,
+  stats: {
+    bS: G_model_createStats(85, 25, 13, 6, 15),
+    ai: G_AI_PLAYER,
+  },
+  action: async (ch: Character) => {
+    const lines = `
+There's something strange about this pot...
+You check the pot...
+There's a man inside.
+'Hello! This pot is lovely, but you look more appealing.'
+'I'm coming with you!'
+The Pot joins your party.
+  `.split('\n');
+
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+    const world = G_model_getCurrentWorld();
+    const party = world.party;
+    const room = G_model_worldGetCurrentRoom(world);
+    G_model_roomRemoveCharacter(room, ch);
+    G_model_partyAddCharacter(party, ch);
+  },
+};
 const G_CHARACTER_POT_REAL: CharacterDef = {
   name: 'Pot',
   spr: SPRITESHEET_TERRAIN,
   sprI: 4,
+  stats: {
+    bS: G_model_createStats(85, 25, 13, 6, 15),
+    ai: G_AI_STRIKER,
+  },
   action: async (ch: Character) => {
     const lines = `
 You check the pot...
@@ -330,27 +388,44 @@ You check the pot...
   },
 };
 
-const G_CHARACTER_PATE: CharacterDef = {
-  name: 'Pate',
+const G_CHARACTER_JIN: CharacterDef = {
+  name: 'Jin',
   sprI: 3,
-  action: async (pate: Character) => {
-    G_controller_facePlayer(pate);
+  stats: {
+    bS: G_model_createStats(75, 23, 12, 7, 10),
+    ai: G_AI_PLAYER,
+  },
+  action: async (ch: Character) => {
+    G_controller_facePlayer(ch);
     let lines = [''];
-    if (G_model_worldOnce('talked_to_pate')) {
+    if (G_model_worldOnce('talked_to_jin')) {
       lines = `
-Hello friend!
+'Hello friend!
 I seem to have misplaced some treasure.
-If you'd kindly bring it to me.  I'd be happy to accompany you out of here.
+If you'd kindly bring it to me.  I'd be happy to accompany you out of here.'
     `.split('\n');
     } else {
       lines = `
-Have you found my treasure yet?
-No? Come back when you have!
+'Have you found my treasure yet?'
       `.split('\n');
     }
 
     await G_controller_playLinearCutscene(lines);
     G_view_hideDialog();
+    const world = G_model_getCurrentWorld();
+    const { party } = world;
+
+    if (G_model_partyGetItem(party, G_ITEM_MARBLE)) {
+      const lines2 = `
+'Excellent! I'll take that. Let's be on our way!'
+      `.split('\n');
+      G_model_partyRemoveItem(party, G_ITEM_MARBLE);
+      G_model_partyAddCharacter(party, ch);
+      const room = G_model_worldGetCurrentRoom(world);
+      G_model_roomRemoveCharacter(room, ch);
+      await G_controller_playLinearCutscene(lines2);
+      G_view_hideDialog();
+    }
   },
 };
 
@@ -445,33 +520,11 @@ const G_CHARACTER_FAKE_WALL: CharacterDef = {
   sprI: 1,
 };
 
-const G_CHARACTER_ITEM_PATE: CharacterDef = {
-  name: 'A gleaming item...',
+const G_CHARACTER_ITEM_MARBLE: CharacterDef = {
+  name: 'Shining Stone',
   spr: SPRITESHEET_TERRAIN,
   sprI: 11,
-  action: async () => {
-    const lines = `
-A gleaming marble radiating shifting hues...
-    `.split('\n');
-
-    await G_controller_playLinearCutscene(lines);
-    G_view_hideDialog();
-  },
-};
-
-const G_CHARACTER_ITEM_FEATHER: CharacterDef = {
-  name: 'Feather',
-  spr: SPRITESHEET_TERRAIN,
-  sprI: 4,
-  action: async () => {
-    const lines = `
-A white and black feather.
-How could it have gotten here?
-    `.split('\n');
-
-    await G_controller_playLinearCutscene(lines);
-    G_view_hideDialog();
-  },
+  action: (ch: Character) => G_controller_acquireItem(G_ITEM_MARBLE, ch),
 };
 
 const G_CHARACTER_ITEM_BOMB: CharacterDef = {
@@ -485,28 +538,33 @@ const G_CHARACTER_ORANGE: CharacterDef = {
   name: 'Orange',
   sprI: 0,
   stats: {
-    bS: G_model_createStats(75, 23, 12, 7, 10),
+    bS: G_model_createStats(5, 23, 12, 7, 10),
     ai: G_AI_STRIKER,
   },
   action: async (ch: Character) => {
     G_controller_facePlayer(ch);
     const lines = `
-I am the strongest man!
-Fight me and I will join you!
+'I am the strongest man!'
+'Fight me and I will join you!'
     `.split('\n');
     const lines2 = `
-    Onward, then!
+'Wow, you are tough! Onward, then!'
+Orange has joined your party.
     `.split('\n');
 
     await G_controller_playLinearCutscene(lines);
     G_view_hideDialog();
     const G_ENCOUNTER_8: EncounterDef = { enemies: [G_CHARACTER_ORANGE] };
-    await G_controller_startBattle(ch, G_ENCOUNTER_8);
     const world = G_model_getCurrentWorld();
-    const party = world.party;
-    G_model_partyAddCharacter(party, ch);
-    await G_controller_playLinearCutscene(lines2);
-    G_view_hideDialog();
+    const battle = await G_controller_startBattle(ch, G_ENCOUNTER_8);
+    if (battle.completionState === G_COMPLETION_VICTORY) {
+      const party = world.party;
+      G_model_partyAddCharacter(party, ch);
+      await G_controller_playLinearCutscene(lines2);
+      G_view_hideDialog();
+      const unit = ch.unit as Unit;
+      G_model_statsModifyHp(unit.cS, unit.bS, 99);
+    }
   },
 };
 
@@ -515,4 +573,11 @@ const G_CHARACTER_ITEM_STATUE_LEGS: CharacterDef = {
   spr: SPRITESHEET_TERRAIN,
   sprI: 11,
   action: (ch: Character) => G_controller_acquireItem(G_ITEM_STATUE_LEGS, ch),
+};
+
+const G_CHARACTER_ITEM_STATUE_MIND: CharacterDef = {
+  name: 'Item',
+  spr: SPRITESHEET_TERRAIN,
+  sprI: 11,
+  action: (ch: Character) => G_controller_acquireItem(G_ITEM_STATUE_MIND, ch),
 };

@@ -15,8 +15,9 @@ G_view_drawBattle
 G_view_playSound
 G_utils_areAllUnitsDead
 G_utils_isAlly
-G_utils_getRandArrElem
 G_utils_getRandNum
+G_model_ResurrectDeadUnits
+G_controller_battleSelectItem
 
 G_BATTLE_SCALE
 G_CURSOR_WIDTH
@@ -48,7 +49,7 @@ interface Battle {
   completionState: CompletionState;
 }
 
-type RoundAction = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+type RoundAction = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 const G_ACTION_STRIKE: RoundAction = 0; // requires target
 const G_ACTION_CHARGE: RoundAction = 1;
 const G_ACTION_INTERRUPT: RoundAction = 2; // requires target
@@ -56,6 +57,7 @@ const G_ACTION_DEFEND: RoundAction = 3;
 const G_ACTION_HEAL: RoundAction = 4;
 const G_ACTION_USE: RoundAction = 5; // may require target
 const G_ACTION_FLEE: RoundAction = 6;
+const G_ACTION_RENEW: RoundAction = 7;
 const G_BATTLE_MENU_LABELS = [
   // make sure these indices match above
   'Strike',
@@ -104,6 +106,7 @@ const makeAllies = (characters: Character[]) => {
     G_model_actorSetFacing(unit.actor, G_FACING_RIGHT);
     battleParty.push(unit);
   }
+  G_model_ResurrectDeadUnits(battleParty);
   return battleParty;
 };
 
@@ -244,9 +247,6 @@ const handleActionMenuSelected = async (i: RoundAction) => {
     case G_ACTION_HEAL:
       G_controller_roundApplyAction(G_ACTION_HEAL, round, null);
       break;
-    case G_ACTION_FLEE:
-      G_controller_roundApplyAction(G_ACTION_FLEE, round, null);
-      break;
     case G_ACTION_USE: {
       const item = await G_controller_battleSelectItem(battle);
       if (item) {
@@ -260,6 +260,10 @@ const handleActionMenuSelected = async (i: RoundAction) => {
       if (!target) {
         G_controller_roundApplyAction(G_ACTION_INTERRUPT, round, target);
       }
+      break;
+    }
+    case G_ACTION_FLEE: {
+      G_controller_roundApplyAction(G_ACTION_FLEE, round, null);
       break;
     }
     default:

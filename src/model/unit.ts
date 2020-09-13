@@ -122,6 +122,14 @@ const G_model_unitResetDef = (unit: Unit) => {
   unit.cS.def = unit.bS.def;
 };
 
+const G_model_ResurrectDeadUnits = (units: Unit[]) => {
+  for (let i = 0; i < units.length; i++) {
+    if (units[i].cS.hp === 0) {
+      units[i].cS.hp = 1;
+    }
+  }
+};
+
 const G_model_modifySpeed = (unit: Unit, action: RoundAction) => {
   const { cS } = unit;
   switch (action) {

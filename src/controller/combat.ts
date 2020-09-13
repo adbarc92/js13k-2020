@@ -41,7 +41,6 @@ G_model_unitSetToCenter
 
 G_view_drawBattleText
 G_view_playSound
-G_utils_getRandArrElem
 G_utils_getRandNum
 G_utils_areAllUnitsDead
 G_utils_isAlly
@@ -51,7 +50,9 @@ G_ACTION_CHARGE
 G_ACTION_DEFEND
 G_ACTION_HEAL
 G_ACTION_INTERRUPT
+G_ACTION_RENEW
 G_ACTION_STRIKE
+G_ACTION_FLEE
 G_ACTION_USE
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
@@ -67,6 +68,8 @@ G_FACING_UP_RIGHT
 G_COMPLETION_INCONCLUSIVE
 G_CURSOR_WIDTH
 G_CURSOR_HEIGHT
+G_COMPLETION_FAILURE
+G_COMPLETION_VICTORY
 
 G_model_battleSumLostHealth
 
@@ -84,6 +87,13 @@ const G_controller_doBattle = async (battle: Battle) => {
       await G_controller_battleSimulateNextRound(battle); // do the fight!
     }
 
+    if (G_utils_areAllUnitsDead(battle.allies)) {
+      battle.completionState = G_COMPLETION_FAILURE;
+    } else if (G_utils_areAllUnitsDead(battle.enemies)) {
+      battle.completionState = G_COMPLETION_VICTORY;
+    } else {
+      battle.completionState = G_COMPLETION_INCONCLUSIVE;
+    }
     G_model_setCurrentBattle(null);
     resolve();
   });
@@ -204,6 +214,10 @@ const G_controller_roundApplyAction = async (
     case G_ACTION_FLEE:
       G_controller_battleActionFlee();
       break;
+    case G_ACTION_RENEW:
+      battle.text = 'Powers replenished.';
+      G_controller_battleActionRenew(actingUnit);
+      break;
     case G_ACTION_USE:
       if (item && item.onUse) {
         item.onUse(item);
@@ -302,6 +316,10 @@ const G_controller_battleActionFlee = () => {
   battle.completionState = G_COMPLETION_INCONCLUSIVE;
 };
 
+const G_controller_battleActionRenew = (unit: Unit) => {
+  unit.cS.iCnt = unit.bS.mag;
+};
+
 const G_controller_battleSelectItem = async (
   battle: Battle
 ): Promise<Item | null> => {
@@ -335,7 +353,6 @@ const G_controller_battleSelectItem = async (
       true,
       lineHeight
     );
-    console.log('CREATE MENU', itemMenu, itemNames);
     itemMenu.i = -1;
     G_model_menuSetNextCursorIndex(itemMenu, 1);
     battle.actionMenuStack.unshift(itemMenu); // transfers input to the newly-created menu
