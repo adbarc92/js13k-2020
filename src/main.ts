@@ -66,6 +66,10 @@ const runMainLoop = async () => {
   (window as any).world = world;
   console.log('WORLD', world);
 
+  G_model_worldSetState(`${G_ITEM_STATUE_LEGS}_fixed`, true);
+  G_model_worldSetState(`${G_ITEM_STATUE_VOICE}_fixed`, true);
+  G_model_worldSetState(`${G_ITEM_STATUE_MIND}_fixed`, true);
+
   G_view_drawRect(
     0,
     0,

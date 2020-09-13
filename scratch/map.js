@@ -101,7 +101,7 @@
                  "gid":5,
                  "height":16,
                  "id":7,
-                 "name":"G_CHARACTER_POT",
+                 "name":"G_CHARACTER_PARTY_POT",
                  "rotation":0,
                  "type":"",
                  "visible":true,

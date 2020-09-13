@@ -34,7 +34,10 @@ G_AI_STRIKER
 G_FACING_LEFT
 G_FACING_RIGHT
 G_COMPLETION_VICTORY
+G_model_worldGetCurrentRoom
 G_PLATFORM_AI_LEFT_RIGHT
+G_model_roomRemoveCharacter
+G_model_statsModifyHp
 */
 
 type AI = 0 | 1 | 2 | 3 | 4;
@@ -193,13 +196,15 @@ const breaker: CharacterDef = {
 };
 
 const ancientBeing: CharacterDef = {
-  name: 'Some Old Guy',
+  name: 'Old Guy',
   stats: {
     bS: G_model_createStats(200, 30, 40, 10, 17),
     ai: G_AI_BOSS,
   },
   sprI: 15,
 };
+
+const ancientBeing2 = { ...ancientBeing, name: 'Old Guy (clone)' };
 
 const G_ENCOUNTER_0: EncounterDef = { enemies: [golem, golem, golem] };
 const G_ENCOUNTER_1: EncounterDef = { enemies: [fairy, golem, fairy, ape] };
@@ -210,7 +215,7 @@ const G_ENCOUNTER_5: EncounterDef = { enemies: [breaker, ape, golem] };
 const G_ENCOUNTER_6: EncounterDef = { enemies: [breaker, ape, fairy] };
 const G_ENCOUNTER_7: EncounterDef = { enemies: [fairy, ape, ape, golem] };
 const G_ENCOUNTER_FINAL: EncounterDef = {
-  enemies: [ancientBeing, ancientBeing],
+  enemies: [ancientBeing, ancientBeing2],
 };
 
 const G_CHARACTER_OLD_MAN: CharacterDef = {
@@ -219,13 +224,13 @@ const G_CHARACTER_OLD_MAN: CharacterDef = {
   action: async (oldMan: Character) => {
     G_controller_facePlayer(oldMan);
     const lines = `
-Hello there.
-I see you've arrived with your wits about you.
-That's very good.  You'll need them.
-If you examine the statues in this cave, you'll notice that they're all...
-...missing something.
+'Hello there.'
+'I see you've arrived with your wits about you.'
+'That's very good.  You'll need them.'
+'If you examine the statues in this cave, you'll notice that they're all...'
+'...missing something.'
 :)
-It may be prudent for you to find what is not found and restore them.
+'It may be prudent for you to find what is not found and restore them.'
   `.split('\n');
 
     await G_controller_playLinearCutscene(lines);
@@ -319,8 +324,26 @@ There's nothing inside.
     G_view_hideDialog();
   },
 };
+
 const G_CHARACTER_POT_FAKE: CharacterDef = {
   name: 'Pot!',
+  spr: SPRITESHEET_TERRAIN,
+  sprI: 4,
+  action: async () => {
+    const lines = `
+This pot seems different from the others!
+You check the pot.
+...
+There's nothing inside.
+  `.split('\n');
+
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+  },
+};
+
+const G_CHARACTER_PARTY_POT: CharacterDef = {
+  name: 'Pot',
   spr: SPRITESHEET_TERRAIN,
   sprI: 4,
   stats: {
@@ -332,15 +355,17 @@ const G_CHARACTER_POT_FAKE: CharacterDef = {
 There's something strange about this pot...
 You check the pot...
 There's a man inside.
-'Hello!' He says. 'This pot is lovely, but you look more appealing.'
+'Hello! This pot is lovely, but you look more appealing.'
 'I'm coming with you!'
-The pot joins your party.
+The Pot joins your party.
   `.split('\n');
 
     await G_controller_playLinearCutscene(lines);
     G_view_hideDialog();
     const world = G_model_getCurrentWorld();
     const party = world.party;
+    const room = G_model_worldGetCurrentRoom(world);
+    G_model_roomRemoveCharacter(room, ch);
     G_model_partyAddCharacter(party, ch);
   },
 };
@@ -375,26 +400,29 @@ const G_CHARACTER_JIN: CharacterDef = {
     let lines = [''];
     if (G_model_worldOnce('talked_to_jin')) {
       lines = `
-Hello friend!
+'Hello friend!
 I seem to have misplaced some treasure.
-If you'd kindly bring it to me.  I'd be happy to accompany you out of here.
+If you'd kindly bring it to me.  I'd be happy to accompany you out of here.'
     `.split('\n');
     } else {
       lines = `
-Have you found my treasure yet?
+'Have you found my treasure yet?'
       `.split('\n');
     }
 
     await G_controller_playLinearCutscene(lines);
     G_view_hideDialog();
-    const { party } = G_model_getCurrentWorld();
+    const world = G_model_getCurrentWorld();
+    const { party } = world;
 
     if (G_model_partyGetItem(party, G_ITEM_MARBLE)) {
       const lines2 = `
-      Excellent! I'll take that. Let's be on our way!
+'Excellent! I'll take that. Let's be on our way!'
       `.split('\n');
       G_model_partyRemoveItem(party, G_ITEM_MARBLE);
       G_model_partyAddCharacter(party, ch);
+      const room = G_model_worldGetCurrentRoom(world);
+      G_model_roomRemoveCharacter(room, ch);
       await G_controller_playLinearCutscene(lines2);
       G_view_hideDialog();
     }
@@ -510,28 +538,33 @@ const G_CHARACTER_ORANGE: CharacterDef = {
   name: 'Orange',
   sprI: 0,
   stats: {
-    bS: G_model_createStats(75, 23, 12, 7, 10),
+    bS: G_model_createStats(5, 23, 12, 7, 10),
     ai: G_AI_STRIKER,
   },
   action: async (ch: Character) => {
     G_controller_facePlayer(ch);
     const lines = `
-I am the strongest man!
-Fight me and I will join you!
+'I am the strongest man!'
+'Fight me and I will join you!'
     `.split('\n');
     const lines2 = `
-    Onward, then!
+'Wow, you are tough! Onward, then!'
+Orange has joined your party.
     `.split('\n');
 
     await G_controller_playLinearCutscene(lines);
     G_view_hideDialog();
     const G_ENCOUNTER_8: EncounterDef = { enemies: [G_CHARACTER_ORANGE] };
-    await G_controller_startBattle(ch, G_ENCOUNTER_8);
     const world = G_model_getCurrentWorld();
-    const party = world.party;
-    G_model_partyAddCharacter(party, ch);
-    await G_controller_playLinearCutscene(lines2);
-    G_view_hideDialog();
+    const battle = await G_controller_startBattle(ch, G_ENCOUNTER_8);
+    if (battle.completionState === G_COMPLETION_VICTORY) {
+      const party = world.party;
+      G_model_partyAddCharacter(party, ch);
+      await G_controller_playLinearCutscene(lines2);
+      G_view_hideDialog();
+      const unit = ch.unit as Unit;
+      G_model_statsModifyHp(unit.cS, unit.bS, 99);
+    }
   },
 };
 

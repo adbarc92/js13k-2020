@@ -68,6 +68,8 @@ G_FACING_UP_RIGHT
 G_COMPLETION_INCONCLUSIVE
 G_CURSOR_WIDTH
 G_CURSOR_HEIGHT
+G_COMPLETION_FAILURE
+G_COMPLETION_VICTORY
 
 G_model_battleSumLostHealth
 
@@ -85,6 +87,13 @@ const G_controller_doBattle = async (battle: Battle) => {
       await G_controller_battleSimulateNextRound(battle); // do the fight!
     }
 
+    if (G_utils_areAllUnitsDead(battle.allies)) {
+      battle.completionState = G_COMPLETION_FAILURE;
+    } else if (G_utils_areAllUnitsDead(battle.enemies)) {
+      battle.completionState = G_COMPLETION_VICTORY;
+    } else {
+      battle.completionState = G_COMPLETION_INCONCLUSIVE;
+    }
     G_model_setCurrentBattle(null);
     resolve();
   });

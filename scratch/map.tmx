@@ -80,7 +80,7 @@
   <object id="3" name="G_CHARACTER_STATUE_RUNNER" gid="9" x="320" y="400" width="16" height="16"/>
   <object id="4" name="G_CHARACTER_STATUE_SPEAKER" gid="9" x="336" y="464" width="16" height="16"/>
   <object id="6" name="G_SIGN_POT_ROOM" gid="6" x="144" y="496" width="16" height="16"/>
-  <object id="7" name="G_CHARACTER_POT" gid="5" x="112" y="432" width="16" height="16"/>
+  <object id="7" name="G_CHARACTER_PARTY_POT" gid="5" x="112" y="432" width="16" height="16"/>
   <object id="8" name="G_CHARACTER_POT" gid="5" x="144" y="432" width="16" height="16"/>
   <object id="9" name="G_CHARACTER_POT" gid="5" x="176" y="432" width="16" height="16"/>
   <object id="10" name="G_CHARACTER_POT" gid="5" x="208" y="432" width="16" height="16"/>

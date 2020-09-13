@@ -26,6 +26,10 @@ G_FACING_LEFT
 G_FACING_RIGHT
 G_COMPLETION_VICTORY
 G_COMPLETION_INCONCLUSIVE
+G_ITEM_STATUE_LEGS
+G_ITEM_STATUE_VOICE
+G_ITEM_STATUE_MIND
+G_ENCOUNTER_FINAL
 */
 
 const SIGN = (text: string) => [`This sign says: "${text}"`];
@@ -119,6 +123,31 @@ ${defaultText}
 
   await G_controller_playLinearCutscene(lines);
   G_view_hideDialog();
+  if (
+    G_model_worldGetState(`${G_ITEM_STATUE_LEGS}_fixed`) &&
+    G_model_worldGetState(`${G_ITEM_STATUE_VOICE}_fixed`) &&
+    G_model_worldGetState(`${G_ITEM_STATUE_MIND}_fixed`)
+  ) {
+    const lines = `
+'Mwahaha'
+'You've done exactly as I've asked.'
+'Now that I've become unbound, I will return to my rightful place and rule over this world!'`.split(
+      '\n'
+    );
+    await G_controller_playLinearCutscene(lines);
+    G_view_hideDialog();
+    const battle = G_model_createBattle(party, G_ENCOUNTER_FINAL);
+    await G_controller_doBattle(battle);
+    if (battle.completionState === G_COMPLETION_VICTORY) {
+      await G_controller_playLinearCutscene(['Y THO']);
+      G_view_hideDialog();
+      window.location.reload();
+    } else {
+      await G_controller_playLinearCutscene(['Game Over']);
+      window.location.reload();
+    }
+    return;
+  }
 };
 
 const G_controller_startBattle = async (
@@ -133,6 +162,7 @@ const G_controller_startBattle = async (
   const [x, y] = G_model_actorGetPosition(protag.actor);
   const battle = G_model_createBattle(party, encounter);
   await G_controller_doBattle(battle);
+  console.log('Battle over', battle, battle.completionState);
   const room = G_model_worldGetCurrentRoom(world);
   G_model_roomRemoveCharacter(room, roamer);
   G_model_actorSetPosition(protag.actor, x, y);
@@ -152,6 +182,7 @@ const G_controller_startBattle = async (
     window.location.reload();
   }
   world.pause = false;
+  return battle;
 };
 
 const G_controller_acquireItem = async (
