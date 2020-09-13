@@ -4,9 +4,13 @@ G_controller_roundApplyAction
 G_model_battleGetCurrentRound
 G_utils_getRandArrElem
 G_utils_getRandNum
+G_view_drawBattleText
+G_model_unitLives
+
 G_ACTION_CHARGE
 G_ACTION_STRIKE
 G_ACTION_INTERRUPT
+G_ACTION_RENEW
 
 G_AI_CHARGER
 G_AI_STRIKER
@@ -14,17 +18,28 @@ G_AI_BREAKER
 G_AI_BOSS
 */
 
-// Attack weakest target
+const G_utils_getWeakestEnemy = (enemies: Unit[]): Unit => {
+  let weakest = enemies[0];
+  for (let i = 0; i < enemies.length; i++) {
+    if (enemies[i].cS.hp < weakest.cS.hp) {
+      weakest = enemies[i];
+    }
+  }
+  return weakest;
+};
 
-// const G_utils_getWeakestEnemy = (enemies: Unit[]): Unit => {
-//   let weakest = enemies[0];
-//   for (let i = 0; i < enemies.length; i++) {
-//     if (enemies[i].cS.hp < weakest.cS.hp) {
-//       weakest = enemies[i];
-//     }
-//   }
-//   return weakest;
-// };
+const G_utils_getChargedEnemy = (battle: Battle, enemies: Unit[]): Unit => {
+  for (let i = 0; i < enemies.length; i++) {
+    if (enemies[i].cS.cCnt >= 3 && G_model_unitLives(enemies[i])) {
+      return enemies[i];
+    }
+  }
+  if (G_model_unitLives(enemies[battle.aiSeed])) {
+    return enemies[battle.aiSeed];
+  } else {
+    return G_utils_getWeakestEnemy(enemies);
+  }
+};
 
 // const GET_LEAST = false;
 // const GET_GREATEST = true;
@@ -49,39 +64,14 @@ G_AI_BOSS
 //   return outlier;
 // };
 
-// const G_model_aiTargetWeakest = (allies: Unit[], round: Round) => {
-//   const target = G_utils_getOutlierByStat(allies, 'hp', GET_LEAST);
-//   G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
-// };
-
-// const G_model_aiBoss = (actingUnit: Unit, battle: Battle, round: Round) => {
-//   // If Interrupt Count < 2, replenish
-//   if (actingUnit.cS.iCnt < 2) {
-//     battle.text = 'Replenishing';
-//     actingUnit.cS.iCnt = actingUnit.bS.iCnt;
-//   } else {
-//     const target = G_utils_getOutlierByStat(
-//       battle.allies,
-//       'cCnt',
-//       GET_GREATEST
-//     );
-//     // If an enemy has charge of >4, Interrupt
-//     if (target.cS.cCnt > 4) {
-//       // G_controller_roundApplyAction(G_ACTION_INTERRUPT, round, target);
-//     }
-//   }
-// };
-
-const G_model_getChargeStatus = (actingUnit: Unit, battle: Battle) => {
+const G_model_showChargeStatus = (battle: Battle, actingUnit: Unit) => {
   const chargeStatus = actingUnit.cS.cCnt / actingUnit.cS.iCnt;
   // 0%
   if (chargeStatus < 0.2) {
-    battle.text = `${actingUnit.name} begins to glow ominously.`;
+    G_view_drawBattleText(`${actingUnit.name} begins to glow ominously.`);
   } else if (chargeStatus < 0.5) {
-    battle.text = `${actingUnit.name} shines with contempt.`;
+    G_view_drawBattleText(`${actingUnit.name} shines contemptuously.`);
   }
-  // 50%
-  // 80%
 };
 
 const G_model_doAI = (battle: Battle, round: Round, actingUnit: Unit) => {
@@ -94,6 +84,7 @@ const G_model_doAI = (battle: Battle, round: Round, actingUnit: Unit) => {
       } else {
         G_controller_roundApplyAction(G_ACTION_STRIKE, round, target);
       }
+      G_model_showChargeStatus(battle, actingUnit);
       break;
     case G_AI_STRIKER: // Striker
       // AI (the dumb version): select a random target and STRIKE
@@ -105,5 +96,23 @@ const G_model_doAI = (battle: Battle, round: Round, actingUnit: Unit) => {
       const action =
         roundIndex % (aiSeed + 2) === 0 ? G_ACTION_INTERRUPT : G_ACTION_STRIKE;
       G_controller_roundApplyAction(action, round, target);
+      break;
+    case G_AI_BOSS:
+      // Interrupt charge > 3
+      let bossTarget = G_utils_getWeakestEnemy(battle.allies);
+      let bossAction: RoundAction;
+      if (roundIndex % (aiSeed + 2)) {
+        if (actingUnit.cS.iCnt < 2) {
+          bossAction = G_ACTION_RENEW;
+          G_controller_roundApplyAction(bossAction, round, null);
+        } else {
+          bossAction = G_ACTION_INTERRUPT;
+          bossTarget = G_utils_getChargedEnemy(battle, battle.allies);
+          G_controller_roundApplyAction(bossAction, round, null);
+        }
+      } else {
+        bossAction = actingUnit.cS.cCnt < 3 ? G_ACTION_CHARGE : G_ACTION_STRIKE;
+        G_controller_roundApplyAction(bossAction, round, bossTarget);
+      }
   }
 };

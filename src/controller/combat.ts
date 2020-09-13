@@ -50,6 +50,7 @@ G_ACTION_CHARGE
 G_ACTION_DEFEND
 G_ACTION_HEAL
 G_ACTION_INTERRUPT
+G_ACTION_RENEW
 G_ACTION_STRIKE
 G_ALLEGIANCE_ALLY
 G_ALLEGIANCE_ENEMY
@@ -200,6 +201,9 @@ const G_controller_roundApplyAction = async (
     case G_ACTION_INTERRUPT:
       G_controller_battleActionInterrupt(actingUnit, target as Unit);
       break;
+    case G_ACTION_RENEW:
+      G_controller_battleActionRenew(actingUnit);
+      break;
     default:
       console.error('No action:', action, 'exists.');
   }
@@ -291,4 +295,9 @@ const G_controller_battleActionDefend = (unit: Unit) => {
 const G_controller_battleActionFlee = (unit: Unit) => {
   const battle = G_model_getCurrentBattle();
   battle.completionState = G_COMPLETION_INCONCLUSIVE;
+};
+
+const G_controller_battleActionRenew = (unit: Unit) => {
+  unit.cS.iCnt = unit.bS.mag;
+  G_view_drawBattleText('Powers replenished.');
 };

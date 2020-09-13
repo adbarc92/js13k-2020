@@ -178,6 +178,15 @@ const breaker: CharacterDef = {
   sprI: 7,
 };
 
+const ancientBeing: CharacterDef = {
+  name: 'Breaker',
+  stats: {
+    bS: G_model_createStats(200, 60, 25, 10, 17),
+    ai: G_AI_BOSS,
+  },
+  sprI: 7,
+};
+
 const G_ENCOUNTER_0: EncounterDef = { enemies: [golem, golem, golem] };
 const G_ENCOUNTER_1: EncounterDef = { enemies: [fairy, golem, fairy] };
 const G_ENCOUNTER_2: EncounterDef = { enemies: [fairy, golem, fairy] };
@@ -186,6 +195,9 @@ const G_ENCOUNTER_4: EncounterDef = { enemies: [ape, ape, golem, golem] };
 const G_ENCOUNTER_5: EncounterDef = { enemies: [breaker, breaker, breaker] };
 const G_ENCOUNTER_6: EncounterDef = { enemies: [breaker, ape, fairy] };
 const G_ENCOUNTER_7: EncounterDef = { enemies: [fairy] };
+const G_ENCOUNTER_FINAL: EncounterDef = {
+  enemies: [ancientBeing, ancientBeing],
+};
 
 const G_CHARACTER_OLD_MAN: CharacterDef = {
   name: 'Old Man',
@@ -501,4 +513,11 @@ const G_CHARACTER_ITEM_STATUE_LEGS: CharacterDef = {
   spr: SPRITESHEET_TERRAIN,
   sprI: 11,
   action: (ch: Character) => G_controller_acquireItem(G_ITEM_STATUE_LEGS, ch),
+};
+
+const G_CHARACTER_ITEM_STATUE_MIND: CharacterDef = {
+  name: 'Item',
+  spr: SPRITESHEET_TERRAIN,
+  sprI: 11,
+  action: (ch: Character) => G_controller_acquireItem(G_ITEM_STATUE_MIND, ch),
 };
