@@ -54,22 +54,22 @@ const GRAVITY_RATE = 0.185; // the rate that the y velocity is modified each fra
 // given an actor and a 'vx' or 'vy' reduce the velocity value one step closer to 0
 const decelerateVelocity = (actor: Actor, vel: 'vx' | 'vy') => {
   const v = actor[vel];
+  const fm = G_model_getFrameMultiplier();
 
   if (v < 0) {
-    actor[vel] += DECELERATION_RATE;
+    actor[vel] += DECELERATION_RATE * fm;
   } else if (v > 0) {
-    actor[vel] -= DECELERATION_RATE;
+    actor[vel] -= DECELERATION_RATE * fm;
   }
 
-  if (Math.abs(actor[vel]) <= DECELERATION_RATE) {
+  if (Math.abs(actor[vel]) <= DECELERATION_RATE * fm) {
     actor[vel] = 0;
   }
 };
 
 const applyGravity = (actor: Actor) => {
-  const fm = G_model_getFrameMultiplier();
   if (actor.isGround) {
-    actor.ay += 0.0001 * fm;
+    actor.ay += 0.0001;
   } else {
     actor.ay += GRAVITY_RATE;
   }
@@ -130,7 +130,10 @@ const handleActorTileCollisions = (actor: Actor, room: Room) => {
               collisionSideMap[side] = tile;
             }
 
-            //HACK: yip yip yip yip yip yip yip yip yip yip yip yip yip yip
+            //HACK: The ai checks if there is a collidable tile to the left or right of it.
+            // If this is the case, then assume instead that it's a wall and reverse the
+            // ai walking direction. Hack because this logic only applies to the left right
+            // ai.
             if (
               side === G_COLLISION_LEFT &&
               actor.plAi === G_PLATFORM_AI_LEFT_RIGHT
@@ -311,8 +314,19 @@ const G_controller_updateActor = (
 
   const fm = G_model_getFrameMultiplier();
   let { x, y, vx, vy, ax, ay, w, h } = actor;
-  let newVx = vx + ax * fm;
+  let newVx = vx + ax;
   let newVy = vy + ay * fm;
+  // Hack.  Jumping shouldn't use frame multiplier because the force upwards only lasts
+  // for a single frame.  If you multiply by fm, then you get a jump that varies in power
+  // based on frame rate.  30fps jumps will be mega jumps, while 144fps jumps are ass hoppers.
+  // X velocity has the same issue, since it's only modified as a direct force left or right.
+  // If you use fm here, on faster frame rates, the character appears to lag a bit before
+  // moving because the force is small enough that the character has to accelerate to
+  // max speed for a few frames rather than the single frame of force this is intended to
+  // be used for.
+  if (ay < 0) {
+    newVy = vy + ay;
+  }
   if (Math.abs(newVx) > MAX_SPEED_X) {
     newVx = MAX_SPEED_X * G_utils_getSign(newVx);
   }

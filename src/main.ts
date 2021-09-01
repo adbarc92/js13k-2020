@@ -84,7 +84,7 @@ const runMainLoop = async () => {
   const startTime = performance.now();
   let prevNow = startTime;
   const loop = (now: number) => {
-    const sixtyFpsMs = 18;
+    const sixtyFpsMs = 17;
     const dt = now - prevNow;
     const fm = dt / sixtyFpsMs;
     G_model_setFrameMultiplier(fm > 2 ? 2 : fm);
@@ -106,7 +106,7 @@ const runMainLoop = async () => {
     }
 
     if ((window as any).running) requestAnimationFrame(loop);
-    // if ((window as any).running) setTimeout(() => loop(performance.now()), 33); // for debugging
+    // if ((window as any).running) setTimeout(() => loop(performance.now()), 16); // for debugging
   };
   loop(startTime);
 };
