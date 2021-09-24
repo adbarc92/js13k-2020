@@ -14,7 +14,7 @@ This is the first game I've ever developed! I've had aspirations of creating gam
 
 | Key | Control |
 |-----|---------|
-| `X | Enter` | Interact |
+| `X` | `Enter` | Interact |
 | `Left Arrow` | Move Left |
 | `Right Arrow` | Move Right |
 | `Space` | Jump |
