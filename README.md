@@ -21,3 +21,5 @@ This is the first game I've ever developed! I've had aspirations of creating gam
 | `Space` | Jump |
 
 ## Changelog/Roadmap
+
+* This repo is currently broken, so fixing it is first priority
