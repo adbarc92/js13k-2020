@@ -27,3 +27,8 @@ This is the first game I've ever developed! I've had aspirations of creating gam
 ## Changelog/Roadmap
 
 * This game is complete!
+
+## Installation
+
+1. Do not install this game. Its repo is broken, and requires several fixes. Unfortunately, this game is also not my first priority.
+2. Play the deployed version. Have fun!
