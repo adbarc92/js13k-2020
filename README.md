@@ -1,5 +1,9 @@
 # Y THO
 
+## About
+
+A game wherein turn-based combat and platforming traversal overlap, resulting in a (somewhat) unholy abomination. Gather party members, solve the mystery, and gitgud at jumping!
+
 ## Motivation
 
 This is the first game I've ever developed! I've had aspirations of creating games since I was very young, and this represents the first step of a long journey. [Click here to give it a try!](https://js13kgames.com/games/y-tho/index.html)
@@ -22,4 +26,4 @@ This is the first game I've ever developed! I've had aspirations of creating gam
 
 ## Changelog/Roadmap
 
-* This repo is currently broken, so fixing it is first priority
+* This game is complete!
